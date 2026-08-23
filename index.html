@@ -4,11 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rapor Pemain Akademi</title>
-<!-- html2canvas untuk mengambil gambar dari elemen HTML -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- jsPDF untuk mengubah gambar menjadi file PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!-- Font & Icons -->
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
 
@@ -34,7 +31,6 @@
   }
   :focus-visible{outline:2px solid var(--green);outline-offset:2px;}
 
-  /* Loading Screen Premium */
   #loadingScreen{
     position: fixed; inset: 0; z-index: 9999;
     background: var(--ink);
@@ -48,7 +44,6 @@
   }
   @keyframes spin{to{transform:rotate(360deg);}}
 
-  /* Topbar Premium */
   .topbar{
     background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px);
     padding:16px 24px; border-bottom:1px solid var(--line);
@@ -63,11 +58,15 @@
   }
 
   .layout{display:flex;gap:24px;padding:24px;max-width:1440px;margin:0 auto;align-items:flex-start;}
-  @media (max-width:980px){.layout{flex-direction:column;}.panel-preview{position:static!important;width:100%;}}
+  @media (max-width:980px){
+      .layout{flex-direction:column; padding: 16px;}
+      .panel-preview{position:static!important;width:100%;}
+      /* Pastikan di layar hp, kotak kartu dibatasi agar bisa discroll horizontal jika perlu, tapi html2canvas akan membaca isi penuh */
+      .preview-wrapper { width: 100%; overflow-x: auto; padding-bottom: 20px;}
+  }
 
-  /* Panel Editor Premium (Dark) */
-  .panel-editor{flex:1 1 380px;max-width:480px;display:flex;flex-direction:column;gap:20px;}
-  .panel-preview{flex:1 1 520px;position:sticky;top:24px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .panel-editor{flex:1 1 380px;max-width:480px;display:flex;flex-direction:column;gap:20px; width: 100%;}
+  .panel-preview{flex:1 1 520px;position:sticky;top:24px;display:flex;flex-direction:column;align-items:center;gap:16px; width: 100%;}
 
   .card-section{
     background: var(--panel-bg); border-radius: 1.5rem; padding: 20px 24px;
@@ -84,7 +83,6 @@
   .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
   .field label{font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.05em;}
   
-  /* Input Premium */
   .field input, .field select, .field textarea{
     padding:12px 16px; border:2px solid rgba(255,255,255,0.08); border-radius:12px;
     font-size:14px; font-family:inherit; background:rgba(2,6,23,0.5); color:#fff;
@@ -96,11 +94,9 @@
   }
   .field textarea{resize:vertical;}
   .field-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
-  
   .field-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
   .field-row label{font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;}
 
-  /* Buttons Premium */
   .btn{
     background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);
     padding:10px 16px; border-radius:12px; font-weight:700; cursor:pointer; font-size:13px; 
@@ -111,11 +107,9 @@
   
   .btn-primary { background:var(--green); color:#000; border-color:var(--green); box-shadow: 0 4px 14px rgba(183,255,40,0.2); }
   .btn-primary:hover { background:#9de018; border-color:#9de018; }
-  
   .btn-danger{background:rgba(225, 29, 72, 0.15);color:#f43f5e; border-color:rgba(225, 29, 72, 0.3);}
   .btn-danger:hover{background:#e11d48; color:#fff;}
-  
-  .btn-wa{background:rgba(37, 211, 102, 0.15);color:#25D366; border-color:rgba(37, 211, 102, 0.3);}
+  .btn-wa{background:rgba(37, 211, 102, 0.15);color:#25D366; border-color:rgba(37, 211, 102, 0.3); width:100%; padding:14px; font-size:14px;}
   .btn-wa:hover{background:#25D366; color:#fff;}
   
   .btn-sync{background:var(--green); color:#000; width:100%; margin-bottom:16px; font-size:14px; padding:12px;}
@@ -152,30 +146,39 @@
   .saved-reports-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
   .saved-report-row{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.2);padding:10px 14px;border-radius:12px;font-size:13px; border:1px solid var(--line);}
 
-  /* ==== REPORT CARD (PREVIEW) ==== 
-     (DIJAGA TETAP TERANG AGAR HASIL PDF SEPERTI KERTAS FISIK) */
+  /* ==== REPORT CARD (PREVIEW) ==== */
   .report-card{
-    width:100%;max-width:720px;background:#ffffff;border-radius:24px;overflow:hidden;
+    width:720px; /* Ukuran tetap agar canvas membaca konsisten */
+    max-width:100%; 
+    background:#ffffff;border-radius:24px;overflow:hidden;
     box-shadow:0 20px 50px rgba(0,0,0,0.4); color: #232735;
+    /* Resolusi minimum untuk render mobil/desktop agar tidak terpotong */
+    transform-origin: top left;
   }
+  
+  /* Di Mobile, kita scale card-nya di UI (view) tapi ukurannya tetap 720px agar canvas HD */
+  @media (max-width:768px){
+      .report-card { width: 720px !important; max-width: none !important; }
+      .preview-wrapper { overflow-x: auto; width: 100vw; margin-left: -16px; padding-left: 16px; padding-right: 16px;}
+  }
+
   .rc-header{display:flex;align-items:center;gap:14px;padding:20px 24px 12px; background:#fff;}
   .rc-logo{width:56px;height:56px;border-radius:50%;object-fit:contain;border:2px solid var(--navy);flex-shrink:0;background:#fff;}
-  .rc-clubname{font-weight:900;color:var(--navy);text-transform:uppercase;line-height:1.15;letter-spacing:.5px;font-size:clamp(16px,4vw,22px);}
+  .rc-clubname{font-weight:900;color:var(--navy);text-transform:uppercase;line-height:1.15;letter-spacing:.5px;font-size:22px;}
   .rc-clubname .l2{display:block;font-size:.62em;font-weight:800;color:var(--purple1); margin-top:2px;}
 
   .rc-banner{position:relative;background:linear-gradient(135deg,var(--purple1),var(--blue2));color:#fff;padding:28px 24px 48px;overflow:visible;}
-  .rc-banner h2.title{color:var(--green);font-size:clamp(28px,7.5vw,42px);margin:0;font-weight:900;letter-spacing:1px; line-height:1;}
-  .rc-banner .sub{font-weight:800;font-size:clamp(14px,3.5vw,18px);margin-top:2px; letter-spacing: 0.5px;}
-  .rc-period{margin-top:16px;font-weight:700;font-size:clamp(12px,2.8vw,14px);letter-spacing:1px; background:rgba(255,255,255,0.1); display:inline-block; padding:4px 10px; border-radius:6px;}
-  .rc-playername{margin-top:20px;color:var(--green);font-weight:900;font-size:clamp(20px,5vw,30px);line-height:1.15;padding-right:120px; text-transform:uppercase;}
+  .rc-banner h2.title{color:var(--green);font-size:42px;margin:0;font-weight:900;letter-spacing:1px; line-height:1;}
+  .rc-banner .sub{font-weight:800;font-size:18px;margin-top:2px; letter-spacing: 0.5px;}
+  .rc-period{margin-top:16px;font-weight:700;font-size:14px;letter-spacing:1px; background:rgba(255,255,255,0.1); display:inline-block; padding:4px 10px; border-radius:6px;}
+  .rc-playername{margin-top:20px;color:var(--green);font-weight:900;font-size:30px;line-height:1.15;padding-right:120px; text-transform:uppercase;}
 
-  .rc-photo-wrap{position:absolute;right:24px;top:50%;transform:translateY(-28%);width:clamp(96px,22vw,150px);height:clamp(96px,22vw,150px);border-radius:50%;padding:6px;background:#e8e8ee;box-shadow:0 8px 20px rgba(0,0,0,.3);}
+  .rc-photo-wrap{position:absolute;right:24px;top:50%;transform:translateY(-28%);width:150px;height:150px;border-radius:50%;padding:6px;background:#e8e8ee;box-shadow:0 8px 20px rgba(0,0,0,.3);}
   .rc-photo{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#ddd;display:block;}
 
-  .rc-class{padding:20px 24px 4px;font-weight:900;color:var(--navy);font-size:clamp(16px,3.8vw,20px);letter-spacing:1px;}
+  .rc-class{padding:20px 24px 4px;font-weight:900;color:var(--navy);font-size:20px;letter-spacing:1px;}
 
   .rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding:8px 24px 8px;}
-  @media (max-width:520px){.rc-grid{grid-template-columns:1fr;}}
   .rc-category h3{color:var(--navy);font-weight:900;font-size:15px;letter-spacing:.5px;margin:16px 0 10px;display:flex;align-items:center;gap:10px; border-bottom:2px solid #f1f5f9; padding-bottom:6px;}
   .rc-cat-icon{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple1),var(--blue2));display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0; color:#fff;}
   .rc-skill{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start;}
@@ -200,8 +203,26 @@
 
   .rc-contact{background:#f8fafc;padding:14px 24px;display:flex;gap:24px;font-size:13px;color:var(--navy);font-weight:700;align-items:center;flex-wrap:wrap; border-top:1px solid #e2e8f0;}
 
-  .actions{width:100%;max-width:720px;display:flex;justify-content:center;gap:16px; flex-wrap:wrap;}
-  .actions .btn{padding:14px 24px;font-size:14.5px; display:flex; align-items:center; gap:8px;}
+  /* DESAIN TOMBOL EKSPOR PREMIUM */
+  .export-section {
+      width: 100%; max-width: 720px; margin-top: 24px;
+      display: flex; flex-direction: column; gap: 12px;
+  }
+  .export-label {
+      font-size: 11px; font-weight: 800; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 0; text-align: center;
+  }
+  .export-row {
+      display: flex; gap: 10px; width: 100%;
+  }
+  .btn-export {
+      flex: 1; background: rgba(255,255,255,0.05); color: #e2e8f0;
+      border: 1px solid rgba(255,255,255,0.1); padding: 12px; font-size: 13px;
+  }
+  .btn-export:hover {
+      background: rgba(183, 255, 40, 0.15); color: var(--green); border-color: rgba(183, 255, 40, 0.3);
+  }
 </style>
 </head>
 <body>
@@ -222,22 +243,6 @@
 
   <div class="layout">
     <aside class="panel-editor">
-
-      <section class="card-section">
-        <h2 class="sect-title"><i data-lucide="settings" class="h-5 w-5"></i> Pengaturan Klub</h2>
-        <div class="field-row">
-          <label>Logo Klub</label>
-          <input type="file" id="inLogo" accept="image/*">
-        </div>
-        <div class="field-grid-2">
-          <div class="field"><label>Nama Klub (baris 1)</label><input type="text" id="inClubName1"></div>
-          <div class="field"><label>Nama Klub (baris 2)</label><input type="text" id="inClubName2"></div>
-          <div class="field"><label>Instagram</label><input type="text" id="inClubIg"></div>
-          <div class="field"><label>No. Telepon</label><input type="text" id="inClubPhone"></div>
-        </div>
-        <button class="btn btn-small" id="btnSaveClub"><i data-lucide="save" class="h-4 w-4"></i> Simpan Klub</button>
-      </section>
-
       <section class="card-section">
         <h2 class="sect-title"><i data-lucide="users" class="h-5 w-5"></i> Database Pemain</h2>
         <p class="hint">Tarik data terbaru dari Spreadsheet (termasuk Nama, KU, Foto, Posisi, Kaki Dominan, dan WA Ortu).</p>
@@ -302,86 +307,106 @@
         </div>
         <div id="savedReportsList" class="saved-reports-list"></div>
       </section>
-
+      
+      <!-- Pengaturan dipindah ke bawah karena jarang diubah -->
       <section class="card-section">
-        <h2 class="sect-title"><i data-lucide="alert-triangle" class="h-5 w-5 text-rose-500"></i> Area Berbahaya</h2>
-        <button class="btn btn-danger btn-small" id="btnResetAll" style="width: 100%;"><i data-lucide="trash-2" class="h-4 w-4"></i> Hapus Semua Data Rapor</button>
+        <h2 class="sect-title"><i data-lucide="settings" class="h-5 w-5"></i> Pengaturan Klub</h2>
+        <div class="field-row">
+          <label>Logo Klub</label>
+          <input type="file" id="inLogo" accept="image/*">
+        </div>
+        <div class="field-grid-2">
+          <div class="field"><label>Nama Klub (baris 1)</label><input type="text" id="inClubName1"></div>
+          <div class="field"><label>Nama Klub (baris 2)</label><input type="text" id="inClubName2"></div>
+          <div class="field"><label>Instagram</label><input type="text" id="inClubIg"></div>
+          <div class="field"><label>No. Telepon</label><input type="text" id="inClubPhone"></div>
+        </div>
+        <button class="btn btn-small" id="btnSaveClub" style="width:100%"><i data-lucide="save" class="h-4 w-4"></i> Simpan Pengaturan</button>
       </section>
 
     </aside>
 
     <main class="panel-preview">
-      <div class="report-card" id="reportCard">
-        <div class="rc-header">
-          <img id="pv-logo" class="rc-logo" alt="logo klub" src="https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png" crossorigin="anonymous">
-          <div class="rc-clubname">
-            <span id="pv-clubname1">MNA GEN-Z</span>
-            <span class="l2" id="pv-clubname2">FUTSAL ACADEMY</span>
-          </div>
-        </div>
-        <div class="rc-banner">
-          <h2 class="title">RAPOR</h2>
-          <div class="sub">PEMAIN AKADEMI</div>
-          <div class="rc-period" id="pv-period">TRIWULAN 1 MUSIM 2026</div>
-          <div class="rc-playername" id="pv-playername">— Pilih Pemain —</div>
-          <div class="rc-photo-wrap"><img class="rc-photo" id="pv-photo" alt="foto pemain" crossorigin="anonymous"></div>
-        </div>
-        <div class="rc-class" id="pv-class">KATEGORI —</div>
-        <div class="rc-grid">
-          <div class="rc-category">
-            <h3><span class="rc-cat-icon">🏃</span>FISIK</h3>
-            <div class="rc-skill"><div class="txt"><div class="label">Atletics</div><div class="desc">Gerakan Dasar Atletik</div></div><div class="rc-stars" id="pv-star-atletics"></div></div>
-            <div class="rc-skill"><div class="txt"><div class="label">Agility</div><div class="desc">Kelincahan &amp; Keseimbangan</div></div><div class="rc-stars" id="pv-star-agility"></div></div>
-            <div class="rc-skill"><div class="txt"><div class="label">Stamina</div><div class="desc">Daya Tahan Fisik</div></div><div class="rc-stars" id="pv-star-stamina"></div></div>
-          </div>
-          <div class="rc-category">
-            <h3><span class="rc-cat-icon">🧠</span>TAKTIK</h3>
-            <div class="rc-skill"><div class="txt"><div class="label">Role of Play</div><div class="desc">Pemahaman peraturan resmi futsal</div></div><div class="rc-stars" id="pv-star-roleplay"></div></div>
-          </div>
-          <div class="rc-category">
-            <h3><span class="rc-cat-icon">⚽</span>TEHNIK</h3>
-            <div class="rc-skill"><div class="txt"><div class="label">Passing</div><div class="desc">Kemampuan Mengumpan</div></div><div class="rc-stars" id="pv-star-passing"></div></div>
-            <div class="rc-skill"><div class="txt"><div class="label">Dribbling</div><div class="desc">Kemampuan Menggiring</div></div><div class="rc-stars" id="pv-star-dribbling"></div></div>
-            <div class="rc-skill"><div class="txt"><div class="label">Shooting</div><div class="desc">Kemampuan Menembak ke Gawang</div></div><div class="rc-stars" id="pv-star-shooting"></div></div>
-          </div>
-          <div class="rc-category">
-            <h3><span class="rc-cat-icon">🌟</span>MENTAL</h3>
-            <div class="rc-skill"><div class="txt"><div class="label">Motivation</div><div class="desc">Semangat berlatih dan bertanding</div></div><div class="rc-stars" id="pv-star-motivation"></div></div>
-            <div class="rc-skill"><div class="txt"><div class="label">Teamwork</div><div class="desc">Interaksi dan kerja sama dalam tim</div></div><div class="rc-stars" id="pv-star-teamwork"></div></div>
-            <div class="rc-skill"><div class="txt"><div class="label">Discipline</div><div class="desc">Kerajinan dan ketepatan waktu</div></div><div class="rc-stars" id="pv-star-discipline"></div></div>
-          </div>
-        </div>
-        <div class="rc-footer">
-          <div class="notes">
-            <h4>CATATAN PELATIH</h4>
-            <p id="pv-catatan">—</p>
-            <div class="rc-meta">
-              <div><b>POSISI</b> <span id="pv-posisi">—</span></div>
-              <div><b>DOMINAN</b> <span id="pv-dominan">—</span></div>
-              <div><b>PRESTASI</b> <span id="pv-prestasi">—</span></div>
+      <div class="preview-wrapper">
+        <div class="report-card" id="reportCard">
+          <div class="rc-header">
+            <img id="pv-logo" class="rc-logo" alt="logo klub" src="https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png" crossorigin="anonymous">
+            <div class="rc-clubname">
+              <span id="pv-clubname1">MNA GEN-Z</span>
+              <span class="l2" id="pv-clubname2">FUTSAL ACADEMY</span>
             </div>
           </div>
-          <div class="rc-sign">
-            <div class="date" id="pv-tanggal">—</div>
-            <div class="name" id="pv-pelatih">Coach</div>
-            <div class="label">TANDA TANGAN</div>
+          <div class="rc-banner">
+            <h2 class="title">RAPOR</h2>
+            <div class="sub">PEMAIN AKADEMI</div>
+            <div class="rc-period" id="pv-period">TRIWULAN 1 MUSIM 2026</div>
+            <div class="rc-playername" id="pv-playername">— Pilih Pemain —</div>
+            <div class="rc-photo-wrap"><img class="rc-photo" id="pv-photo" alt="foto pemain" crossorigin="anonymous"></div>
           </div>
-        </div>
-        <div class="rc-contact">
-          <span>📷 <span id="pv-ig">mna_futsal</span></span>
-          <span>📞 <span id="pv-phone">0812-3062-2037</span></span>
+          <div class="rc-class" id="pv-class">KATEGORI —</div>
+          <div class="rc-grid">
+            <div class="rc-category">
+              <h3><span class="rc-cat-icon">🏃</span>FISIK</h3>
+              <div class="rc-skill"><div class="txt"><div class="label">Atletics</div><div class="desc">Gerakan Dasar Atletik</div></div><div class="rc-stars" id="pv-star-atletics"></div></div>
+              <div class="rc-skill"><div class="txt"><div class="label">Agility</div><div class="desc">Kelincahan &amp; Keseimbangan</div></div><div class="rc-stars" id="pv-star-agility"></div></div>
+              <div class="rc-skill"><div class="txt"><div class="label">Stamina</div><div class="desc">Daya Tahan Fisik</div></div><div class="rc-stars" id="pv-star-stamina"></div></div>
+            </div>
+            <div class="rc-category">
+              <h3><span class="rc-cat-icon">🧠</span>TAKTIK</h3>
+              <div class="rc-skill"><div class="txt"><div class="label">Role of Play</div><div class="desc">Pemahaman peraturan resmi futsal</div></div><div class="rc-stars" id="pv-star-roleplay"></div></div>
+            </div>
+            <div class="rc-category">
+              <h3><span class="rc-cat-icon">⚽</span>TEHNIK</h3>
+              <div class="rc-skill"><div class="txt"><div class="label">Passing</div><div class="desc">Kemampuan Mengumpan</div></div><div class="rc-stars" id="pv-star-passing"></div></div>
+              <div class="rc-skill"><div class="txt"><div class="label">Dribbling</div><div class="desc">Kemampuan Menggiring</div></div><div class="rc-stars" id="pv-star-dribbling"></div></div>
+              <div class="rc-skill"><div class="txt"><div class="label">Shooting</div><div class="desc">Kemampuan Menembak ke Gawang</div></div><div class="rc-stars" id="pv-star-shooting"></div></div>
+            </div>
+            <div class="rc-category">
+              <h3><span class="rc-cat-icon">🌟</span>MENTAL</h3>
+              <div class="rc-skill"><div class="txt"><div class="label">Motivation</div><div class="desc">Semangat berlatih dan bertanding</div></div><div class="rc-stars" id="pv-star-motivation"></div></div>
+              <div class="rc-skill"><div class="txt"><div class="label">Teamwork</div><div class="desc">Interaksi dan kerja sama dalam tim</div></div><div class="rc-stars" id="pv-star-teamwork"></div></div>
+              <div class="rc-skill"><div class="txt"><div class="label">Discipline</div><div class="desc">Kerajinan dan ketepatan waktu</div></div><div class="rc-stars" id="pv-star-discipline"></div></div>
+            </div>
+          </div>
+          <div class="rc-footer">
+            <div class="notes">
+              <h4>CATATAN PELATIH</h4>
+              <p id="pv-catatan">—</p>
+              <div class="rc-meta">
+                <div><b>POSISI</b> <span id="pv-posisi">—</span></div>
+                <div><b>DOMINAN</b> <span id="pv-dominan">—</span></div>
+                <div><b>PRESTASI</b> <span id="pv-prestasi">—</span></div>
+              </div>
+            </div>
+            <div class="rc-sign">
+              <div class="date" id="pv-tanggal">—</div>
+              <div class="name" id="pv-pelatih">Coach</div>
+              <div class="label">TANDA TANGAN</div>
+            </div>
+          </div>
+          <div class="rc-contact">
+            <span>📷 <span id="pv-ig">mna_genz_academy</span></span>
+            <span>📞 <span id="pv-phone">0812-xxxx-xxxx</span></span>
+          </div>
         </div>
       </div>
       
-      <!-- Action Buttons Updated -->
-      <div class="actions" style="margin-top: 24px;">
-        <button class="btn" id="btnDownloadPDF">
-          <i data-lucide="file-down" class="h-5 w-5"></i>
-          Unduh PDF
-        </button>
-        <button class="btn btn-wa" id="btnSendWA">
-          <i data-lucide="send" class="h-5 w-5"></i>
-          Kirim ke WhatsApp
+      <!-- EXPORT & SHARE BUTTONS -->
+      <div class="export-section">
+        <p class="export-label">EKSPOR DOKUMEN</p>
+        <div class="export-row">
+            <button class="btn btn-export" id="btnExportPDF" onclick="exportReport('pdf')">
+                <i data-lucide="file-text" class="h-4 w-4"></i> PDF
+            </button>
+            <button class="btn btn-export" id="btnExportPNG" onclick="exportReport('png')">
+                <i data-lucide="image" class="h-4 w-4"></i> PNG
+            </button>
+            <button class="btn btn-export" id="btnExportJPG" onclick="exportReport('jpg')">
+                <i data-lucide="image" class="h-4 w-4"></i> JPG
+            </button>
+        </div>
+        <button class="btn btn-wa mt-2" id="btnSendWA" onclick="sendToWhatsApp()">
+          <i data-lucide="send" class="h-5 w-5"></i> Kirim Langsung ke WhatsApp Ortu
         </button>
       </div>
     </main>
@@ -406,7 +431,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwM
 
 const DEFAULT_AVATAR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="rgb(232,232,238)"/><circle cx="50" cy="38" r="18" fill="rgb(184,188,200)"/><ellipse cx="50" cy="94" rx="34" ry="26" fill="rgb(184,188,200)"/></svg>';
 const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(DEFAULT_AVATAR_SVG);
-const DEFAULT_LOGO = 'https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png'; // Logo MNA GEN-Z Default
+const DEFAULT_LOGO = 'https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png'; 
 
 const SKILL_DEFS = {
   fisik:  [ {key:'atletics',  label:'Atletics'},  {key:'agility',    label:'Agility'},    {key:'stamina',    label:'Stamina'} ],
@@ -428,7 +453,6 @@ let pendingLogoData = null;
 let selectedPlayer = null;
 let ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
 
-// ================= DB Wrapper =================
 const DB = {
   async getClub(){ try{ const r=await window.storage.get('club-settings'); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
   async setClub(data){ try{ await window.storage.set('club-settings', JSON.stringify(data)); }catch(e){ console.error(e); } },
@@ -475,7 +499,6 @@ function formatTanggalIndo(iso){
   return HARI[d.getDay()]+', '+d.getDate()+' '+BULAN[d.getMonth()]+' '+d.getFullYear();
 }
 
-// ================= INTEGRASI GOOGLE SPREADSHEET =================
 async function syncPlayersFromSheet() {
     const btn = document.getElementById('btnSyncSheet');
     const origHtml = btn.innerHTML;
@@ -498,21 +521,13 @@ async function syncPlayersFromSheet() {
             let photoUrl = row["Foto"] || (ex ? ex.photo : DEFAULT_AVATAR);
             let positionStr = row["Posisi"] || (ex ? ex.position : "-");
             let footStr = row["Kaki Dominan"] || row["Dominan"] || (ex ? ex.foot : "Kaki Kanan");
-            
-            // Mengambil Nomor WA Ortu dari Spreadsheet
             let parentPhone = row["No. WhatsApp (Ortu)"] || row["No. WhatsApp"] || row["No WhatsApp"] || (ex ? ex.parentPhone : "");
             let parentName = row["Nama Orang Tua / Wali"] || row["Nama Ortu"] || (ex ? ex.parentName : "Bapak/Ibu");
 
             return {
-                id: pid,
-                name: name,
-                ku: row["Kategori Umur"] || (ex ? ex.ku : "-"),
-                position: positionStr,
-                foot: footStr,
-                photoThumb: photoUrl,
-                photo: photoUrl,
-                parentPhone: parentPhone,
-                parentName: parentName
+                id: pid, name: name, ku: row["Kategori Umur"] || (ex ? ex.ku : "-"),
+                position: positionStr, foot: footStr, photoThumb: photoUrl, photo: photoUrl,
+                parentPhone: parentPhone, parentName: parentName
             };
         }).filter(p => p !== null);
 
@@ -543,7 +558,6 @@ ${players.length} pemain ditarik dari Spreadsheet.`);
     }
 }
 
-// ================= Render: editor rating groups =================
 function buildAllEditorGroups(){
   const root = document.getElementById('ratingInputs');
   root.innerHTML = '';
@@ -562,6 +576,7 @@ function buildAllEditorGroups(){
   });
   root.addEventListener('click', onStarPickerClick);
 }
+
 function onStarPickerClick(e){
   const sp = e.target.closest('span[data-n]'); if(!sp) return;
   const picker = sp.closest('.star-picker'); const key = picker.dataset.key; const n = parseInt(sp.dataset.n,10);
@@ -569,14 +584,17 @@ function onStarPickerClick(e){
   updateStarPickerUI(picker,n);
   updatePreviewStars(key,n);
 }
+
 function updateStarPickerUI(picker,value){
   picker.querySelectorAll('span').forEach(sp=>{ sp.classList.toggle('active', parseInt(sp.dataset.n,10) <= value); });
 }
+
 function updatePreviewStars(key,value){
   const el = document.getElementById('pv-star-'+key); if(!el) return;
   el.innerHTML='';
   for(let i=1;i<=5;i++){ const s=document.createElement('span'); s.className = i<=value?'on':'off'; s.textContent='★'; el.appendChild(s); }
 }
+
 function syncAllStars(){
   document.querySelectorAll('.star-picker').forEach(picker=>{
     const key = picker.dataset.key; const val = ratings[key]||0;
@@ -584,13 +602,12 @@ function syncAllStars(){
   });
 }
 
-// ================= Render: preview umum =================
 function renderPreview(){
   document.getElementById('pv-clubname1').textContent = clubSettings.name1 || 'MNA GEN-Z';
   document.getElementById('pv-clubname2').textContent = clubSettings.name2 || 'FUTSAL ACADEMY';
   document.getElementById('pv-logo').src = clubSettings.logo || DEFAULT_LOGO;
-  document.getElementById('pv-ig').textContent = clubSettings.instagram || 'mna_futsal';
-  document.getElementById('pv-phone').textContent = clubSettings.phone || '0812--3062-2037';
+  document.getElementById('pv-ig').textContent = clubSettings.instagram || 'mna_genz_academy';
+  document.getElementById('pv-phone').textContent = clubSettings.phone || '0812-xxxx-xxxx';
 
   const tw = document.getElementById('inTriwulan').value;
   const ms = document.getElementById('inMusim').value;
@@ -616,7 +633,6 @@ function renderPreview(){
   document.getElementById('pv-tanggal').textContent = formatTanggalIndo(document.getElementById('inTanggal').value);
 }
 
-// ================= Klub =================
 async function saveClubSettings(){
   const btn = document.getElementById('btnSaveClub'); const orig = btn.innerHTML;
   btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menyimpan...'; btn.disabled = true; lucide.createIcons();
@@ -631,13 +647,13 @@ async function saveClubSettings(){
   renderPreview();
   btn.innerHTML = orig; btn.disabled = false; lucide.createIcons();
 }
+
 async function onLogoChange(e){
   const f = e.target.files[0]; if(!f) return;
   try{ pendingLogoData = await resizeImage(f,220,0.85); document.getElementById('pv-logo').src = pendingLogoData; }
   catch(err){ alert('Gagal memuat logo: '+err.message); }
 }
 
-// ================= Pemain =================
 function renderPlayerList(){
   const c = document.getElementById('playerListContainer');
   c.innerHTML = '';
@@ -663,6 +679,7 @@ function renderPlayerList(){
     c.appendChild(card);
   });
 }
+
 function resetPlayerForm(){
   editingPlayerId = null; editingPlayerExisting = null; pendingPhotoThumb = null; pendingPhotoFull = null;
   document.getElementById('inPName').value='';
@@ -674,6 +691,7 @@ function resetPlayerForm(){
   document.getElementById('inPPhoto').value='';
   document.getElementById('manualInputArea').style.display = 'none';
 }
+
 async function onPlayerPhotoChange(e){
   const f = e.target.files[0]; if(!f) return;
   try{
@@ -683,6 +701,7 @@ async function onPlayerPhotoChange(e){
     prev.src = pendingPhotoThumb; prev.style.visibility='visible';
   }catch(err){ alert('Gagal memuat foto: '+err.message); }
 }
+
 async function savePlayer(){
   const name = document.getElementById('inPName').value.trim();
   const ku = document.getElementById('inPKu').value.trim();
@@ -702,6 +721,7 @@ async function savePlayer(){
   resetPlayerForm();
   btn.innerHTML=orig; btn.disabled=false;
 }
+
 async function editPlayer(id){
   const rec = await DB.getPlayer(id); if(!rec) return;
   editingPlayerId = id; editingPlayerExisting = rec;
@@ -714,7 +734,6 @@ async function editPlayer(id){
   document.getElementById('inPName').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
-// ================= Laporan / Rapor =================
 function updateSelectedPlayerBox(){
   const box = document.getElementById('selectedPlayerBox');
   box.innerHTML = '';
@@ -727,6 +746,7 @@ function updateSelectedPlayerBox(){
     lucide.createIcons();
   }
 }
+
 async function selectPlayerForReport(id){
   const rec = await DB.getPlayer(id) || players.find(p => p.id === id); if(!rec) return;
   selectedPlayer = rec;
@@ -735,9 +755,11 @@ async function selectPlayerForReport(id){
   await refreshSavedReportsList();
   await maybeLoadExistingReport();
 }
+
 function resetRatingsObj(){
   ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
 }
+
 async function maybeLoadExistingReport(){
   const note = document.getElementById('reportStatusNote');
   if(!selectedPlayer){ note.innerHTML=''; return; }
@@ -765,10 +787,12 @@ async function maybeLoadExistingReport(){
   syncAllStars();
   renderPreview();
 }
+
 function onPeriodChange(){
   renderPreview();
   if(selectedPlayer){ maybeLoadExistingReport(); }
 }
+
 async function saveReport(){
   if(!selectedPlayer){ alert('Pilih pemain terlebih dahulu di bagian Database Pemain.'); return; }
   const btn = document.getElementById('btnSaveReport'); const orig = btn.innerHTML; 
@@ -799,6 +823,7 @@ async function saveReport(){
   
   btn.innerHTML = orig; btn.disabled = false;
 }
+
 async function refreshSavedReportsList(){
   const c = document.getElementById('savedReportsList');
   c.innerHTML = '';
@@ -820,38 +845,109 @@ async function refreshSavedReportsList(){
   });
 }
 
-// ================= FUNGSI PDF & WHATSAPP =================
-async function generatePDFBlob() {
-    const canvas = await html2canvas(document.getElementById('reportCard'), {
-        scale: 2, backgroundColor: '#ffffff', useCORS: true, allowTaint: true
+// ================= FUNGSI EXPORT KHUSUS ANTI-TERPOTONG =================
+async function getCapturedCanvas() {
+    const target = document.getElementById('reportCard');
+    
+    // Simpan gaya asli
+    const origWidth = target.style.width;
+    const origMaxWidth = target.style.maxWidth;
+    const origTransform = target.style.transform;
+    const origMargin = target.style.margin;
+    const origBoxShadow = target.style.boxShadow;
+    
+    // Paksa mode desktop mutlak agar hasil potretan html2canvas sempurna (tidak terpotong mobile viewport)
+    target.style.width = '720px';
+    target.style.maxWidth = '720px';
+    target.style.transform = 'none'; 
+    target.style.margin = '0';
+    target.style.boxShadow = 'none'; // Hilangkan bayangan saat diekspor agar rapi
+    
+    // Penting: Scroll ke paling atas agar canvas membaca keseluruhan tinggi dokumen
+    const origScroll = window.scrollY;
+    window.scrollTo(0, 0);
+
+    const canvas = await html2canvas(target, {
+        scale: 2, 
+        backgroundColor: '#ffffff', 
+        useCORS: true, 
+        allowTaint: true,
+        windowWidth: 720, 
+        scrollY: 0,
+        onclone: function (clonedDoc) {
+            // Memaksa elemen di dalam cloned document memiliki ukuran fix
+            const clonedTarget = clonedDoc.getElementById('reportCard');
+            clonedTarget.style.width = '720px';
+            clonedTarget.style.maxWidth = '720px';
+            clonedTarget.style.transform = 'none';
+        }
     });
-    const imgData = canvas.toDataURL('image/jpeg', 1.0);
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const margin = 10; 
-    const imgWidth = pdfWidth - (margin * 2);
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    pdf.addImage(imgData, 'JPEG', margin, 15, imgWidth, imgHeight);
-    return pdf;
+
+    // Kembalikan gaya asli ke UI
+    target.style.width = origWidth;
+    target.style.maxWidth = origMaxWidth;
+    target.style.transform = origTransform;
+    target.style.margin = origMargin;
+    target.style.boxShadow = origBoxShadow;
+    window.scrollTo(0, origScroll);
+    
+    return canvas;
 }
 
-async function downloadReportPDF(){
-  if(!selectedPlayer) return alert('Silakan pilih pemain terlebih dahulu.');
-  const btn = document.getElementById('btnDownloadPDF'); 
-  const orig = btn.innerHTML;
-  btn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Menyiapkan PDF...'; 
-  btn.disabled = true; lucide.createIcons();
-  try{
-    const pdf = await generatePDFBlob();
-    const pname = selectedPlayer.name.replace(/[^a-zA-Z0-9]+/g,'_');
-    const tw = document.getElementById('inTriwulan').value;
-    const ms = document.getElementById('inMusim').value;
-    pdf.save(`Rapor_${pname}_T${tw}_${ms}.pdf`);
-  }catch(err){
-    alert('Gagal membuat PDF. Pastikan link foto (ImgBB) tidak diprivat. Error: '+err.message);
-  }finally{
-    btn.innerHTML = orig; btn.disabled = false; lucide.createIcons();
-  }
+// FUNGSI MULTI-EKSPOR
+async function exportReport(format, isSilent = false) {
+    if(!selectedPlayer) {
+        if(!isSilent) alert('Silakan pilih pemain terlebih dahulu.');
+        return false;
+    }
+
+    const btns = document.querySelectorAll('.btn-export, .btn-wa');
+    btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+    
+    let oldText = "";
+    if(!isSilent) {
+        const btnId = 'btnExport' + format.toUpperCase();
+        oldText = document.getElementById(btnId).innerHTML;
+        document.getElementById(btnId).innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Proses...';
+    }
+    lucide.createIcons();
+
+    try {
+        const canvas = await getCapturedCanvas();
+        const pname = selectedPlayer.name.replace(/[^a-zA-Z0-9]+/g,'_');
+        const tw = document.getElementById('inTriwulan').value;
+        const ms = document.getElementById('inMusim').value;
+        const filename = `Rapor_${pname}_T${tw}_${ms}`;
+
+        if(format === 'pdf') {
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const margin = 10; 
+            const imgWidth = pdfWidth - (margin * 2);
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(imgData, 'JPEG', margin, 15, imgWidth, imgHeight);
+            pdf.save(filename + '.pdf');
+        } else if(format === 'png') {
+            const link = document.createElement('a');
+            link.download = filename + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } else if(format === 'jpg') {
+            const link = document.createElement('a');
+            link.download = filename + '.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        }
+        return true;
+    } catch(err) {
+        if(!isSilent) alert('Gagal mengekspor: ' + err.message);
+        return false;
+    } finally {
+        btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+        if(!isSilent) document.getElementById('btnExport' + format.toUpperCase()).innerHTML = oldText;
+        lucide.createIcons();
+    }
 }
 
 async function sendToWhatsApp() {
@@ -860,13 +956,19 @@ async function sendToWhatsApp() {
     
     const btn = document.getElementById('btnSendWA');
     const orig = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Memproses...';
-    btn.disabled = true; lucide.createIcons();
+    btn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Menyiapkan File...';
+    
+    const btns = document.querySelectorAll('.btn-export, .btn-wa');
+    btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+    lucide.createIcons();
 
     try {
         let phoneRaw = selectedPlayer.parentPhone.toString().replace(/\D/g, '');
         if(phoneRaw.startsWith('0')) { phoneRaw = '62' + phoneRaw.substring(1); }
-        await downloadReportPDF();
+        
+        // Memaksa unduh PDF secara diam-diam tanpa memunculkan loading di tombol PDF
+        await exportReport('pdf', true);
+        
         const parentName = selectedPlayer.parentName || "Bapak/Ibu";
         const tw = document.getElementById('inTriwulan').value;
         const ms = document.getElementById('inMusim').value;
@@ -883,7 +985,9 @@ Terima Kasih,
     } catch(err) {
         alert('Gagal memproses pengiriman WhatsApp. ' + err.message);
     } finally {
-        btn.innerHTML = orig; btn.disabled = false; lucide.createIcons();
+        btn.innerHTML = orig; 
+        btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+        lucide.createIcons();
     }
 }
 
@@ -907,7 +1011,7 @@ async function resetAllData(){
 async function init(){
   clubSettings = await DB.getClub() || {};
   if(!clubSettings.name1){
-    clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_futsal', phone:'0812-3062-2037', logo: DEFAULT_LOGO };
+    clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_genz_academy', phone:'0812-xxxx-xxxx', logo: DEFAULT_LOGO };
   }
   document.getElementById('inClubName1').value = clubSettings.name1;
   document.getElementById('inClubName2').value = clubSettings.name2;
@@ -928,7 +1032,6 @@ async function init(){
   syncAllStars();
   updateSelectedPlayerBox();
 
-  // Wiring event - FIX: Event yang hilang/error sudah dihapus & diganti
   document.getElementById('btnSaveClub').onclick = saveClubSettings;
   document.getElementById('inLogo').addEventListener('change', onLogoChange);
   document.getElementById('inPPhoto').addEventListener('change', onPlayerPhotoChange);
@@ -936,8 +1039,6 @@ async function init(){
   document.getElementById('btnCancelEditPlayer').onclick = resetPlayerForm;
   document.getElementById('btnSaveReport').onclick = saveReport;
   document.getElementById('btnResetAll').onclick = resetAllData;
-  document.getElementById('btnDownloadPDF').addEventListener('click', downloadReportPDF);
-  document.getElementById('btnSendWA').addEventListener('click', sendToWhatsApp);
   
   document.getElementById('inTriwulan').addEventListener('change', onPeriodChange);
   document.getElementById('inMusim').addEventListener('input', onPeriodChange);
