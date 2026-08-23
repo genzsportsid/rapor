@@ -368,8 +368,8 @@
           </div>
         </div>
         <div class="rc-contact">
-          <span>📷 <span id="pv-ig">mna_genz_academy</span></span>
-          <span>📞 <span id="pv-phone">0812-xxxx-xxxx</span></span>
+          <span>📷 <span id="pv-ig">mna_futsal</span></span>
+          <span>📞 <span id="pv-phone">0812-3062-2037</span></span>
         </div>
       </div>
       
@@ -589,8 +589,8 @@ function renderPreview(){
   document.getElementById('pv-clubname1').textContent = clubSettings.name1 || 'MNA GEN-Z';
   document.getElementById('pv-clubname2').textContent = clubSettings.name2 || 'FUTSAL ACADEMY';
   document.getElementById('pv-logo').src = clubSettings.logo || DEFAULT_LOGO;
-  document.getElementById('pv-ig').textContent = clubSettings.instagram || 'mna_genz_academy';
-  document.getElementById('pv-phone').textContent = clubSettings.phone || '0812-xxxx-xxxx';
+  document.getElementById('pv-ig').textContent = clubSettings.instagram || 'mna_futsal';
+  document.getElementById('pv-phone').textContent = clubSettings.phone || '0812--3062-2037';
 
   const tw = document.getElementById('inTriwulan').value;
   const ms = document.getElementById('inMusim').value;
@@ -907,7 +907,7 @@ async function resetAllData(){
 async function init(){
   clubSettings = await DB.getClub() || {};
   if(!clubSettings.name1){
-    clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_genz_academy', phone:'0812-xxxx-xxxx', logo: DEFAULT_LOGO };
+    clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_futsal', phone:'0812-3062-2037', logo: DEFAULT_LOGO };
   }
   document.getElementById('inClubName1').value = clubSettings.name1;
   document.getElementById('inClubName2').value = clubSettings.name2;
