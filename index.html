@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rapor Pemain Akademi</title>
+<!-- html2canvas untuk mengambil gambar dari elemen HTML -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- jsPDF untuk mengubah gambar menjadi file PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
@@ -61,7 +63,6 @@
   @media (max-width:980px){
       .layout{flex-direction:column; padding: 16px;}
       .panel-preview{position:static!important;width:100%;}
-      /* Pastikan di layar hp, kotak kartu dibatasi agar bisa discroll horizontal jika perlu, tapi html2canvas akan membaca isi penuh */
       .preview-wrapper { width: 100%; overflow-x: auto; padding-bottom: 20px;}
   }
 
@@ -148,15 +149,13 @@
 
   /* ==== REPORT CARD (PREVIEW) ==== */
   .report-card{
-    width:720px; /* Ukuran tetap agar canvas membaca konsisten */
+    width:720px; 
     max-width:100%; 
     background:#ffffff;border-radius:24px;overflow:hidden;
     box-shadow:0 20px 50px rgba(0,0,0,0.4); color: #232735;
-    /* Resolusi minimum untuk render mobil/desktop agar tidak terpotong */
     transform-origin: top left;
   }
   
-  /* Di Mobile, kita scale card-nya di UI (view) tapi ukurannya tetap 720px agar canvas HD */
   @media (max-width:768px){
       .report-card { width: 720px !important; max-width: none !important; }
       .preview-wrapper { overflow-x: auto; width: 100vw; margin-left: -16px; padding-left: 16px; padding-right: 16px;}
@@ -308,7 +307,6 @@
         <div id="savedReportsList" class="saved-reports-list"></div>
       </section>
       
-      <!-- Pengaturan dipindah ke bawah karena jarang diubah -->
       <section class="card-section">
         <h2 class="sect-title"><i data-lucide="settings" class="h-5 w-5"></i> Pengaturan Klub</h2>
         <div class="field-row">
@@ -395,17 +393,17 @@
       <div class="export-section">
         <p class="export-label">EKSPOR DOKUMEN</p>
         <div class="export-row">
-            <button class="btn btn-export" id="btnExportPDF" onclick="exportReport('pdf')">
+            <button class="btn btn-export" id="btnExportPDF">
                 <i data-lucide="file-text" class="h-4 w-4"></i> PDF
             </button>
-            <button class="btn btn-export" id="btnExportPNG" onclick="exportReport('png')">
+            <button class="btn btn-export" id="btnExportPNG">
                 <i data-lucide="image" class="h-4 w-4"></i> PNG
             </button>
-            <button class="btn btn-export" id="btnExportJPG" onclick="exportReport('jpg')">
+            <button class="btn btn-export" id="btnExportJPG">
                 <i data-lucide="image" class="h-4 w-4"></i> JPG
             </button>
         </div>
-        <button class="btn btn-wa mt-2" id="btnSendWA" onclick="sendToWhatsApp()">
+        <button class="btn btn-wa mt-2" id="btnSendWA">
           <i data-lucide="send" class="h-5 w-5"></i> Kirim Langsung ke WhatsApp Ortu
         </button>
       </div>
@@ -414,565 +412,555 @@
 </div>
 
 <script>
-// ================= Pengganti window.storage =================
-if (typeof window.storage === 'undefined') {
-  window.storage = {
-    get: async (key) => { const v = localStorage.getItem(key); return v ? { value: v } : null; },
-    set: async (key, val) => localStorage.setItem(key, val),
-    delete: async (key) => localStorage.removeItem(key)
-  };
-}
+// PENTING: Untuk mengatasi error inisialisasi pada browser yang lambat
+document.addEventListener("DOMContentLoaded", function() {
 
-// Inisialisasi jsPDF dari CDN
-window.jsPDF = window.jspdf.jsPDF;
-
-// ================= Konstanta =================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
-
-const DEFAULT_AVATAR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="rgb(232,232,238)"/><circle cx="50" cy="38" r="18" fill="rgb(184,188,200)"/><ellipse cx="50" cy="94" rx="34" ry="26" fill="rgb(184,188,200)"/></svg>';
-const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(DEFAULT_AVATAR_SVG);
-const DEFAULT_LOGO = 'https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png'; 
-
-const SKILL_DEFS = {
-  fisik:  [ {key:'atletics',  label:'Atletics'},  {key:'agility',    label:'Agility'},    {key:'stamina',    label:'Stamina'} ],
-  teknik: [ {key:'passing',   label:'Passing'},   {key:'dribbling',  label:'Dribbling'},  {key:'shooting',   label:'Shooting'} ],
-  taktik: [ {key:'roleplay',  label:'Role of Play'} ],
-  mental: [ {key:'motivation',label:'Motivation'},{key:'teamwork',   label:'Teamwork'},   {key:'discipline', label:'Discipline'} ]
-};
-const HARI = ['MINGGU','SENIN','SELASA','RABU','KAMIS',"JUM'AT",'SABTU'];
-const BULAN = ['JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];
-
-// ================= State =================
-let clubSettings = {};
-let players = [];
-let editingPlayerId = null;
-let editingPlayerExisting = null;
-let pendingPhotoThumb = null;
-let pendingPhotoFull = null;
-let pendingLogoData = null;
-let selectedPlayer = null;
-let ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
-
-const DB = {
-  async getClub(){ try{ const r=await window.storage.get('club-settings'); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
-  async setClub(data){ try{ await window.storage.set('club-settings', JSON.stringify(data)); }catch(e){ console.error(e); } },
-  async listPlayers(){ try{ const r=await window.storage.get('players-index'); return r?JSON.parse(r.value):[]; }catch(e){ return []; } },
-  async savePlayersIndex(arr){ try{ await window.storage.set('players-index', JSON.stringify(arr)); }catch(e){ console.error(e); } },
-  async getPlayer(id){ try{ const r=await window.storage.get('player:'+id); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
-  async setPlayer(id,data){ try{ await window.storage.set('player:'+id, JSON.stringify(data)); }catch(e){ console.error(e); } },
-  async deletePlayer(id){ try{ await window.storage.delete('player:'+id); }catch(e){ } },
-  async listReports(playerId){ try{ const r=await window.storage.get('reports-index:'+playerId); return r?JSON.parse(r.value):[]; }catch(e){ return []; } },
-  async saveReportsIndex(playerId,arr){ try{ await window.storage.set('reports-index:'+playerId, JSON.stringify(arr)); }catch(e){ console.error(e); } },
-  async getReport(playerId,key){ try{ const r=await window.storage.get('report:'+playerId+':'+key); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
-  async setReport(playerId,key,data){ try{ await window.storage.set('report:'+playerId+':'+key, JSON.stringify(data)); }catch(e){ console.error(e); } },
-  async deleteReport(playerId,key){ try{ await window.storage.delete('report:'+playerId+':'+key); }catch(e){ } }
-};
-
-function genId(prefix){ return prefix+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-
-function resizeImage(file, maxDim, quality){
-  return new Promise((resolve,reject)=>{
-    const reader = new FileReader();
-    reader.onload = (e)=>{
-      const img = new Image();
-      img.onload = ()=>{
-        let w=img.width, h=img.height;
-        if(w>h && w>maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
-        else if(h>=w && h>maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
-        const canvas = document.createElement('canvas');
-        canvas.width=w; canvas.height=h;
-        canvas.getContext('2d').drawImage(img,0,0,w,h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+    // ================= Pengganti window.storage =================
+    if (typeof window.storage === 'undefined') {
+      window.storage = {
+        get: async (key) => { const v = localStorage.getItem(key); return v ? { value: v } : null; },
+        set: async (key, val) => localStorage.setItem(key, val),
+        delete: async (key) => localStorage.removeItem(key)
       };
-      img.onerror = ()=>reject(new Error('Gagal membaca gambar'));
-      img.src = e.target.result;
+    }
+
+    // Inisialisasi jsPDF
+    window.jsPDF = window.jspdf.jsPDF;
+
+    // ================= Konstanta =================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
+
+    const DEFAULT_AVATAR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="rgb(232,232,238)"/><circle cx="50" cy="38" r="18" fill="rgb(184,188,200)"/><ellipse cx="50" cy="94" rx="34" ry="26" fill="rgb(184,188,200)"/></svg>';
+    const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(DEFAULT_AVATAR_SVG);
+    const DEFAULT_LOGO = 'https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png'; 
+
+    const SKILL_DEFS = {
+      fisik:  [ {key:'atletics',  label:'Atletics'},  {key:'agility',    label:'Agility'},    {key:'stamina',    label:'Stamina'} ],
+      teknik: [ {key:'passing',   label:'Passing'},   {key:'dribbling',  label:'Dribbling'},  {key:'shooting',   label:'Shooting'} ],
+      taktik: [ {key:'roleplay',  label:'Role of Play'} ],
+      mental: [ {key:'motivation',label:'Motivation'},{key:'teamwork',   label:'Teamwork'},   {key:'discipline', label:'Discipline'} ]
     };
-    reader.onerror = ()=>reject(new Error('Gagal membaca file'));
-    reader.readAsDataURL(file);
-  });
-}
+    const HARI = ['MINGGU','SENIN','SELASA','RABU','KAMIS',"JUM'AT",'SABTU'];
+    const BULAN = ['JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];
 
-function formatTanggalIndo(iso){
-  if(!iso) return '-';
-  const d = new Date(iso+'T00:00:00');
-  if(isNaN(d.getTime())) return '-';
-  return HARI[d.getDay()]+', '+d.getDate()+' '+BULAN[d.getMonth()]+' '+d.getFullYear();
-}
+    // ================= State =================
+    let clubSettings = {};
+    let players = [];
+    let editingPlayerId = null;
+    let editingPlayerExisting = null;
+    let pendingPhotoThumb = null;
+    let pendingPhotoFull = null;
+    let pendingLogoData = null;
+    let selectedPlayer = null;
+    let ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
 
-async function syncPlayersFromSheet() {
-    const btn = document.getElementById('btnSyncSheet');
-    const origHtml = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menyinkronkan...';
-    btn.disabled = true;
-    lucide.createIcons();
+    const DB = {
+      async getClub(){ try{ const r=await window.storage.get('club-settings'); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
+      async setClub(data){ try{ await window.storage.set('club-settings', JSON.stringify(data)); }catch(e){ console.error(e); } },
+      async listPlayers(){ try{ const r=await window.storage.get('players-index'); return r?JSON.parse(r.value):[]; }catch(e){ return []; } },
+      async savePlayersIndex(arr){ try{ await window.storage.set('players-index', JSON.stringify(arr)); }catch(e){ console.error(e); } },
+      async getPlayer(id){ try{ const r=await window.storage.get('player:'+id); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
+      async setPlayer(id,data){ try{ await window.storage.set('player:'+id, JSON.stringify(data)); }catch(e){ console.error(e); } },
+      async deletePlayer(id){ try{ await window.storage.delete('player:'+id); }catch(e){ } },
+      async listReports(playerId){ try{ const r=await window.storage.get('reports-index:'+playerId); return r?JSON.parse(r.value):[]; }catch(e){ return []; } },
+      async saveReportsIndex(playerId,arr){ try{ await window.storage.set('reports-index:'+playerId, JSON.stringify(arr)); }catch(e){ console.error(e); } },
+      async getReport(playerId,key){ try{ const r=await window.storage.get('report:'+playerId+':'+key); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
+      async setReport(playerId,key,data){ try{ await window.storage.set('report:'+playerId+':'+key, JSON.stringify(data)); }catch(e){ console.error(e); } },
+      async deleteReport(playerId,key){ try{ await window.storage.delete('report:'+playerId+':'+key); }catch(e){ } }
+    };
 
-    try {
-        const res = await fetch(SCRIPT_URL);
-        const data = await res.json();
-        const existing = await DB.listPlayers();
+    function genId(prefix){ return prefix+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
-        const sheetPlayers = data.map(row => {
-            const name = row["Nama Pemain"] ? row["Nama Pemain"].toString().trim() : "";
-            if (!name) return null;
+    function resizeImage(file, maxDim, quality){
+      return new Promise((resolve,reject)=>{
+        const reader = new FileReader();
+        reader.onload = (e)=>{
+          const img = new Image();
+          img.onload = ()=>{
+            let w=img.width, h=img.height;
+            if(w>h && w>maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+            else if(h>=w && h>maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+            const canvas = document.createElement('canvas');
+            canvas.width=w; canvas.height=h;
+            canvas.getContext('2d').drawImage(img,0,0,w,h);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = ()=>reject(new Error('Gagal membaca gambar'));
+          img.src = e.target.result;
+        };
+        reader.onerror = ()=>reject(new Error('Gagal membaca file'));
+        reader.readAsDataURL(file);
+      });
+    }
 
-            const ex = existing.find(e => e.name.toUpperCase() === name.toUpperCase());
-            const pid = ex ? ex.id : genId('p');
+    function formatTanggalIndo(iso){
+      if(!iso) return '-';
+      const d = new Date(iso+'T00:00:00');
+      if(isNaN(d.getTime())) return '-';
+      return HARI[d.getDay()]+', '+d.getDate()+' '+BULAN[d.getMonth()]+' '+d.getFullYear();
+    }
+
+    async function syncPlayersFromSheet() {
+        const btn = document.getElementById('btnSyncSheet');
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menyinkronkan...';
+        btn.disabled = true;
+        lucide.createIcons();
+
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const data = await res.json();
+            const existing = await DB.listPlayers();
+
+            const sheetPlayers = data.map(row => {
+                const name = row["Nama Pemain"] ? row["Nama Pemain"].toString().trim() : "";
+                if (!name) return null;
+
+                const ex = existing.find(e => e.name.toUpperCase() === name.toUpperCase());
+                const pid = ex ? ex.id : genId('p');
+                
+                let photoUrl = row["Foto"] || (ex ? ex.photo : DEFAULT_AVATAR);
+                let positionStr = row["Posisi"] || (ex ? ex.position : "-");
+                let footStr = row["Kaki Dominan"] || row["Dominan"] || (ex ? ex.foot : "Kaki Kanan");
+                let parentPhone = row["No. WhatsApp (Ortu)"] || row["No. WhatsApp"] || row["No WhatsApp"] || (ex ? ex.parentPhone : "");
+                let parentName = row["Nama Orang Tua / Wali"] || row["Nama Ortu"] || (ex ? ex.parentName : "Bapak/Ibu");
+
+                return {
+                    id: pid, name: name, ku: row["Kategori Umur"] || (ex ? ex.ku : "-"),
+                    position: positionStr, foot: footStr, photoThumb: photoUrl, photo: photoUrl,
+                    parentPhone: parentPhone, parentName: parentName
+                };
+            }).filter(p => p !== null);
+
+            players = sheetPlayers;
+            await DB.savePlayersIndex(players);
+            for(const p of players) { await DB.setPlayer(p.id, p); }
+
+            renderPlayerList();
             
-            let photoUrl = row["Foto"] || (ex ? ex.photo : DEFAULT_AVATAR);
-            let positionStr = row["Posisi"] || (ex ? ex.position : "-");
-            let footStr = row["Kaki Dominan"] || row["Dominan"] || (ex ? ex.foot : "Kaki Kanan");
-            let parentPhone = row["No. WhatsApp (Ortu)"] || row["No. WhatsApp"] || row["No WhatsApp"] || (ex ? ex.parentPhone : "");
-            let parentName = row["Nama Orang Tua / Wali"] || row["Nama Ortu"] || (ex ? ex.parentName : "Bapak/Ibu");
+            if (selectedPlayer) {
+               const updated = players.find(p => p.id === selectedPlayer.id);
+               if (updated) {
+                   selectedPlayer = updated;
+                   updateSelectedPlayerBox();
+                   renderPreview();
+               }
+            }
 
-            return {
-                id: pid, name: name, ku: row["Kategori Umur"] || (ex ? ex.ku : "-"),
-                position: positionStr, foot: footStr, photoThumb: photoUrl, photo: photoUrl,
-                parentPhone: parentPhone, parentName: parentName
-            };
-        }).filter(p => p !== null);
-
-        players = sheetPlayers;
-        await DB.savePlayersIndex(players);
-        for(const p of players) { await DB.setPlayer(p.id, p); }
-
-        renderPlayerList();
-        
-        if (selectedPlayer) {
-           const updated = players.find(p => p.id === selectedPlayer.id);
-           if (updated) {
-               selectedPlayer = updated;
-               updateSelectedPlayerBox();
-               renderPreview();
-           }
-        }
-
-        alert(`✅ Sinkronisasi Berhasil!
+            alert(`✅ Sinkronisasi Berhasil!
 ${players.length} pemain ditarik dari Spreadsheet.`);
-    } catch (err) {
-        console.error("Gagal sinkronisasi:", err);
-        alert("Gagal menarik data. Pastikan API URL benar dan koneksi internet stabil.");
-    } finally {
-        btn.innerHTML = origHtml;
-        btn.disabled = false;
-        lucide.createIcons();
-    }
-}
-
-function buildAllEditorGroups(){
-  const root = document.getElementById('ratingInputs');
-  root.innerHTML = '';
-  const cats = [['FISIK',SKILL_DEFS.fisik],['TEHNIK',SKILL_DEFS.teknik],['TAKTIK',SKILL_DEFS.taktik],['MENTAL',SKILL_DEFS.mental]];
-  cats.forEach(([label,arr])=>{
-    const h = document.createElement('div'); h.className='rating-cat-title'; h.textContent=label;
-    root.appendChild(h);
-    arr.forEach(s=>{
-      const row = document.createElement('div'); row.className='edit-skill-row';
-      const lbl = document.createElement('div'); lbl.className='esr-label'; lbl.textContent=s.label;
-      const picker = document.createElement('div'); picker.className='star-picker'; picker.dataset.key=s.key;
-      for(let n=1;n<=5;n++){ const sp=document.createElement('span'); sp.dataset.n=n; sp.textContent='★'; picker.appendChild(sp); }
-      row.append(lbl,picker);
-      root.appendChild(row);
-    });
-  });
-  root.addEventListener('click', onStarPickerClick);
-}
-
-function onStarPickerClick(e){
-  const sp = e.target.closest('span[data-n]'); if(!sp) return;
-  const picker = sp.closest('.star-picker'); const key = picker.dataset.key; const n = parseInt(sp.dataset.n,10);
-  ratings[key] = n;
-  updateStarPickerUI(picker,n);
-  updatePreviewStars(key,n);
-}
-
-function updateStarPickerUI(picker,value){
-  picker.querySelectorAll('span').forEach(sp=>{ sp.classList.toggle('active', parseInt(sp.dataset.n,10) <= value); });
-}
-
-function updatePreviewStars(key,value){
-  const el = document.getElementById('pv-star-'+key); if(!el) return;
-  el.innerHTML='';
-  for(let i=1;i<=5;i++){ const s=document.createElement('span'); s.className = i<=value?'on':'off'; s.textContent='★'; el.appendChild(s); }
-}
-
-function syncAllStars(){
-  document.querySelectorAll('.star-picker').forEach(picker=>{
-    const key = picker.dataset.key; const val = ratings[key]||0;
-    updateStarPickerUI(picker,val); updatePreviewStars(key,val);
-  });
-}
-
-function renderPreview(){
-  document.getElementById('pv-clubname1').textContent = clubSettings.name1 || 'MNA GEN-Z';
-  document.getElementById('pv-clubname2').textContent = clubSettings.name2 || 'FUTSAL ACADEMY';
-  document.getElementById('pv-logo').src = clubSettings.logo || DEFAULT_LOGO;
-  document.getElementById('pv-ig').textContent = clubSettings.instagram || 'mna_genz_academy';
-  document.getElementById('pv-phone').textContent = clubSettings.phone || '0812-xxxx-xxxx';
-
-  const tw = document.getElementById('inTriwulan').value;
-  const ms = document.getElementById('inMusim').value;
-  document.getElementById('pv-period').textContent = 'TRIWULAN '+tw+' MUSIM '+ms;
-
-  if(selectedPlayer){
-    document.getElementById('pv-playername').textContent = selectedPlayer.name;
-    document.getElementById('pv-class').textContent = ('KATEGORI '+selectedPlayer.ku).toUpperCase();
-    document.getElementById('pv-photo').src = selectedPlayer.photo || DEFAULT_AVATAR;
-    document.getElementById('pv-posisi').textContent = selectedPlayer.position || '-';
-    document.getElementById('pv-dominan').textContent = selectedPlayer.foot || '-';
-  } else {
-    document.getElementById('pv-playername').textContent = '— Pilih Pemain —';
-    document.getElementById('pv-class').textContent = 'KATEGORI —';
-    document.getElementById('pv-photo').src = DEFAULT_AVATAR;
-    document.getElementById('pv-posisi').textContent = '-';
-    document.getElementById('pv-dominan').textContent = '-';
-  }
-
-  document.getElementById('pv-catatan').textContent = document.getElementById('inCatatan').value || '—';
-  document.getElementById('pv-prestasi').textContent = document.getElementById('inPrestasi').value || '-';
-  document.getElementById('pv-pelatih').textContent = document.getElementById('inPelatih').value || 'Coach';
-  document.getElementById('pv-tanggal').textContent = formatTanggalIndo(document.getElementById('inTanggal').value);
-}
-
-async function saveClubSettings(){
-  const btn = document.getElementById('btnSaveClub'); const orig = btn.innerHTML;
-  btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menyimpan...'; btn.disabled = true; lucide.createIcons();
-  clubSettings = {
-    name1: document.getElementById('inClubName1').value.trim() || 'MNA GEN-Z',
-    name2: document.getElementById('inClubName2').value.trim() || 'FUTSAL ACADEMY',
-    instagram: document.getElementById('inClubIg').value.trim(),
-    phone: document.getElementById('inClubPhone').value.trim(),
-    logo: pendingLogoData || clubSettings.logo || DEFAULT_LOGO
-  };
-  await DB.setClub(clubSettings);
-  renderPreview();
-  btn.innerHTML = orig; btn.disabled = false; lucide.createIcons();
-}
-
-async function onLogoChange(e){
-  const f = e.target.files[0]; if(!f) return;
-  try{ pendingLogoData = await resizeImage(f,220,0.85); document.getElementById('pv-logo').src = pendingLogoData; }
-  catch(err){ alert('Gagal memuat logo: '+err.message); }
-}
-
-function renderPlayerList(){
-  const c = document.getElementById('playerListContainer');
-  c.innerHTML = '';
-  if(players.length===0){ 
-      const p=document.createElement('p'); p.className='hint'; p.innerHTML='<i data-lucide="info" class="h-4 w-4 inline mr-1"></i> Belum ada pemain. Tekan tombol Sinkronisasi untuk mengambil data.'; 
-      c.appendChild(p); lucide.createIcons(); return; 
-  }
-  players.forEach(p=>{
-    const card = document.createElement('div'); card.className='player-card';
-    const img = document.createElement('img'); img.src = p.photoThumb || DEFAULT_AVATAR; card.appendChild(img);
-    const info = document.createElement('div'); info.className='info';
-    const nm = document.createElement('div'); nm.className='name'; nm.textContent = p.name; info.appendChild(nm);
-    const ku = document.createElement('div'); ku.className='ku'; ku.textContent = p.ku; info.appendChild(ku);
-    card.appendChild(info);
-    const btns = document.createElement('div'); btns.className='card-btns';
-    const bPilih = document.createElement('button'); bPilih.className='btn btn-primary btn-small'; bPilih.textContent='Pilih'; bPilih.onclick=()=>selectPlayerForReport(p.id);
-    const bEdit = document.createElement('button'); bEdit.className='btn btn-secondary btn-small'; bEdit.textContent='Edit'; bEdit.onclick=()=>{
-        document.getElementById('manualInputArea').style.display = 'block';
-        editPlayer(p.id);
-    };
-    btns.append(bPilih,bEdit);
-    card.appendChild(btns);
-    c.appendChild(card);
-  });
-}
-
-function resetPlayerForm(){
-  editingPlayerId = null; editingPlayerExisting = null; pendingPhotoThumb = null; pendingPhotoFull = null;
-  document.getElementById('inPName').value='';
-  document.getElementById('inPKu').value='';
-  document.getElementById('inPPosisi').value='';
-  document.getElementById('inPFoot').value='Kaki Kanan';
-  document.getElementById('pPhotoPreview').src='';
-  document.getElementById('pPhotoPreview').style.visibility='hidden';
-  document.getElementById('inPPhoto').value='';
-  document.getElementById('manualInputArea').style.display = 'none';
-}
-
-async function onPlayerPhotoChange(e){
-  const f = e.target.files[0]; if(!f) return;
-  try{
-    pendingPhotoThumb = await resizeImage(f,120,0.8);
-    pendingPhotoFull = await resizeImage(f,450,0.82);
-    const prev = document.getElementById('pPhotoPreview');
-    prev.src = pendingPhotoThumb; prev.style.visibility='visible';
-  }catch(err){ alert('Gagal memuat foto: '+err.message); }
-}
-
-async function savePlayer(){
-  const name = document.getElementById('inPName').value.trim();
-  const ku = document.getElementById('inPKu').value.trim();
-  if(!name || !ku){ alert('Nama dan Kelas/KU wajib diisi.'); return; }
-  const btn = document.getElementById('btnSavePlayer'); const orig=btn.innerHTML; btn.innerHTML='Menyimpan...'; btn.disabled=true;
-  const id = editingPlayerId || genId('p');
-  const thumb = pendingPhotoThumb || (editingPlayerExisting && editingPlayerExisting.photoThumb) || DEFAULT_AVATAR;
-  const full = pendingPhotoFull || (editingPlayerExisting && editingPlayerExisting.photo) || DEFAULT_AVATAR;
-  const record = { id, name, ku, position: document.getElementById('inPPosisi').value.trim(), foot: document.getElementById('inPFoot').value, photoThumb: thumb, photo: full };
-  await DB.setPlayer(id, record);
-  const idx = players.findIndex(p=>p.id===id);
-  const idxEntry = { id, name, ku, photoThumb: thumb, photo: full, position: record.position, foot: record.foot };
-  if(idx>=0) players[idx]=idxEntry; else players.push(idxEntry);
-  await DB.savePlayersIndex(players);
-  renderPlayerList();
-  if(selectedPlayer && selectedPlayer.id===id){ selectedPlayer = record; renderPreview(); updateSelectedPlayerBox(); }
-  resetPlayerForm();
-  btn.innerHTML=orig; btn.disabled=false;
-}
-
-async function editPlayer(id){
-  const rec = await DB.getPlayer(id); if(!rec) return;
-  editingPlayerId = id; editingPlayerExisting = rec;
-  document.getElementById('inPName').value = rec.name;
-  document.getElementById('inPKu').value = rec.ku;
-  document.getElementById('inPPosisi').value = rec.position || '';
-  document.getElementById('inPFoot').value = rec.foot || 'Kaki Kanan';
-  const prev = document.getElementById('pPhotoPreview'); prev.src = rec.photoThumb || ''; prev.style.visibility = rec.photoThumb ? 'visible':'hidden';
-  pendingPhotoThumb = null; pendingPhotoFull = null;
-  document.getElementById('inPName').scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-function updateSelectedPlayerBox(){
-  const box = document.getElementById('selectedPlayerBox');
-  box.innerHTML = '';
-  if(selectedPlayer){
-    const img = document.createElement('img'); img.src = selectedPlayer.photoThumb || DEFAULT_AVATAR; img.className='sel-thumb';
-    const span = document.createElement('span'); span.textContent = selectedPlayer.name+' — '+selectedPlayer.ku;
-    box.append(img,span);
-  } else {
-    box.innerHTML = '<i data-lucide="mouse-pointer-click" class="h-4 w-4"></i> Belum ada pemain dipilih.';
-    lucide.createIcons();
-  }
-}
-
-async function selectPlayerForReport(id){
-  const rec = await DB.getPlayer(id) || players.find(p => p.id === id); if(!rec) return;
-  selectedPlayer = rec;
-  updateSelectedPlayerBox();
-  renderPreview();
-  await refreshSavedReportsList();
-  await maybeLoadExistingReport();
-}
-
-function resetRatingsObj(){
-  ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
-}
-
-async function maybeLoadExistingReport(){
-  const note = document.getElementById('reportStatusNote');
-  if(!selectedPlayer){ note.innerHTML=''; return; }
-  const tw = document.getElementById('inTriwulan').value;
-  const ms = document.getElementById('inMusim').value;
-  const key = 'T'+tw+'_'+ms;
-  const rep = await DB.getReport(selectedPlayer.id, key);
-  if(rep){
-    resetRatingsObj(); Object.assign(ratings, rep.ratings||{});
-    document.getElementById('inCatatan').value = rep.catatan || '';
-    document.getElementById('inPrestasi').value = rep.prestasi || '';
-    document.getElementById('inPelatih').value = rep.pelatih || '';
-    document.getElementById('inTanggal').value = rep.tanggal || '';
-    note.innerHTML = '<i data-lucide="file-check-2" class="h-4 w-4 inline mr-1"></i> Data rapor tersimpan dimuat.';
-    note.style.color = 'var(--green)';
-  } else {
-    resetRatingsObj();
-    document.getElementById('inCatatan').value = '';
-    document.getElementById('inPrestasi').value = '';
-    if(!document.getElementById('inTanggal').value){ document.getElementById('inTanggal').value = new Date().toISOString().slice(0,10); }
-    note.innerHTML = '<i data-lucide="file-plus-2" class="h-4 w-4 inline mr-1"></i> Rapor baru, silakan isi rating.';
-    note.style.color = '#94a3b8';
-  }
-  lucide.createIcons();
-  syncAllStars();
-  renderPreview();
-}
-
-function onPeriodChange(){
-  renderPreview();
-  if(selectedPlayer){ maybeLoadExistingReport(); }
-}
-
-async function saveReport(){
-  if(!selectedPlayer){ alert('Pilih pemain terlebih dahulu di bagian Database Pemain.'); return; }
-  const btn = document.getElementById('btnSaveReport'); const orig = btn.innerHTML; 
-  btn.innerHTML='<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Menyimpan...'; btn.disabled=true; lucide.createIcons();
-  
-  const tw = document.getElementById('inTriwulan').value;
-  const ms = document.getElementById('inMusim').value;
-  const key = 'T'+tw+'_'+ms;
-  const data = {
-    key, triwulan: tw, musim: ms,
-    ratings: Object.assign({}, ratings),
-    catatan: document.getElementById('inCatatan').value.trim(),
-    prestasi: document.getElementById('inPrestasi').value.trim(),
-    pelatih: document.getElementById('inPelatih').value.trim(),
-    tanggal: document.getElementById('inTanggal').value
-  };
-  await DB.setReport(selectedPlayer.id, key, data);
-  const idx = await DB.listReports(selectedPlayer.id);
-  if(!idx.find(r=>r.key===key)){
-    idx.push({ key, label:'Triwulan '+tw+' - Musim '+ms, triwulan: tw, musim: ms });
-    await DB.saveReportsIndex(selectedPlayer.id, idx);
-  }
-  await refreshSavedReportsList();
-  
-  document.getElementById('reportStatusNote').innerHTML = '<i data-lucide="check-circle-2" class="h-4 w-4 inline mr-1"></i> Laporan berhasil disimpan.';
-  document.getElementById('reportStatusNote').style.color = 'var(--green)';
-  lucide.createIcons();
-  
-  btn.innerHTML = orig; btn.disabled = false;
-}
-
-async function refreshSavedReportsList(){
-  const c = document.getElementById('savedReportsList');
-  c.innerHTML = '';
-  if(!selectedPlayer) return;
-  const idx = await DB.listReports(selectedPlayer.id);
-  if(idx.length===0){ const p=document.createElement('p'); p.className='hint'; p.innerHTML='<i data-lucide="info" class="h-4 w-4 inline mr-1"></i> Belum ada laporan tersimpan untuk pemain ini.'; c.appendChild(p); lucide.createIcons(); return; }
-  const title = document.createElement('div'); title.className='hint'; title.textContent='Laporan tersimpan untuk pemain ini:'; c.appendChild(title);
-  idx.forEach(r=>{
-    const row = document.createElement('div'); row.className='saved-report-row';
-    const lbl = document.createElement('span'); lbl.textContent = r.label;
-    const btn = document.createElement('button'); btn.className='btn btn-secondary btn-small'; btn.textContent='Muat';
-    btn.onclick = ()=>{
-      document.getElementById('inTriwulan').value = r.triwulan;
-      document.getElementById('inMusim').value = r.musim;
-      maybeLoadExistingReport();
-    };
-    row.append(lbl,btn);
-    c.appendChild(row);
-  });
-}
-
-// ================= FUNGSI EXPORT KHUSUS ANTI-TERPOTONG =================
-async function getCapturedCanvas() {
-    const target = document.getElementById('reportCard');
-    
-    // Simpan gaya asli
-    const origWidth = target.style.width;
-    const origMaxWidth = target.style.maxWidth;
-    const origTransform = target.style.transform;
-    const origMargin = target.style.margin;
-    const origBoxShadow = target.style.boxShadow;
-    
-    // Paksa mode desktop mutlak agar hasil potretan html2canvas sempurna (tidak terpotong mobile viewport)
-    target.style.width = '720px';
-    target.style.maxWidth = '720px';
-    target.style.transform = 'none'; 
-    target.style.margin = '0';
-    target.style.boxShadow = 'none'; // Hilangkan bayangan saat diekspor agar rapi
-    
-    // Penting: Scroll ke paling atas agar canvas membaca keseluruhan tinggi dokumen
-    const origScroll = window.scrollY;
-    window.scrollTo(0, 0);
-
-    const canvas = await html2canvas(target, {
-        scale: 2, 
-        backgroundColor: '#ffffff', 
-        useCORS: true, 
-        allowTaint: true,
-        windowWidth: 720, 
-        scrollY: 0,
-        onclone: function (clonedDoc) {
-            // Memaksa elemen di dalam cloned document memiliki ukuran fix
-            const clonedTarget = clonedDoc.getElementById('reportCard');
-            clonedTarget.style.width = '720px';
-            clonedTarget.style.maxWidth = '720px';
-            clonedTarget.style.transform = 'none';
+        } catch (err) {
+            console.error("Gagal sinkronisasi:", err);
+            alert("Gagal menarik data. Pastikan API URL benar dan koneksi internet stabil.");
+        } finally {
+            btn.innerHTML = origHtml;
+            btn.disabled = false;
+            lucide.createIcons();
         }
-    });
-
-    // Kembalikan gaya asli ke UI
-    target.style.width = origWidth;
-    target.style.maxWidth = origMaxWidth;
-    target.style.transform = origTransform;
-    target.style.margin = origMargin;
-    target.style.boxShadow = origBoxShadow;
-    window.scrollTo(0, origScroll);
-    
-    return canvas;
-}
-
-// FUNGSI MULTI-EKSPOR
-async function exportReport(format, isSilent = false) {
-    if(!selectedPlayer) {
-        if(!isSilent) alert('Silakan pilih pemain terlebih dahulu.');
-        return false;
     }
 
-    const btns = document.querySelectorAll('.btn-export, .btn-wa');
-    btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
-    
-    let oldText = "";
-    if(!isSilent) {
-        const btnId = 'btnExport' + format.toUpperCase();
-        oldText = document.getElementById(btnId).innerHTML;
-        document.getElementById(btnId).innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Proses...';
+    function buildAllEditorGroups(){
+      const root = document.getElementById('ratingInputs');
+      root.innerHTML = '';
+      const cats = [['FISIK',SKILL_DEFS.fisik],['TEHNIK',SKILL_DEFS.teknik],['TAKTIK',SKILL_DEFS.taktik],['MENTAL',SKILL_DEFS.mental]];
+      cats.forEach(([label,arr])=>{
+        const h = document.createElement('div'); h.className='rating-cat-title'; h.textContent=label;
+        root.appendChild(h);
+        arr.forEach(s=>{
+          const row = document.createElement('div'); row.className='edit-skill-row';
+          const lbl = document.createElement('div'); lbl.className='esr-label'; lbl.textContent=s.label;
+          const picker = document.createElement('div'); picker.className='star-picker'; picker.dataset.key=s.key;
+          for(let n=1;n<=5;n++){ const sp=document.createElement('span'); sp.dataset.n=n; sp.textContent='★'; picker.appendChild(sp); }
+          row.append(lbl,picker);
+          root.appendChild(row);
+        });
+      });
+      root.addEventListener('click', onStarPickerClick);
     }
-    lucide.createIcons();
 
-    try {
-        const canvas = await getCapturedCanvas();
-        const pname = selectedPlayer.name.replace(/[^a-zA-Z0-9]+/g,'_');
-        const tw = document.getElementById('inTriwulan').value;
-        const ms = document.getElementById('inMusim').value;
-        const filename = `Rapor_${pname}_T${tw}_${ms}`;
+    function onStarPickerClick(e){
+      const sp = e.target.closest('span[data-n]'); if(!sp) return;
+      const picker = sp.closest('.star-picker'); const key = picker.dataset.key; const n = parseInt(sp.dataset.n,10);
+      ratings[key] = n;
+      updateStarPickerUI(picker,n);
+      updatePreviewStars(key,n);
+    }
 
-        if(format === 'pdf') {
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const margin = 10; 
-            const imgWidth = pdfWidth - (margin * 2);
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            pdf.addImage(imgData, 'JPEG', margin, 15, imgWidth, imgHeight);
-            pdf.save(filename + '.pdf');
-        } else if(format === 'png') {
-            const link = document.createElement('a');
-            link.download = filename + '.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        } else if(format === 'jpg') {
-            const link = document.createElement('a');
-            link.download = filename + '.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 0.95);
-            link.click();
-        }
-        return true;
-    } catch(err) {
-        if(!isSilent) alert('Gagal mengekspor: ' + err.message);
-        return false;
-    } finally {
-        btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
-        if(!isSilent) document.getElementById('btnExport' + format.toUpperCase()).innerHTML = oldText;
+    function updateStarPickerUI(picker,value){
+      picker.querySelectorAll('span').forEach(sp=>{ sp.classList.toggle('active', parseInt(sp.dataset.n,10) <= value); });
+    }
+
+    function updatePreviewStars(key,value){
+      const el = document.getElementById('pv-star-'+key); if(!el) return;
+      el.innerHTML='';
+      for(let i=1;i<=5;i++){ const s=document.createElement('span'); s.className = i<=value?'on':'off'; s.textContent='★'; el.appendChild(s); }
+    }
+
+    function syncAllStars(){
+      document.querySelectorAll('.star-picker').forEach(picker=>{
+        const key = picker.dataset.key; const val = ratings[key]||0;
+        updateStarPickerUI(picker,val); updatePreviewStars(key,val);
+      });
+    }
+
+    function renderPreview(){
+      document.getElementById('pv-clubname1').textContent = clubSettings.name1 || 'MNA GEN-Z';
+      document.getElementById('pv-clubname2').textContent = clubSettings.name2 || 'FUTSAL ACADEMY';
+      document.getElementById('pv-logo').src = clubSettings.logo || DEFAULT_LOGO;
+      document.getElementById('pv-ig').textContent = clubSettings.instagram || 'mna_genz_academy';
+      document.getElementById('pv-phone').textContent = clubSettings.phone || '0812-xxxx-xxxx';
+
+      const tw = document.getElementById('inTriwulan').value;
+      const ms = document.getElementById('inMusim').value;
+      document.getElementById('pv-period').textContent = 'TRIWULAN '+tw+' MUSIM '+ms;
+
+      if(selectedPlayer){
+        document.getElementById('pv-playername').textContent = selectedPlayer.name;
+        document.getElementById('pv-class').textContent = ('KATEGORI '+selectedPlayer.ku).toUpperCase();
+        document.getElementById('pv-photo').src = selectedPlayer.photo || DEFAULT_AVATAR;
+        document.getElementById('pv-posisi').textContent = selectedPlayer.position || '-';
+        document.getElementById('pv-dominan').textContent = selectedPlayer.foot || '-';
+      } else {
+        document.getElementById('pv-playername').textContent = '— Pilih Pemain —';
+        document.getElementById('pv-class').textContent = 'KATEGORI —';
+        document.getElementById('pv-photo').src = DEFAULT_AVATAR;
+        document.getElementById('pv-posisi').textContent = '-';
+        document.getElementById('pv-dominan').textContent = '-';
+      }
+
+      document.getElementById('pv-catatan').textContent = document.getElementById('inCatatan').value || '—';
+      document.getElementById('pv-prestasi').textContent = document.getElementById('inPrestasi').value || '-';
+      document.getElementById('pv-pelatih').textContent = document.getElementById('inPelatih').value || 'Coach';
+      document.getElementById('pv-tanggal').textContent = formatTanggalIndo(document.getElementById('inTanggal').value);
+    }
+
+    async function saveClubSettings(){
+      const btn = document.getElementById('btnSaveClub'); const orig = btn.innerHTML;
+      btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menyimpan...'; btn.disabled = true; lucide.createIcons();
+      clubSettings = {
+        name1: document.getElementById('inClubName1').value.trim() || 'MNA GEN-Z',
+        name2: document.getElementById('inClubName2').value.trim() || 'FUTSAL ACADEMY',
+        instagram: document.getElementById('inClubIg').value.trim(),
+        phone: document.getElementById('inClubPhone').value.trim(),
+        logo: pendingLogoData || clubSettings.logo || DEFAULT_LOGO
+      };
+      await DB.setClub(clubSettings);
+      renderPreview();
+      btn.innerHTML = orig; btn.disabled = false; lucide.createIcons();
+    }
+
+    async function onLogoChange(e){
+      const f = e.target.files[0]; if(!f) return;
+      try{ pendingLogoData = await resizeImage(f,220,0.85); document.getElementById('pv-logo').src = pendingLogoData; }
+      catch(err){ alert('Gagal memuat logo: '+err.message); }
+    }
+
+    function renderPlayerList(){
+      const c = document.getElementById('playerListContainer');
+      c.innerHTML = '';
+      if(players.length===0){ 
+          const p=document.createElement('p'); p.className='hint'; p.innerHTML='<i data-lucide="info" class="h-4 w-4 inline mr-1"></i> Belum ada pemain. Tekan tombol Sinkronisasi untuk mengambil data.'; 
+          c.appendChild(p); lucide.createIcons(); return; 
+      }
+      players.forEach(p=>{
+        const card = document.createElement('div'); card.className='player-card';
+        const img = document.createElement('img'); img.src = p.photoThumb || DEFAULT_AVATAR; card.appendChild(img);
+        const info = document.createElement('div'); info.className='info';
+        const nm = document.createElement('div'); nm.className='name'; nm.textContent = p.name; info.appendChild(nm);
+        const ku = document.createElement('div'); ku.className='ku'; ku.textContent = p.ku; info.appendChild(ku);
+        card.appendChild(info);
+        const btns = document.createElement('div'); btns.className='card-btns';
+        const bPilih = document.createElement('button'); bPilih.className='btn btn-primary btn-small'; bPilih.textContent='Pilih'; bPilih.onclick=()=>selectPlayerForReport(p.id);
+        const bEdit = document.createElement('button'); bEdit.className='btn btn-secondary btn-small'; bEdit.textContent='Edit'; bEdit.onclick=()=>{
+            document.getElementById('manualInputArea').style.display = 'block';
+            editPlayer(p.id);
+        };
+        btns.append(bPilih,bEdit);
+        card.appendChild(btns);
+        c.appendChild(card);
+      });
+    }
+
+    function resetPlayerForm(){
+      editingPlayerId = null; editingPlayerExisting = null; pendingPhotoThumb = null; pendingPhotoFull = null;
+      document.getElementById('inPName').value='';
+      document.getElementById('inPKu').value='';
+      document.getElementById('inPPosisi').value='';
+      document.getElementById('inPFoot').value='Kaki Kanan';
+      document.getElementById('pPhotoPreview').src='';
+      document.getElementById('pPhotoPreview').style.visibility='hidden';
+      document.getElementById('inPPhoto').value='';
+      document.getElementById('manualInputArea').style.display = 'none';
+    }
+
+    async function onPlayerPhotoChange(e){
+      const f = e.target.files[0]; if(!f) return;
+      try{
+        pendingPhotoThumb = await resizeImage(f,120,0.8);
+        pendingPhotoFull = await resizeImage(f,450,0.82);
+        const prev = document.getElementById('pPhotoPreview');
+        prev.src = pendingPhotoThumb; prev.style.visibility='visible';
+      }catch(err){ alert('Gagal memuat foto: '+err.message); }
+    }
+
+    async function savePlayer(){
+      const name = document.getElementById('inPName').value.trim();
+      const ku = document.getElementById('inPKu').value.trim();
+      if(!name || !ku){ alert('Nama dan Kelas/KU wajib diisi.'); return; }
+      const btn = document.getElementById('btnSavePlayer'); const orig=btn.innerHTML; btn.innerHTML='Menyimpan...'; btn.disabled=true;
+      const id = editingPlayerId || genId('p');
+      const thumb = pendingPhotoThumb || (editingPlayerExisting && editingPlayerExisting.photoThumb) || DEFAULT_AVATAR;
+      const full = pendingPhotoFull || (editingPlayerExisting && editingPlayerExisting.photo) || DEFAULT_AVATAR;
+      const record = { id, name, ku, position: document.getElementById('inPPosisi').value.trim(), foot: document.getElementById('inPFoot').value, photoThumb: thumb, photo: full };
+      await DB.setPlayer(id, record);
+      const idx = players.findIndex(p=>p.id===id);
+      const idxEntry = { id, name, ku, photoThumb: thumb, photo: full, position: record.position, foot: record.foot };
+      if(idx>=0) players[idx]=idxEntry; else players.push(idxEntry);
+      await DB.savePlayersIndex(players);
+      renderPlayerList();
+      if(selectedPlayer && selectedPlayer.id===id){ selectedPlayer = record; renderPreview(); updateSelectedPlayerBox(); }
+      resetPlayerForm();
+      btn.innerHTML=orig; btn.disabled=false;
+    }
+
+    async function editPlayer(id){
+      const rec = await DB.getPlayer(id); if(!rec) return;
+      editingPlayerId = id; editingPlayerExisting = rec;
+      document.getElementById('inPName').value = rec.name;
+      document.getElementById('inPKu').value = rec.ku;
+      document.getElementById('inPPosisi').value = rec.position || '';
+      document.getElementById('inPFoot').value = rec.foot || 'Kaki Kanan';
+      const prev = document.getElementById('pPhotoPreview'); prev.src = rec.photoThumb || ''; prev.style.visibility = rec.photoThumb ? 'visible':'hidden';
+      pendingPhotoThumb = null; pendingPhotoFull = null;
+      document.getElementById('inPName').scrollIntoView({behavior:'smooth',block:'center'});
+    }
+
+    function updateSelectedPlayerBox(){
+      const box = document.getElementById('selectedPlayerBox');
+      box.innerHTML = '';
+      if(selectedPlayer){
+        const img = document.createElement('img'); img.src = selectedPlayer.photoThumb || DEFAULT_AVATAR; img.className='sel-thumb';
+        const span = document.createElement('span'); span.textContent = selectedPlayer.name+' — '+selectedPlayer.ku;
+        box.append(img,span);
+      } else {
+        box.innerHTML = '<i data-lucide="mouse-pointer-click" class="h-4 w-4"></i> Belum ada pemain dipilih.';
         lucide.createIcons();
+      }
     }
-}
 
-async function sendToWhatsApp() {
-    if(!selectedPlayer) return alert('Silakan pilih pemain terlebih dahulu.');
-    if(!selectedPlayer.parentPhone) return alert('Nomor WhatsApp orang tua tidak ditemukan di Database. Pastikan Anda telah mengisi kolom "No. WhatsApp (Ortu)" di Spreadsheet lalu tekan Sinkronisasi.');
-    
-    const btn = document.getElementById('btnSendWA');
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Menyiapkan File...';
-    
-    const btns = document.querySelectorAll('.btn-export, .btn-wa');
-    btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
-    lucide.createIcons();
+    async function selectPlayerForReport(id){
+      const rec = await DB.getPlayer(id) || players.find(p => p.id === id); if(!rec) return;
+      selectedPlayer = rec;
+      updateSelectedPlayerBox();
+      renderPreview();
+      await refreshSavedReportsList();
+      await maybeLoadExistingReport();
+    }
 
-    try {
-        let phoneRaw = selectedPlayer.parentPhone.toString().replace(/\D/g, '');
-        if(phoneRaw.startsWith('0')) { phoneRaw = '62' + phoneRaw.substring(1); }
+    function resetRatingsObj(){
+      ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
+    }
+
+    async function maybeLoadExistingReport(){
+      const note = document.getElementById('reportStatusNote');
+      if(!selectedPlayer){ note.innerHTML=''; return; }
+      const tw = document.getElementById('inTriwulan').value;
+      const ms = document.getElementById('inMusim').value;
+      const key = 'T'+tw+'_'+ms;
+      const rep = await DB.getReport(selectedPlayer.id, key);
+      if(rep){
+        resetRatingsObj(); Object.assign(ratings, rep.ratings||{});
+        document.getElementById('inCatatan').value = rep.catatan || '';
+        document.getElementById('inPrestasi').value = rep.prestasi || '';
+        document.getElementById('inPelatih').value = rep.pelatih || '';
+        document.getElementById('inTanggal').value = rep.tanggal || '';
+        note.innerHTML = '<i data-lucide="file-check-2" class="h-4 w-4 inline mr-1"></i> Data rapor tersimpan dimuat.';
+        note.style.color = 'var(--green)';
+      } else {
+        resetRatingsObj();
+        document.getElementById('inCatatan').value = '';
+        document.getElementById('inPrestasi').value = '';
+        if(!document.getElementById('inTanggal').value){ document.getElementById('inTanggal').value = new Date().toISOString().slice(0,10); }
+        note.innerHTML = '<i data-lucide="file-plus-2" class="h-4 w-4 inline mr-1"></i> Rapor baru, silakan isi rating.';
+        note.style.color = '#94a3b8';
+      }
+      lucide.createIcons();
+      syncAllStars();
+      renderPreview();
+    }
+
+    function onPeriodChange(){
+      renderPreview();
+      if(selectedPlayer){ maybeLoadExistingReport(); }
+    }
+
+    async function saveReport(){
+      if(!selectedPlayer){ alert('Pilih pemain terlebih dahulu di bagian Database Pemain.'); return; }
+      const btn = document.getElementById('btnSaveReport'); const orig = btn.innerHTML; 
+      btn.innerHTML='<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Menyimpan...'; btn.disabled=true; lucide.createIcons();
+      
+      const tw = document.getElementById('inTriwulan').value;
+      const ms = document.getElementById('inMusim').value;
+      const key = 'T'+tw+'_'+ms;
+      const data = {
+        key, triwulan: tw, musim: ms,
+        ratings: Object.assign({}, ratings),
+        catatan: document.getElementById('inCatatan').value.trim(),
+        prestasi: document.getElementById('inPrestasi').value.trim(),
+        pelatih: document.getElementById('inPelatih').value.trim(),
+        tanggal: document.getElementById('inTanggal').value
+      };
+      await DB.setReport(selectedPlayer.id, key, data);
+      const idx = await DB.listReports(selectedPlayer.id);
+      if(!idx.find(r=>r.key===key)){
+        idx.push({ key, label:'Triwulan '+tw+' - Musim '+ms, triwulan: tw, musim: ms });
+        await DB.saveReportsIndex(selectedPlayer.id, idx);
+      }
+      await refreshSavedReportsList();
+      
+      document.getElementById('reportStatusNote').innerHTML = '<i data-lucide="check-circle-2" class="h-4 w-4 inline mr-1"></i> Laporan berhasil disimpan.';
+      document.getElementById('reportStatusNote').style.color = 'var(--green)';
+      lucide.createIcons();
+      
+      btn.innerHTML = orig; btn.disabled = false;
+    }
+
+    async function refreshSavedReportsList(){
+      const c = document.getElementById('savedReportsList');
+      c.innerHTML = '';
+      if(!selectedPlayer) return;
+      const idx = await DB.listReports(selectedPlayer.id);
+      if(idx.length===0){ const p=document.createElement('p'); p.className='hint'; p.innerHTML='<i data-lucide="info" class="h-4 w-4 inline mr-1"></i> Belum ada laporan tersimpan untuk pemain ini.'; c.appendChild(p); lucide.createIcons(); return; }
+      const title = document.createElement('div'); title.className='hint'; title.textContent='Laporan tersimpan untuk pemain ini:'; c.appendChild(title);
+      idx.forEach(r=>{
+        const row = document.createElement('div'); row.className='saved-report-row';
+        const lbl = document.createElement('span'); lbl.textContent = r.label;
+        const btn = document.createElement('button'); btn.className='btn btn-secondary btn-small'; btn.textContent='Muat';
+        btn.onclick = ()=>{
+          document.getElementById('inTriwulan').value = r.triwulan;
+          document.getElementById('inMusim').value = r.musim;
+          maybeLoadExistingReport();
+        };
+        row.append(lbl,btn);
+        c.appendChild(row);
+      });
+    }
+
+    // ================= FUNGSI EXPORT KHUSUS ANTI-TERPOTONG =================
+    async function getCapturedCanvas() {
+        const target = document.getElementById('reportCard');
         
-        // Memaksa unduh PDF secara diam-diam tanpa memunculkan loading di tombol PDF
-        await exportReport('pdf', true);
+        // Simpan gaya asli
+        const origWidth = target.style.width;
+        const origMaxWidth = target.style.maxWidth;
+        const origTransform = target.style.transform;
         
-        const parentName = selectedPlayer.parentName || "Bapak/Ibu";
-        const tw = document.getElementById('inTriwulan').value;
-        const ms = document.getElementById('inMusim').value;
-        const message = `Halo ${parentName},
+        // Paksa mode desktop mutlak agar hasil potretan html2canvas sempurna (tidak terpotong viewport mobile)
+        target.style.width = '720px';
+        target.style.maxWidth = '720px';
+        target.style.transform = 'none'; 
+        
+        const origScroll = window.scrollY;
+        window.scrollTo(0, 0);
+
+        const canvas = await html2canvas(target, {
+            scale: 2, 
+            backgroundColor: '#ffffff', 
+            useCORS: true, 
+            allowTaint: true,
+            windowWidth: 720, 
+            scrollY: 0
+        });
+
+        // Kembalikan gaya asli ke UI
+        target.style.width = origWidth;
+        target.style.maxWidth = origMaxWidth;
+        target.style.transform = origTransform;
+        window.scrollTo(0, origScroll);
+        
+        return canvas;
+    }
+
+    // Eksekusi fungsi export dari HTML
+    window.exportReport = async function(format, isSilent = false) {
+        if(!selectedPlayer) {
+            if(!isSilent) alert('Silakan pilih pemain terlebih dahulu.');
+            return false;
+        }
+
+        const btns = document.querySelectorAll('.btn-export, .btn-wa');
+        btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+        
+        let oldText = "";
+        let btnId = "";
+        if(!isSilent) {
+            btnId = 'btnExport' + format.toUpperCase();
+            oldText = document.getElementById(btnId).innerHTML;
+            document.getElementById(btnId).innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Proses...';
+        }
+        lucide.createIcons();
+
+        try {
+            const canvas = await getCapturedCanvas();
+            const pname = selectedPlayer.name.replace(/[^a-zA-Z0-9]+/g,'_');
+            const tw = document.getElementById('inTriwulan').value;
+            const ms = document.getElementById('inMusim').value;
+            const filename = `Rapor_${pname}_T${tw}_${ms}`;
+
+            if(format === 'pdf') {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const margin = 10; 
+                const imgWidth = pdfWidth - (margin * 2);
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                pdf.addImage(imgData, 'JPEG', margin, 15, imgWidth, imgHeight);
+                pdf.save(filename + '.pdf');
+            } else if(format === 'png') {
+                const link = document.createElement('a');
+                link.download = filename + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } else if(format === 'jpg') {
+                const link = document.createElement('a');
+                link.download = filename + '.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+            }
+            return true;
+        } catch(err) {
+            if(!isSilent) alert('Gagal mengekspor: ' + err.message);
+            return false;
+        } finally {
+            btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+            if(!isSilent) document.getElementById(btnId).innerHTML = oldText;
+            lucide.createIcons();
+        }
+    };
+
+    window.sendToWhatsApp = async function() {
+        if(!selectedPlayer) return alert('Silakan pilih pemain terlebih dahulu.');
+        if(!selectedPlayer.parentPhone) return alert('Nomor WhatsApp orang tua tidak ditemukan di Database. Pastikan Anda telah mengisi kolom "No. WhatsApp (Ortu)" di Spreadsheet lalu tekan Sinkronisasi.');
+        
+        const btn = document.getElementById('btnSendWA');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Menyiapkan File...';
+        
+        const btns = document.querySelectorAll('.btn-export, .btn-wa');
+        btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+        lucide.createIcons();
+
+        try {
+            let phoneRaw = selectedPlayer.parentPhone.toString().replace(/\D/g, '');
+            if(phoneRaw.startsWith('0')) { phoneRaw = '62' + phoneRaw.substring(1); }
+            
+            // Memaksa unduh PDF secara diam-diam tanpa memunculkan loading di tombol PDF
+            await window.exportReport('pdf', true);
+            
+            const parentName = selectedPlayer.parentName || "Bapak/Ibu";
+            const tw = document.getElementById('inTriwulan').value;
+            const ms = document.getElementById('inMusim').value;
+            const message = `Halo ${parentName},
 
 Berikut kami sampaikan Rapor Evaluasi Akademi Futsal MNA GEN-Z untuk ananda *${selectedPlayer.name}* pada periode Triwulan ${tw} Musim ${ms}.
 
@@ -980,80 +968,81 @@ _(Mohon pelatih melampirkan file PDF Rapor yang baru saja diunduh ke dalam chat 
 
 Terima Kasih,
 *Manajemen MNA GEN-Z ACADEMY*`;
-        const waUrl = `https://wa.me/${phoneRaw}?text=${encodeURIComponent(message)}`;
-        window.open(waUrl, '_blank');
-    } catch(err) {
-        alert('Gagal memproses pengiriman WhatsApp. ' + err.message);
-    } finally {
-        btn.innerHTML = orig; 
-        btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
-        lucide.createIcons();
+            const waUrl = `https://wa.me/${phoneRaw}?text=${encodeURIComponent(message)}`;
+            window.open(waUrl, '_blank');
+        } catch(err) {
+            alert('Gagal memproses pengiriman WhatsApp. ' + err.message);
+        } finally {
+            btn.innerHTML = orig; 
+            btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+            lucide.createIcons();
+        }
+    };
+
+    // ================= Reset semua =================
+    async function resetAllData(){
+      if(!confirm('Yakin ingin menghapus SEMUA data rapor yang pernah dibuat?')) return;
+      try{
+        for(const p of players){
+          const repIdx = await DB.listReports(p.id);
+          for(const r of repIdx){ await DB.deleteReport(p.id, r.key); }
+          try{ await window.storage.delete('reports-index:'+p.id); }catch(e){}
+        }
+        alert('Semua data rapor telah dihapus. Daftar pemain tetap aman dari Spreadsheet.');
+        location.reload();
+      }catch(err){
+        alert('Gagal menghapus data: '+err.message);
+      }
     }
-}
 
-// ================= Reset semua =================
-async function resetAllData(){
-  if(!confirm('Yakin ingin menghapus SEMUA data rapor yang pernah dibuat?')) return;
-  try{
-    for(const p of players){
-      const repIdx = await DB.listReports(p.id);
-      for(const r of repIdx){ await DB.deleteReport(p.id, r.key); }
-      try{ await window.storage.delete('reports-index:'+p.id); }catch(e){}
+    // ================= Init =================
+    async function init(){
+      clubSettings = await DB.getClub() || {};
+      if(!clubSettings.name1){
+        clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_genz_academy', phone:'0812-xxxx-xxxx', logo: DEFAULT_LOGO };
+      }
+      document.getElementById('inClubName1').value = clubSettings.name1;
+      document.getElementById('inClubName2').value = clubSettings.name2;
+      document.getElementById('inClubIg').value = clubSettings.instagram || '';
+      document.getElementById('inClubPhone').value = clubSettings.phone || '';
+
+      players = await DB.listPlayers();
+      renderPlayerList();
+      
+      // Auto-sync di latar belakang (tanpa nge-block UI)
+      syncPlayersFromSheet();
+
+      buildAllEditorGroups();
+      document.getElementById('inTanggal').value = new Date().toISOString().slice(0,10);
+      document.getElementById('inMusim').value = new Date().getFullYear();
+
+      renderPreview();
+      syncAllStars();
+      updateSelectedPlayerBox();
+
+      document.getElementById('btnSaveClub').onclick = saveClubSettings;
+      document.getElementById('inLogo').addEventListener('change', onLogoChange);
+      document.getElementById('inPPhoto').addEventListener('change', onPlayerPhotoChange);
+      document.getElementById('btnSavePlayer').onclick = savePlayer;
+      document.getElementById('btnCancelEditPlayer').onclick = resetPlayerForm;
+      document.getElementById('btnSaveReport').onclick = saveReport;
+      document.getElementById('btnResetAll').onclick = resetAllData;
+      
+      document.getElementById('inTriwulan').addEventListener('change', onPeriodChange);
+      document.getElementById('inMusim').addEventListener('input', onPeriodChange);
+      ['inCatatan','inPrestasi','inPelatih','inTanggal'].forEach(id=>{
+        document.getElementById(id).addEventListener('input', renderPreview);
+      });
+
+      // Init Selesai
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      lucide.createIcons();
     }
-    alert('Semua data rapor telah dihapus. Daftar pemain tetap aman dari Spreadsheet.');
-    location.reload();
-  }catch(err){
-    alert('Gagal menghapus data: '+err.message);
-  }
-}
 
-// ================= Init =================
-async function init(){
-  clubSettings = await DB.getClub() || {};
-  if(!clubSettings.name1){
-    clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_genz_academy', phone:'0812-xxxx-xxxx', logo: DEFAULT_LOGO };
-  }
-  document.getElementById('inClubName1').value = clubSettings.name1;
-  document.getElementById('inClubName2').value = clubSettings.name2;
-  document.getElementById('inClubIg').value = clubSettings.instagram || '';
-  document.getElementById('inClubPhone').value = clubSettings.phone || '';
-
-  players = await DB.listPlayers();
-  renderPlayerList();
-  
-  // Auto-sync di latar belakang (tanpa nge-block UI)
-  syncPlayersFromSheet();
-
-  buildAllEditorGroups();
-  document.getElementById('inTanggal').value = new Date().toISOString().slice(0,10);
-  document.getElementById('inMusim').value = new Date().getFullYear();
-
-  renderPreview();
-  syncAllStars();
-  updateSelectedPlayerBox();
-
-  document.getElementById('btnSaveClub').onclick = saveClubSettings;
-  document.getElementById('inLogo').addEventListener('change', onLogoChange);
-  document.getElementById('inPPhoto').addEventListener('change', onPlayerPhotoChange);
-  document.getElementById('btnSavePlayer').onclick = savePlayer;
-  document.getElementById('btnCancelEditPlayer').onclick = resetPlayerForm;
-  document.getElementById('btnSaveReport').onclick = saveReport;
-  document.getElementById('btnResetAll').onclick = resetAllData;
-  
-  document.getElementById('inTriwulan').addEventListener('change', onPeriodChange);
-  document.getElementById('inMusim').addEventListener('input', onPeriodChange);
-  ['inCatatan','inPrestasi','inPelatih','inTanggal'].forEach(id=>{
-    document.getElementById(id).addEventListener('input', renderPreview);
-  });
-
-  // Init Selesai
-  document.getElementById('loadingScreen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  lucide.createIcons();
-}
-
-// Execute
-init();
+    // Execute
+    init();
+});
 </script>
 </body>
 </html>
