@@ -8,142 +8,208 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <!-- jsPDF untuk mengubah gambar menjadi file PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Font & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
 
 <style>
   :root{
     --navy:#1b2a63;
     --purple1:#7c3aed;
     --blue2:#3730a3;
-    --green:#b9f24d;
+    --green:#b7ff28;
     --gold:#fbbf24;
     --graystar:#e0e1e6;
-    --ink:#232735;
-    --line:#ececf1;
+    --ink:#070b13;
+    --line:rgba(255,255,255,0.1);
+    --panel-bg: rgba(15, 23, 42, 0.6);
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f2f2f7;color:var(--ink);}
-  :focus-visible{outline:2px solid var(--purple1);outline-offset:2px;}
-  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;}}
+  body{
+    margin:0;
+    font-family:'DM Sans', sans-serif;
+    background: linear-gradient(135deg, rgba(4, 8, 16, 0.98) 0%, rgba(11, 20, 37, 0.95) 100%);
+    color: #f6f8ff;
+    min-height: 100vh;
+  }
+  :focus-visible{outline:2px solid var(--green);outline-offset:2px;}
 
-  #loadingScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#666;font-size:14px;}
-  .spinner{width:34px;height:34px;border:4px solid #ddd;border-top-color:var(--purple1);border-radius:50%;animation:spin .8s linear infinite;}
+  /* Loading Screen Premium */
+  #loadingScreen{
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--ink);
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;
+    color:var(--green);font-size:15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .spinner{
+    width:48px;height:48px;border:4px solid rgba(183, 255, 40, 0.1);
+    border-top-color:var(--green);border-radius:50%;
+    animation:spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
   @keyframes spin{to{transform:rotate(360deg);}}
 
-  .topbar{background:#fff;padding:14px 20px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-  .topbar h1{font-size:16px;margin:0;color:var(--navy);font-weight:900;letter-spacing:.2px;}
-  .topbar .note{font-size:11.5px;color:#8a8a94;flex-basis:100%;}
-  .infobanner{background:#eef0ff;color:#40399e;font-size:12px;padding:8px 20px;border-bottom:1px solid #e0e0f5; display:flex; justify-content:space-between; align-items:center;}
+  /* Topbar Premium */
+  .topbar{
+    background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px);
+    padding:16px 24px; border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .topbar h1{font-size:18px;margin:0;color:#fff;font-weight:900;letter-spacing:1px; text-transform:uppercase;}
+  .topbar .note{font-size:12px;color:var(--green); font-weight: 700; letter-spacing: 1px;}
+  .infobanner{
+    background: rgba(183, 255, 40, 0.1); color: var(--green);
+    font-size:12.5px;padding:12px 24px;border-bottom:1px solid rgba(183, 255, 40, 0.2); 
+    display:flex; align-items:center; gap:8px; font-weight: 500;
+  }
 
-  .layout{display:flex;gap:24px;padding:20px;max-width:1440px;margin:0 auto;align-items:flex-start;}
+  .layout{display:flex;gap:24px;padding:24px;max-width:1440px;margin:0 auto;align-items:flex-start;}
   @media (max-width:980px){.layout{flex-direction:column;}.panel-preview{position:static!important;width:100%;}}
 
-  .panel-editor{flex:1 1 380px;max-width:460px;display:flex;flex-direction:column;gap:16px;}
-  .panel-preview{flex:1 1 480px;position:sticky;top:18px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+  /* Panel Editor Premium (Dark) */
+  .panel-editor{flex:1 1 380px;max-width:480px;display:flex;flex-direction:column;gap:20px;}
+  .panel-preview{flex:1 1 520px;position:sticky;top:24px;display:flex;flex-direction:column;align-items:center;gap:16px;}
 
-  .card-section{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,10,60,.08);}
-  .sect-title{font-size:14.5px;margin:0 0 10px;color:var(--navy);font-weight:800; display:flex; justify-content:space-between; align-items:center;}
-  .hint{font-size:11.5px;color:#8a8a94;margin:6px 0;line-height:1.4;}
+  .card-section{
+    background: var(--panel-bg); border-radius: 1.5rem; padding: 20px 24px;
+    border: 1px solid var(--line); box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  }
+  .sect-title{
+    font-size:16px;margin:0 0 16px;color:#fff;font-weight:800; 
+    display:flex; align-items:center; gap:8px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .hint{font-size:12px;color:#94a3b8;margin:0 0 12px;line-height:1.5;}
 
-  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
-  .field label{font-size:11.5px;font-weight:700;color:#555;}
-  .field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fafafe; transition:border-color 0.2s;}
-  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple1); outline:none;}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+  .field label{font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.05em;}
+  
+  /* Input Premium */
+  .field input, .field select, .field textarea{
+    padding:12px 16px; border:2px solid rgba(255,255,255,0.08); border-radius:12px;
+    font-size:14px; font-family:inherit; background:rgba(2,6,23,0.5); color:#fff;
+    transition:all 0.3s ease; box-shadow:inset 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    border-color:var(--green); background:rgba(2,6,23,0.8);
+    box-shadow: 0 0 0 4px rgba(183,255,40,0.1), inset 0 2px 4px rgba(0,0,0,0.2);
+  }
   .field textarea{resize:vertical;}
-  .field-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;}
-  .field-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
-  .field-row label{font-size:11.5px;font-weight:700;color:#555;}
+  .field-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+  
+  .field-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+  .field-row label{font-size:11px;font-weight:700;color:#cbd5e1;text-transform:uppercase;}
 
-  .btn{background:var(--purple1);color:#fff;border:none;padding:9px 15px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12.5px; transition:transform 0.1s, opacity 0.2s, background 0.2s;}
-  .btn:hover{background:var(--blue2);}
-  .btn:active{transform:scale(0.97);}
-  .btn-secondary{background:#eee;color:#333;}
-  .btn-secondary:hover{background:#e0e0e0;}
-  .btn-danger{background:#e11d48;color:#fff;}
-  .btn-danger:hover{background:#be123c;}
-  .btn-wa{background:#25D366;color:#fff;}
-  .btn-wa:hover{background:#1da851;}
-  .btn-sync{background:#10b981; color:#fff; width:100%; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:8px;}
-  .btn-sync:hover{background:#059669;}
-  .btn-small{padding:6px 10px;font-size:11.5px;}
-  .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px;}
-  .btn:disabled{opacity:.6;cursor:default; transform:none;}
+  /* Buttons Premium */
+  .btn{
+    background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);
+    padding:10px 16px; border-radius:12px; font-weight:700; cursor:pointer; font-size:13px; 
+    transition:all 0.2s; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn:hover{background:rgba(255,255,255,0.15); transform:translateY(-1px);}
+  .btn:active{transform:scale(0.98);}
+  
+  .btn-primary { background:var(--green); color:#000; border-color:var(--green); box-shadow: 0 4px 14px rgba(183,255,40,0.2); }
+  .btn-primary:hover { background:#9de018; border-color:#9de018; }
+  
+  .btn-danger{background:rgba(225, 29, 72, 0.15);color:#f43f5e; border-color:rgba(225, 29, 72, 0.3);}
+  .btn-danger:hover{background:#e11d48; color:#fff;}
+  
+  .btn-wa{background:rgba(37, 211, 102, 0.15);color:#25D366; border-color:rgba(37, 211, 102, 0.3);}
+  .btn-wa:hover{background:#25D366; color:#fff;}
+  
+  .btn-sync{background:var(--green); color:#000; width:100%; margin-bottom:16px; font-size:14px; padding:12px;}
+  .btn-sync:hover{background:#9de018;}
+  .btn-small{padding:8px 12px;font-size:12px;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 4px;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed; transform:none;}
 
-  .thumb-preview{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#eee;margin-top:4px;display:inline-block;}
+  .thumb-preview{width:48px;height:48px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,0.1);margin-top:4px;display:inline-block;}
 
-  .player-list{margin-top:10px;display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto;}
-  .player-card{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;}
-  .player-card img{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#eee;flex-shrink:0;}
+  .player-list{margin-top:12px;display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;}
+  .player-card{display:flex;align-items:center;gap:12px;padding:10px;background:rgba(0,0,0,0.2);border:1px solid var(--line);border-radius:12px;}
+  .player-card img{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#eee;flex-shrink:0;}
   .player-card .info{flex:1;min-width:0;}
-  .player-card .name{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .player-card .ku{font-size:11px;color:#888;}
-  .card-btns{display:flex;gap:4px;flex-shrink:0;}
+  .player-card .name{font-weight:700;font-size:13.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .player-card .ku{font-size:11px;color:#94a3b8; font-weight:500; margin-top:2px;}
+  .card-btns{display:flex;gap:6px;flex-shrink:0;}
 
-  .selected-box{display:flex;align-items:center;gap:10px;background:#f7f7fb;border-radius:10px;padding:8px 10px;font-size:12.5px;color:#555;margin-bottom:10px; border:1px solid var(--line);}
-  .sel-thumb{width:34px;height:34px;border-radius:50%;object-fit:cover;}
+  .selected-box{
+    display:flex;align-items:center;gap:12px;background:rgba(183,255,40,0.1);border-radius:12px;
+    padding:12px;font-size:13px;font-weight:600;color:var(--green);margin-bottom:16px; border:1px solid rgba(183,255,40,0.2);
+  }
+  .sel-thumb{width:38px;height:38px;border-radius:50%;object-fit:cover; border:2px solid var(--green);}
 
-  .rating-cat-title{font-size:11.5px;font-weight:900;color:var(--purple1);letter-spacing:.5px;margin:12px 0 6px;text-transform:uppercase;}
+  .rating-cat-title{font-size:12px;font-weight:900;color:var(--green);letter-spacing:1px;margin:20px 0 8px;text-transform:uppercase;}
   .rating-cat-title:first-child{margin-top:4px;}
-  .edit-skill-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);}
-  .esr-label{font-size:12.5px;font-weight:600;}
-  .star-picker{display:inline-flex;gap:2px;font-size:20px;cursor:pointer;flex-shrink:0;}
-  .star-picker span{color:var(--graystar);transition:color .1s;}
+  .edit-skill-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .esr-label{font-size:13px;font-weight:600; color:#e2e8f0;}
+  .star-picker{display:inline-flex;gap:4px;font-size:22px;cursor:pointer;flex-shrink:0;}
+  .star-picker span{color:#334155;transition:color .2s; text-shadow:0 1px 2px rgba(0,0,0,0.5);}
   .star-picker span:hover{color:#fcd34d;}
   .star-picker span.active{color:var(--gold);}
 
-  .saved-reports-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
-  .saved-report-row{display:flex;align-items:center;justify-content:space-between;background:#f7f7fb;padding:6px 10px;border-radius:8px;font-size:12px; border:1px solid var(--line);}
+  .saved-reports-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+  .saved-report-row{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.2);padding:10px 14px;border-radius:12px;font-size:13px; border:1px solid var(--line);}
 
-  /* ==== REPORT CARD (PREVIEW) ==== */
-  .report-card{width:100%;max-width:720px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 10px 32px rgba(30,20,90,.18);}
-  .rc-header{display:flex;align-items:center;gap:12px;padding:16px 20px 10px;}
-  .rc-logo{width:52px;height:52px;border-radius:50%;object-fit:contain;border:2px solid var(--navy);flex-shrink:0;background:#fff;}
-  .rc-clubname{font-weight:900;color:var(--navy);text-transform:uppercase;line-height:1.2;letter-spacing:.3px;font-size:clamp(15px,3.6vw,20px);}
-  .rc-clubname .l2{display:block;font-size:.62em;font-weight:800;color:var(--purple1);}
+  /* ==== REPORT CARD (PREVIEW) ==== 
+     (DIJAGA TETAP TERANG AGAR HASIL PDF SEPERTI KERTAS FISIK) */
+  .report-card{
+    width:100%;max-width:720px;background:#ffffff;border-radius:24px;overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4); color: #232735;
+  }
+  .rc-header{display:flex;align-items:center;gap:14px;padding:20px 24px 12px; background:#fff;}
+  .rc-logo{width:56px;height:56px;border-radius:50%;object-fit:contain;border:2px solid var(--navy);flex-shrink:0;background:#fff;}
+  .rc-clubname{font-weight:900;color:var(--navy);text-transform:uppercase;line-height:1.15;letter-spacing:.5px;font-size:clamp(16px,4vw,22px);}
+  .rc-clubname .l2{display:block;font-size:.62em;font-weight:800;color:var(--purple1); margin-top:2px;}
 
-  .rc-banner{position:relative;background:linear-gradient(135deg,var(--purple1),var(--blue2));color:#fff;padding:24px 22px 44px;overflow:visible;}
-  .rc-banner h2.title{color:var(--green);font-size:clamp(26px,7vw,38px);margin:0;font-weight:900;letter-spacing:1px;}
-  .rc-banner .sub{font-weight:800;font-size:clamp(13px,3.2vw,17px);margin-top:-2px;}
-  .rc-period{margin-top:14px;font-weight:700;font-size:clamp(11px,2.6vw,13px);letter-spacing:.4px;}
-  .rc-playername{margin-top:16px;color:var(--green);font-weight:900;font-size:clamp(19px,4.6vw,27px);line-height:1.15;padding-right:110px;}
+  .rc-banner{position:relative;background:linear-gradient(135deg,var(--purple1),var(--blue2));color:#fff;padding:28px 24px 48px;overflow:visible;}
+  .rc-banner h2.title{color:var(--green);font-size:clamp(28px,7.5vw,42px);margin:0;font-weight:900;letter-spacing:1px; line-height:1;}
+  .rc-banner .sub{font-weight:800;font-size:clamp(14px,3.5vw,18px);margin-top:2px; letter-spacing: 0.5px;}
+  .rc-period{margin-top:16px;font-weight:700;font-size:clamp(12px,2.8vw,14px);letter-spacing:1px; background:rgba(255,255,255,0.1); display:inline-block; padding:4px 10px; border-radius:6px;}
+  .rc-playername{margin-top:20px;color:var(--green);font-weight:900;font-size:clamp(20px,5vw,30px);line-height:1.15;padding-right:120px; text-transform:uppercase;}
 
-  .rc-photo-wrap{position:absolute;right:18px;top:50%;transform:translateY(-28%);width:clamp(88px,20vw,140px);height:clamp(88px,20vw,140px);border-radius:50%;padding:5px;background:#e8e8ee;box-shadow:0 4px 14px rgba(0,0,0,.25);}
+  .rc-photo-wrap{position:absolute;right:24px;top:50%;transform:translateY(-28%);width:clamp(96px,22vw,150px);height:clamp(96px,22vw,150px);border-radius:50%;padding:6px;background:#e8e8ee;box-shadow:0 8px 20px rgba(0,0,0,.3);}
   .rc-photo{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#ddd;display:block;}
 
-  .rc-class{padding:14px 22px 2px;font-weight:900;color:var(--navy);font-size:clamp(15px,3.4vw,19px);letter-spacing:.4px;}
+  .rc-class{padding:20px 24px 4px;font-weight:900;color:var(--navy);font-size:clamp(16px,3.8vw,20px);letter-spacing:1px;}
 
-  .rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;padding:6px 22px 4px;}
+  .rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding:8px 24px 8px;}
   @media (max-width:520px){.rc-grid{grid-template-columns:1fr;}}
-  .rc-category h3{color:var(--navy);font-weight:900;font-size:14px;letter-spacing:.4px;margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
-  .rc-cat-icon{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple1),var(--blue2));display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-  .rc-skill{display:flex;gap:8px;margin-bottom:9px;align-items:flex-start;}
+  .rc-category h3{color:var(--navy);font-weight:900;font-size:15px;letter-spacing:.5px;margin:16px 0 10px;display:flex;align-items:center;gap:10px; border-bottom:2px solid #f1f5f9; padding-bottom:6px;}
+  .rc-cat-icon{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple1),var(--blue2));display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0; color:#fff;}
+  .rc-skill{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start;}
   .rc-skill .txt{flex:1;min-width:0;}
-  .rc-skill .label{color:var(--purple1);font-weight:800;font-size:11.5px;text-transform:uppercase;}
-  .rc-skill .desc{color:#93939c;font-size:10px;line-height:1.3;}
-  .rc-stars{white-space:nowrap;font-size:14px;letter-spacing:1px;margin-top:2px;flex-shrink:0;}
+  .rc-skill .label{color:var(--purple1);font-weight:800;font-size:12px;text-transform:uppercase;}
+  .rc-skill .desc{color:#64748b;font-size:10.5px;line-height:1.3; margin-top:2px;}
+  .rc-stars{white-space:nowrap;font-size:16px;letter-spacing:2px;margin-top:2px;flex-shrink:0;}
   .rc-stars .on{color:var(--gold);}
   .rc-stars .off{color:var(--graystar);}
 
-  .rc-footer{background:linear-gradient(135deg,var(--purple1),var(--blue2));color:#fff;padding:18px 22px;display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;}
-  .rc-footer .notes{flex:1.4;min-width:190px;}
-  .rc-footer .notes h4{color:var(--green);margin:0 0 6px;font-size:13px;font-weight:900;}
-  .rc-footer .notes p{margin:0 0 8px;font-size:12px;line-height:1.5;word-break:break-word;}
-  .rc-meta{flex:1;min-width:140px;font-size:11.5px;}
-  .rc-meta div{margin-bottom:4px;}
-  .rc-meta b{color:var(--green);display:inline-block;width:64px;font-size:10.5px;}
-  .rc-sign{background:#fff;border-radius:10px;padding:10px 12px;text-align:center;min-width:140px;color:var(--navy);}
-  .rc-sign .date{font-size:9.5px;font-weight:800;border:1px solid #ddd;border-radius:6px;padding:4px 6px;margin-bottom:8px;}
-  .rc-sign .name{font-family:"Brush Script MT","Segoe Script",cursive;font-size:19px;margin:6px 0 2px;}
-  .rc-sign .label{font-size:9.5px;font-weight:900;letter-spacing:.3px;}
+  .rc-footer{background:linear-gradient(135deg,var(--purple1),var(--blue2));color:#fff;padding:24px;display:flex;gap:20px;flex-wrap:wrap;margin-top:12px;}
+  .rc-footer .notes{flex:1.5;min-width:200px;}
+  .rc-footer .notes h4{color:var(--green);margin:0 0 8px;font-size:14px;font-weight:900; letter-spacing:0.5px;}
+  .rc-footer .notes p{margin:0 0 12px;font-size:13px;line-height:1.6;word-break:break-word; color:rgba(255,255,255,0.9);}
+  .rc-meta{flex:1;min-width:150px;font-size:12.5px;}
+  .rc-meta div{margin-bottom:6px; display:flex; align-items:center;}
+  .rc-meta b{color:var(--green);display:inline-block;width:75px;font-size:11px; letter-spacing:0.5px;}
+  .rc-sign{background:#fff;border-radius:12px;padding:14px 16px;text-align:center;min-width:160px;color:var(--navy); box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+  .rc-sign .date{font-size:10.5px;font-weight:800;border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;margin-bottom:10px; color:#475569;}
+  .rc-sign .name{font-family:"Brush Script MT","Segoe Script",cursive;font-size:22px;margin:8px 0 4px; color:#0f172a;}
+  .rc-sign .label{font-size:10px;font-weight:900;letter-spacing:1px; color:#64748b;}
 
-  .rc-contact{background:#fff;padding:10px 22px;display:flex;gap:20px;font-size:12px;color:var(--navy);font-weight:700;align-items:center;flex-wrap:wrap;}
+  .rc-contact{background:#f8fafc;padding:14px 24px;display:flex;gap:24px;font-size:13px;color:var(--navy);font-weight:700;align-items:center;flex-wrap:wrap; border-top:1px solid #e2e8f0;}
 
-  .actions{width:100%;max-width:720px;display:flex;justify-content:center;gap:12px; flex-wrap:wrap;}
-  .actions .btn{padding:12px 22px;font-size:13.5px; display:flex; align-items:center; gap:8px;}
+  .actions{width:100%;max-width:720px;display:flex;justify-content:center;gap:16px; flex-wrap:wrap;}
+  .actions .btn{padding:14px 24px;font-size:14.5px; display:flex; align-items:center; gap:8px;}
 </style>
 </head>
 <body>
 
-<div id="loadingScreen"><div class="spinner"></div><div>Memuat data akademi...</div></div>
+<div id="loadingScreen">
+  <div class="spinner"></div>
+  <div>MENYIAPKAN SISTEM...</div>
+</div>
 
 <div id="app" style="display:none;">
   <div class="topbar">
@@ -151,14 +217,14 @@
     <div class="note">MNA GEN-Z ACADEMY</div>
   </div>
   <div class="infobanner">
-    <span>📌 Terhubung otomatis dengan Google Spreadsheet (API). Cukup atur data foto, posisi & kontak ortu di Spreadsheet.</span>
+    <span><i data-lucide="info" style="display:inline; width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Terhubung otomatis dengan Google Spreadsheet.</span>
   </div>
 
   <div class="layout">
     <aside class="panel-editor">
 
       <section class="card-section">
-        <h2 class="sect-title">⚙️ Pengaturan Klub</h2>
+        <h2 class="sect-title"><i data-lucide="settings" class="h-5 w-5"></i> Pengaturan Klub</h2>
         <div class="field-row">
           <label>Logo Klub</label>
           <input type="file" id="inLogo" accept="image/*">
@@ -169,19 +235,19 @@
           <div class="field"><label>Instagram</label><input type="text" id="inClubIg"></div>
           <div class="field"><label>No. Telepon</label><input type="text" id="inClubPhone"></div>
         </div>
-        <button class="btn btn-small" id="btnSaveClub">Simpan Pengaturan Klub</button>
+        <button class="btn btn-small" id="btnSaveClub"><i data-lucide="save" class="h-4 w-4"></i> Simpan Klub</button>
       </section>
 
       <section class="card-section">
-        <h2 class="sect-title">🧑‍🤝‍🧑 Database Pemain</h2>
-        <p class="hint">Database dihubungkan dengan <b>Google Spreadsheet</b>. Pastikan kolom "No. WhatsApp (Ortu)" ada agar fitur kirim WA berfungsi.</p>
+        <h2 class="sect-title"><i data-lucide="users" class="h-5 w-5"></i> Database Pemain</h2>
+        <p class="hint">Tarik data terbaru dari Spreadsheet (termasuk Nama, KU, Foto, Posisi, Kaki Dominan, dan WA Ortu).</p>
         
         <button class="btn btn-sync" id="btnSyncSheet" onclick="syncPlayersFromSheet()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
-          Sinkronisasi Data Spreadsheet
+          <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+          Sinkronisasi Spreadsheet
         </button>
 
-        <div style="border: 1px solid #e0e1e6; padding: 10px; border-radius: 8px; background: #fdfdfd; margin-bottom: 12px; display: none;" id="manualInputArea">
+        <div style="border: 1px solid var(--line); padding: 16px; border-radius: 12px; background: rgba(0,0,0,0.2); margin-bottom: 16px; display: none;" id="manualInputArea">
             <div class="field-grid-2">
               <div class="field"><label>Nama Pemain</label><input type="text" id="inPName" placeholder="cth. Zamzam"></div>
               <div class="field"><label>Kelas / KU</label><input type="text" id="inPKu" placeholder="cth. KU-10"></div>
@@ -200,7 +266,7 @@
               <img id="pPhotoPreview" class="thumb-preview" alt="">
             </div>
             <div class="btn-row">
-              <button class="btn btn-small" id="btnSavePlayer">Simpan Manual</button>
+              <button class="btn btn-primary btn-small" id="btnSavePlayer"><i data-lucide="check" class="h-4 w-4"></i> Simpan Manual</button>
               <button class="btn btn-secondary btn-small" id="btnCancelEditPlayer">Batal</button>
             </div>
         </div>
@@ -209,8 +275,10 @@
       </section>
 
       <section class="card-section">
-        <h2 class="sect-title">📝 Data Rapor</h2>
-        <div id="selectedPlayerBox" class="selected-box">Belum ada pemain dipilih — klik "Pilih" pada daftar pemain di atas.</div>
+        <h2 class="sect-title"><i data-lucide="clipboard-edit" class="h-5 w-5"></i> Data Rapor</h2>
+        <div id="selectedPlayerBox" class="selected-box">
+          <i data-lucide="mouse-pointer-click" class="h-4 w-4"></i> Belum ada pemain dipilih.
+        </div>
         <div class="field-grid-2">
           <div class="field"><label>Triwulan</label>
             <select id="inTriwulan">
@@ -219,18 +287,25 @@
           </div>
           <div class="field"><label>Musim / Tahun</label><input type="number" id="inMusim"></div>
         </div>
-        <div id="reportStatusNote" class="hint"></div>
+        <div id="reportStatusNote" class="hint" style="padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px dashed rgba(255,255,255,0.1);"></div>
+        
         <div id="ratingInputs"></div>
-        <div class="field"><label>Catatan Pelatih</label><textarea id="inCatatan" rows="3" placeholder="Catatan perkembangan pemain..."></textarea></div>
+        
+        <div class="field" style="margin-top:16px;"><label>Catatan Pelatih</label><textarea id="inCatatan" rows="3" placeholder="Evaluasi dan pesan untuk pemain..."></textarea></div>
         <div class="field-grid-2">
-          <div class="field"><label>Prestasi (opsional)</label><input type="text" id="inPrestasi" placeholder="cth. Juara 1 ..."></div>
+          <div class="field"><label>Prestasi (opsional)</label><input type="text" id="inPrestasi" placeholder="cth. Top Score"></div>
           <div class="field"><label>Nama Pelatih</label><input type="text" id="inPelatih" placeholder="cth. Coach Fachru"></div>
         </div>
         <div class="field"><label>Tanggal</label><input type="date" id="inTanggal"></div>
         <div class="btn-row">
-          <button class="btn" id="btnSaveReport" style="width: 100%;">💾 Simpan Laporan</button>
+          <button class="btn btn-primary" id="btnSaveReport" style="width: 100%; font-size:14px; padding:12px;"><i data-lucide="save" class="h-5 w-5"></i> Simpan Laporan</button>
         </div>
         <div id="savedReportsList" class="saved-reports-list"></div>
+      </section>
+
+      <section class="card-section">
+        <h2 class="sect-title"><i data-lucide="alert-triangle" class="h-5 w-5 text-rose-500"></i> Area Berbahaya</h2>
+        <button class="btn btn-danger btn-small" id="btnResetAll" style="width: 100%;"><i data-lucide="trash-2" class="h-4 w-4"></i> Hapus Semua Data Rapor</button>
       </section>
 
     </aside>
@@ -238,7 +313,6 @@
     <main class="panel-preview">
       <div class="report-card" id="reportCard">
         <div class="rc-header">
-          <!-- Logo Default diganti dengan Logo MNA GEN-Z dari IMGBB -->
           <img id="pv-logo" class="rc-logo" alt="logo klub" src="https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png" crossorigin="anonymous">
           <div class="rc-clubname">
             <span id="pv-clubname1">MNA GEN-Z</span>
@@ -300,13 +374,13 @@
       </div>
       
       <!-- Action Buttons Updated -->
-      <div class="actions" style="margin-top: 20px;">
+      <div class="actions" style="margin-top: 24px;">
         <button class="btn" id="btnDownloadPDF">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+          <i data-lucide="file-down" class="h-5 w-5"></i>
           Unduh PDF
         </button>
         <button class="btn btn-wa" id="btnSendWA">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <i data-lucide="send" class="h-5 w-5"></i>
           Kirim ke WhatsApp
         </button>
       </div>
@@ -405,8 +479,9 @@ function formatTanggalIndo(iso){
 async function syncPlayersFromSheet() {
     const btn = document.getElementById('btnSyncSheet');
     const origHtml = btn.innerHTML;
-    btn.innerHTML = '⏳ Menyinkronkan...';
+    btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menyinkronkan...';
     btn.disabled = true;
+    lucide.createIcons();
 
     try {
         const res = await fetch(SCRIPT_URL);
@@ -456,13 +531,15 @@ async function syncPlayersFromSheet() {
            }
         }
 
-        alert(`✅ Sinkronisasi Berhasil!\n${players.length} pemain ditarik dari Spreadsheet.`);
+        alert(`✅ Sinkronisasi Berhasil!
+${players.length} pemain ditarik dari Spreadsheet.`);
     } catch (err) {
         console.error("Gagal sinkronisasi:", err);
         alert("Gagal menarik data. Pastikan API URL benar dan koneksi internet stabil.");
     } finally {
         btn.innerHTML = origHtml;
         btn.disabled = false;
+        lucide.createIcons();
     }
 }
 
@@ -541,8 +618,8 @@ function renderPreview(){
 
 // ================= Klub =================
 async function saveClubSettings(){
-  const btn = document.getElementById('btnSaveClub'); const orig = btn.textContent;
-  btn.textContent = 'Menyimpan...'; btn.disabled = true;
+  const btn = document.getElementById('btnSaveClub'); const orig = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menyimpan...'; btn.disabled = true; lucide.createIcons();
   clubSettings = {
     name1: document.getElementById('inClubName1').value.trim() || 'MNA GEN-Z',
     name2: document.getElementById('inClubName2').value.trim() || 'FUTSAL ACADEMY',
@@ -552,7 +629,7 @@ async function saveClubSettings(){
   };
   await DB.setClub(clubSettings);
   renderPreview();
-  btn.textContent = orig; btn.disabled = false;
+  btn.innerHTML = orig; btn.disabled = false; lucide.createIcons();
 }
 async function onLogoChange(e){
   const f = e.target.files[0]; if(!f) return;
@@ -564,7 +641,10 @@ async function onLogoChange(e){
 function renderPlayerList(){
   const c = document.getElementById('playerListContainer');
   c.innerHTML = '';
-  if(players.length===0){ const p=document.createElement('p'); p.className='hint'; p.textContent='Belum ada pemain. Tekan tombol Sinkronisasi untuk mengambil data.'; c.appendChild(p); return; }
+  if(players.length===0){ 
+      const p=document.createElement('p'); p.className='hint'; p.innerHTML='<i data-lucide="info" class="h-4 w-4 inline mr-1"></i> Belum ada pemain. Tekan tombol Sinkronisasi untuk mengambil data.'; 
+      c.appendChild(p); lucide.createIcons(); return; 
+  }
   players.forEach(p=>{
     const card = document.createElement('div'); card.className='player-card';
     const img = document.createElement('img'); img.src = p.photoThumb || DEFAULT_AVATAR; card.appendChild(img);
@@ -573,8 +653,8 @@ function renderPlayerList(){
     const ku = document.createElement('div'); ku.className='ku'; ku.textContent = p.ku; info.appendChild(ku);
     card.appendChild(info);
     const btns = document.createElement('div'); btns.className='card-btns';
-    const bPilih = document.createElement('button'); bPilih.className='btn btn-small'; bPilih.textContent='Pilih'; bPilih.onclick=()=>selectPlayerForReport(p.id);
-    const bEdit = document.createElement('button'); bEdit.className='btn btn-secondary btn-small'; bEdit.textContent='Edit Manual'; bEdit.onclick=()=>{
+    const bPilih = document.createElement('button'); bPilih.className='btn btn-primary btn-small'; bPilih.textContent='Pilih'; bPilih.onclick=()=>selectPlayerForReport(p.id);
+    const bEdit = document.createElement('button'); bEdit.className='btn btn-secondary btn-small'; bEdit.textContent='Edit'; bEdit.onclick=()=>{
         document.getElementById('manualInputArea').style.display = 'block';
         editPlayer(p.id);
     };
@@ -607,7 +687,7 @@ async function savePlayer(){
   const name = document.getElementById('inPName').value.trim();
   const ku = document.getElementById('inPKu').value.trim();
   if(!name || !ku){ alert('Nama dan Kelas/KU wajib diisi.'); return; }
-  const btn = document.getElementById('btnSavePlayer'); const orig=btn.textContent; btn.textContent='Menyimpan...'; btn.disabled=true;
+  const btn = document.getElementById('btnSavePlayer'); const orig=btn.innerHTML; btn.innerHTML='Menyimpan...'; btn.disabled=true;
   const id = editingPlayerId || genId('p');
   const thumb = pendingPhotoThumb || (editingPlayerExisting && editingPlayerExisting.photoThumb) || DEFAULT_AVATAR;
   const full = pendingPhotoFull || (editingPlayerExisting && editingPlayerExisting.photo) || DEFAULT_AVATAR;
@@ -620,7 +700,7 @@ async function savePlayer(){
   renderPlayerList();
   if(selectedPlayer && selectedPlayer.id===id){ selectedPlayer = record; renderPreview(); updateSelectedPlayerBox(); }
   resetPlayerForm();
-  btn.textContent=orig; btn.disabled=false;
+  btn.innerHTML=orig; btn.disabled=false;
 }
 async function editPlayer(id){
   const rec = await DB.getPlayer(id); if(!rec) return;
@@ -643,7 +723,8 @@ function updateSelectedPlayerBox(){
     const span = document.createElement('span'); span.textContent = selectedPlayer.name+' — '+selectedPlayer.ku;
     box.append(img,span);
   } else {
-    box.textContent = 'Belum ada pemain dipilih — klik "Pilih" pada daftar pemain di atas.';
+    box.innerHTML = '<i data-lucide="mouse-pointer-click" class="h-4 w-4"></i> Belum ada pemain dipilih.';
+    lucide.createIcons();
   }
 }
 async function selectPlayerForReport(id){
@@ -659,7 +740,7 @@ function resetRatingsObj(){
 }
 async function maybeLoadExistingReport(){
   const note = document.getElementById('reportStatusNote');
-  if(!selectedPlayer){ note.textContent=''; return; }
+  if(!selectedPlayer){ note.innerHTML=''; return; }
   const tw = document.getElementById('inTriwulan').value;
   const ms = document.getElementById('inMusim').value;
   const key = 'T'+tw+'_'+ms;
@@ -670,16 +751,17 @@ async function maybeLoadExistingReport(){
     document.getElementById('inPrestasi').value = rep.prestasi || '';
     document.getElementById('inPelatih').value = rep.pelatih || '';
     document.getElementById('inTanggal').value = rep.tanggal || '';
-    note.textContent = '📄 Laporan periode ini sudah ada — data tersimpan dimuat.';
-    note.style.color = '#4c3fc9';
+    note.innerHTML = '<i data-lucide="file-check-2" class="h-4 w-4 inline mr-1"></i> Data rapor tersimpan dimuat.';
+    note.style.color = 'var(--green)';
   } else {
     resetRatingsObj();
     document.getElementById('inCatatan').value = '';
     document.getElementById('inPrestasi').value = '';
     if(!document.getElementById('inTanggal').value){ document.getElementById('inTanggal').value = new Date().toISOString().slice(0,10); }
-    note.textContent = '🆕 Belum ada laporan untuk periode ini — isi rating untuk membuat baru.';
-    note.style.color = '#8a8a94';
+    note.innerHTML = '<i data-lucide="file-plus-2" class="h-4 w-4 inline mr-1"></i> Rapor baru, silakan isi rating.';
+    note.style.color = '#94a3b8';
   }
+  lucide.createIcons();
   syncAllStars();
   renderPreview();
 }
@@ -689,7 +771,9 @@ function onPeriodChange(){
 }
 async function saveReport(){
   if(!selectedPlayer){ alert('Pilih pemain terlebih dahulu di bagian Database Pemain.'); return; }
-  const btn = document.getElementById('btnSaveReport'); const orig = btn.textContent; btn.textContent='Menyimpan...'; btn.disabled=true;
+  const btn = document.getElementById('btnSaveReport'); const orig = btn.innerHTML; 
+  btn.innerHTML='<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Menyimpan...'; btn.disabled=true; lucide.createIcons();
+  
   const tw = document.getElementById('inTriwulan').value;
   const ms = document.getElementById('inMusim').value;
   const key = 'T'+tw+'_'+ms;
@@ -708,16 +792,19 @@ async function saveReport(){
     await DB.saveReportsIndex(selectedPlayer.id, idx);
   }
   await refreshSavedReportsList();
-  document.getElementById('reportStatusNote').textContent = '✅ Laporan tersimpan.';
-  document.getElementById('reportStatusNote').style.color = '#16a34a';
-  btn.textContent = orig; btn.disabled = false;
+  
+  document.getElementById('reportStatusNote').innerHTML = '<i data-lucide="check-circle-2" class="h-4 w-4 inline mr-1"></i> Laporan berhasil disimpan.';
+  document.getElementById('reportStatusNote').style.color = 'var(--green)';
+  lucide.createIcons();
+  
+  btn.innerHTML = orig; btn.disabled = false;
 }
 async function refreshSavedReportsList(){
   const c = document.getElementById('savedReportsList');
   c.innerHTML = '';
   if(!selectedPlayer) return;
   const idx = await DB.listReports(selectedPlayer.id);
-  if(idx.length===0){ const p=document.createElement('p'); p.className='hint'; p.textContent='Belum ada laporan tersimpan untuk pemain ini.'; c.appendChild(p); return; }
+  if(idx.length===0){ const p=document.createElement('p'); p.className='hint'; p.innerHTML='<i data-lucide="info" class="h-4 w-4 inline mr-1"></i> Belum ada laporan tersimpan untuk pemain ini.'; c.appendChild(p); lucide.createIcons(); return; }
   const title = document.createElement('div'); title.className='hint'; title.textContent='Laporan tersimpan untuk pemain ini:'; c.appendChild(title);
   idx.forEach(r=>{
     const row = document.createElement('div'); row.className='saved-report-row';
@@ -735,55 +822,35 @@ async function refreshSavedReportsList(){
 
 // ================= FUNGSI PDF & WHATSAPP =================
 async function generatePDFBlob() {
-    // Memotret kartu rapor menjadi gambar kualitas tinggi
     const canvas = await html2canvas(document.getElementById('reportCard'), {
-        scale: 2, 
-        backgroundColor: '#ffffff', 
-        useCORS: true, 
-        allowTaint: true
+        scale: 2, backgroundColor: '#ffffff', useCORS: true, allowTaint: true
     });
-    
     const imgData = canvas.toDataURL('image/jpeg', 1.0);
-    
-    // Inisiasi kertas PDF berukuran A4 (Portrait)
-    const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-    });
-    
-    // Menghitung rasio gambar agar pas di tengah kertas A4 (lebar 210mm)
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const margin = 10; // Margin 1 cm
+    const margin = 10; 
     const imgWidth = pdfWidth - (margin * 2);
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
-    // Menempelkan gambar ke PDF
     pdf.addImage(imgData, 'JPEG', margin, 15, imgWidth, imgHeight);
     return pdf;
 }
 
 async function downloadReportPDF(){
   if(!selectedPlayer) return alert('Silakan pilih pemain terlebih dahulu.');
-  
   const btn = document.getElementById('btnDownloadPDF'); 
   const orig = btn.innerHTML;
-  btn.innerHTML = '⏳ Menyiapkan PDF...'; 
-  btn.disabled = true;
-  
+  btn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Menyiapkan PDF...'; 
+  btn.disabled = true; lucide.createIcons();
   try{
     const pdf = await generatePDFBlob();
     const pname = selectedPlayer.name.replace(/[^a-zA-Z0-9]+/g,'_');
     const tw = document.getElementById('inTriwulan').value;
     const ms = document.getElementById('inMusim').value;
-    
-    // Memicu unduhan otomatis
     pdf.save(`Rapor_${pname}_T${tw}_${ms}.pdf`);
   }catch(err){
-    alert('Gagal membuat PDF: Pastikan link foto (ImgBB) tidak diprivat. '+err.message);
+    alert('Gagal membuat PDF. Pastikan link foto (ImgBB) tidak diprivat. Error: '+err.message);
   }finally{
-    btn.innerHTML = orig; 
-    btn.disabled = false;
+    btn.innerHTML = orig; btn.disabled = false; lucide.createIcons();
   }
 }
 
@@ -793,41 +860,32 @@ async function sendToWhatsApp() {
     
     const btn = document.getElementById('btnSendWA');
     const orig = btn.innerHTML;
-    btn.innerHTML = '⏳ Memproses...';
-    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i> Memproses...';
+    btn.disabled = true; lucide.createIcons();
 
     try {
-        // 1. Format Nomor Telepon (Ubah 0 di depan jadi 62)
         let phoneRaw = selectedPlayer.parentPhone.toString().replace(/\D/g, '');
-        if(phoneRaw.startsWith('0')) {
-            phoneRaw = '62' + phoneRaw.substring(1);
-        }
-
-        // 2. Memicu unduhan PDF (agar pelatih punya filenya untuk dikirim)
+        if(phoneRaw.startsWith('0')) { phoneRaw = '62' + phoneRaw.substring(1); }
         await downloadReportPDF();
-
-        // 3. Siapkan Text Pesan WhatsApp
         const parentName = selectedPlayer.parentName || "Bapak/Ibu";
         const tw = document.getElementById('inTriwulan').value;
         const ms = document.getElementById('inMusim').value;
-        
-        const message = `Halo ${parentName},\n\nBerikut kami sampaikan Rapor Evaluasi Akademi Futsal MNA GEN-Z untuk ananda *${selectedPlayer.name}* pada periode Triwulan ${tw} Musim ${ms}.\n\n_(Mohon pelatih melampirkan file PDF Rapor yang baru saja diunduh ke dalam chat ini)_\n\nTerima Kasih,\n*Manajemen MNA GEN-Z ACADEMY*`;
-        
-        // 4. Membuka tab WhatsApp Web/App
+        const message = `Halo ${parentName},
+
+Berikut kami sampaikan Rapor Evaluasi Akademi Futsal MNA GEN-Z untuk ananda *${selectedPlayer.name}* pada periode Triwulan ${tw} Musim ${ms}.
+
+_(Mohon pelatih melampirkan file PDF Rapor yang baru saja diunduh ke dalam chat ini)_
+
+Terima Kasih,
+*Manajemen MNA GEN-Z ACADEMY*`;
         const waUrl = `https://wa.me/${phoneRaw}?text=${encodeURIComponent(message)}`;
         window.open(waUrl, '_blank');
-        
     } catch(err) {
         alert('Gagal memproses pengiriman WhatsApp. ' + err.message);
     } finally {
-        btn.innerHTML = orig;
-        btn.disabled = false;
+        btn.innerHTML = orig; btn.disabled = false; lucide.createIcons();
     }
 }
-
-// Menyambungkan tombol ke fungsi
-document.getElementById('btnDownloadPDF').addEventListener('click', downloadReportPDF);
-document.getElementById('btnSendWA').addEventListener('click', sendToWhatsApp);
 
 // ================= Reset semua =================
 async function resetAllData(){
@@ -859,7 +917,7 @@ async function init(){
   players = await DB.listPlayers();
   renderPlayerList();
   
-  // Auto-sync di latar belakang
+  // Auto-sync di latar belakang (tanpa nge-block UI)
   syncPlayersFromSheet();
 
   buildAllEditorGroups();
@@ -870,7 +928,7 @@ async function init(){
   syncAllStars();
   updateSelectedPlayerBox();
 
-  // Wiring event
+  // Wiring event - FIX: Event yang hilang/error sudah dihapus & diganti
   document.getElementById('btnSaveClub').onclick = saveClubSettings;
   document.getElementById('inLogo').addEventListener('change', onLogoChange);
   document.getElementById('inPPhoto').addEventListener('change', onPlayerPhotoChange);
@@ -878,15 +936,22 @@ async function init(){
   document.getElementById('btnCancelEditPlayer').onclick = resetPlayerForm;
   document.getElementById('btnSaveReport').onclick = saveReport;
   document.getElementById('btnResetAll').onclick = resetAllData;
+  document.getElementById('btnDownloadPDF').addEventListener('click', downloadReportPDF);
+  document.getElementById('btnSendWA').addEventListener('click', sendToWhatsApp);
+  
   document.getElementById('inTriwulan').addEventListener('change', onPeriodChange);
   document.getElementById('inMusim').addEventListener('input', onPeriodChange);
   ['inCatatan','inPrestasi','inPelatih','inTanggal'].forEach(id=>{
     document.getElementById(id).addEventListener('input', renderPreview);
   });
 
+  // Init Selesai
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  lucide.createIcons();
 }
+
+// Execute
 init();
 </script>
 </body>
