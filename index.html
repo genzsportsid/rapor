@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rapor Pemain Akademi</title>
+<!-- html2canvas untuk mengambil gambar dari elemen HTML -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- jsPDF untuk mengubah gambar menjadi file PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
   :root{
     --navy:#1b2a63;
@@ -49,13 +53,15 @@
   .field-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
   .field-row label{font-size:11.5px;font-weight:700;color:#555;}
 
-  .btn{background:var(--purple1);color:#fff;border:none;padding:9px 15px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12.5px; transition:transform 0.1s, opacity 0.2s;}
+  .btn{background:var(--purple1);color:#fff;border:none;padding:9px 15px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12.5px; transition:transform 0.1s, opacity 0.2s, background 0.2s;}
   .btn:hover{background:var(--blue2);}
   .btn:active{transform:scale(0.97);}
   .btn-secondary{background:#eee;color:#333;}
   .btn-secondary:hover{background:#e0e0e0;}
   .btn-danger{background:#e11d48;color:#fff;}
   .btn-danger:hover{background:#be123c;}
+  .btn-wa{background:#25D366;color:#fff;}
+  .btn-wa:hover{background:#1da851;}
   .btn-sync{background:#10b981; color:#fff; width:100%; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:8px;}
   .btn-sync:hover{background:#059669;}
   .btn-small{padding:6px 10px;font-size:11.5px;}
@@ -90,7 +96,7 @@
   /* ==== REPORT CARD (PREVIEW) ==== */
   .report-card{width:100%;max-width:720px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 10px 32px rgba(30,20,90,.18);}
   .rc-header{display:flex;align-items:center;gap:12px;padding:16px 20px 10px;}
-  .rc-logo{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--navy);flex-shrink:0;background:#eee;}
+  .rc-logo{width:52px;height:52px;border-radius:50%;object-fit:contain;border:2px solid var(--navy);flex-shrink:0;background:#fff;}
   .rc-clubname{font-weight:900;color:var(--navy);text-transform:uppercase;line-height:1.2;letter-spacing:.3px;font-size:clamp(15px,3.6vw,20px);}
   .rc-clubname .l2{display:block;font-size:.62em;font-weight:800;color:var(--purple1);}
 
@@ -131,8 +137,8 @@
 
   .rc-contact{background:#fff;padding:10px 22px;display:flex;gap:20px;font-size:12px;color:var(--navy);font-weight:700;align-items:center;flex-wrap:wrap;}
 
-  .actions{width:100%;max-width:720px;display:flex;justify-content:center;}
-  .actions .btn{padding:12px 22px;font-size:13.5px;}
+  .actions{width:100%;max-width:720px;display:flex;justify-content:center;gap:12px; flex-wrap:wrap;}
+  .actions .btn{padding:12px 22px;font-size:13.5px; display:flex; align-items:center; gap:8px;}
 </style>
 </head>
 <body>
@@ -145,7 +151,7 @@
     <div class="note">MNA GEN-Z ACADEMY</div>
   </div>
   <div class="infobanner">
-    <span>📌 Terhubung otomatis dengan Google Spreadsheet (API). Cukup atur data foto & posisi di Spreadsheet.</span>
+    <span>📌 Terhubung otomatis dengan Google Spreadsheet (API). Cukup atur data foto, posisi & kontak ortu di Spreadsheet.</span>
   </div>
 
   <div class="layout">
@@ -168,7 +174,7 @@
 
       <section class="card-section">
         <h2 class="sect-title">🧑‍🤝‍🧑 Database Pemain</h2>
-        <p class="hint">Database dihubungkan dengan <b>Google Spreadsheet</b>. Tambahkan link ImgBB di kolom "Foto".</p>
+        <p class="hint">Database dihubungkan dengan <b>Google Spreadsheet</b>. Pastikan kolom "No. WhatsApp (Ortu)" ada agar fitur kirim WA berfungsi.</p>
         
         <button class="btn btn-sync" id="btnSyncSheet" onclick="syncPlayersFromSheet()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
@@ -227,17 +233,13 @@
         <div id="savedReportsList" class="saved-reports-list"></div>
       </section>
 
-      <section class="card-section">
-        <h2 class="sect-title">🗑️ Lainnya</h2>
-        <button class="btn btn-danger btn-small" id="btnResetAll" style="width: 100%;">Hapus Semua Data Rapor</button>
-      </section>
-
     </aside>
 
     <main class="panel-preview">
       <div class="report-card" id="reportCard">
         <div class="rc-header">
-          <img id="pv-logo" class="rc-logo" alt="logo klub">
+          <!-- Logo Default diganti dengan Logo MNA GEN-Z dari IMGBB -->
+          <img id="pv-logo" class="rc-logo" alt="logo klub" src="https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png" crossorigin="anonymous">
           <div class="rc-clubname">
             <span id="pv-clubname1">MNA GEN-Z</span>
             <span class="l2" id="pv-clubname2">FUTSAL ACADEMY</span>
@@ -296,15 +298,24 @@
           <span>📞 <span id="pv-phone">0812-xxxx-xxxx</span></span>
         </div>
       </div>
-      <div class="actions">
-        <button class="btn" id="btnDownload">⬇️ Unduh Rapor (PNG)</button>
+      
+      <!-- Action Buttons Updated -->
+      <div class="actions" style="margin-top: 20px;">
+        <button class="btn" id="btnDownloadPDF">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+          Unduh PDF
+        </button>
+        <button class="btn btn-wa" id="btnSendWA">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Kirim ke WhatsApp
+        </button>
       </div>
     </main>
   </div>
 </div>
 
 <script>
-// ================= Pengganti window.storage agar aman di semua server (Vercel dll) =================
+// ================= Pengganti window.storage =================
 if (typeof window.storage === 'undefined') {
   window.storage = {
     get: async (key) => { const v = localStorage.getItem(key); return v ? { value: v } : null; },
@@ -313,13 +324,15 @@ if (typeof window.storage === 'undefined') {
   };
 }
 
+// Inisialisasi jsPDF dari CDN
+window.jsPDF = window.jspdf.jsPDF;
+
 // ================= Konstanta =================
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
 
 const DEFAULT_AVATAR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="rgb(232,232,238)"/><circle cx="50" cy="38" r="18" fill="rgb(184,188,200)"/><ellipse cx="50" cy="94" rx="34" ry="26" fill="rgb(184,188,200)"/></svg>';
 const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(DEFAULT_AVATAR_SVG);
-const DEFAULT_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="rgb(27,42,99)"/><circle cx="50" cy="46" r="20" fill="none" stroke="white" stroke-width="4"/><path d="M50 32 L57 41 L54 51 L46 51 L43 41 Z" fill="white"/></svg>';
-const DEFAULT_LOGO = 'data:image/svg+xml;utf8,' + encodeURIComponent(DEFAULT_LOGO_SVG);
+const DEFAULT_LOGO = 'https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png'; // Logo MNA GEN-Z Default
 
 const SKILL_DEFS = {
   fisik:  [ {key:'atletics',  label:'Atletics'},  {key:'agility',    label:'Agility'},    {key:'stamina',    label:'Stamina'} ],
@@ -404,14 +417,16 @@ async function syncPlayersFromSheet() {
             const name = row["Nama Pemain"] ? row["Nama Pemain"].toString().trim() : "";
             if (!name) return null;
 
-            // Mempertahankan ID agar histori rapor tidak hilang
             const ex = existing.find(e => e.name.toUpperCase() === name.toUpperCase());
             const pid = ex ? ex.id : genId('p');
             
-            // Mengambil link foto dari kolom "Foto" (imgbb) jika ada, jika tidak pakai default atau yang ada sebelumnya
             let photoUrl = row["Foto"] || (ex ? ex.photo : DEFAULT_AVATAR);
             let positionStr = row["Posisi"] || (ex ? ex.position : "-");
             let footStr = row["Kaki Dominan"] || row["Dominan"] || (ex ? ex.foot : "Kaki Kanan");
+            
+            // Mengambil Nomor WA Ortu dari Spreadsheet
+            let parentPhone = row["No. WhatsApp (Ortu)"] || row["No. WhatsApp"] || row["No WhatsApp"] || (ex ? ex.parentPhone : "");
+            let parentName = row["Nama Orang Tua / Wali"] || row["Nama Ortu"] || (ex ? ex.parentName : "Bapak/Ibu");
 
             return {
                 id: pid,
@@ -420,7 +435,9 @@ async function syncPlayersFromSheet() {
                 position: positionStr,
                 foot: footStr,
                 photoThumb: photoUrl,
-                photo: photoUrl
+                photo: photoUrl,
+                parentPhone: parentPhone,
+                parentName: parentName
             };
         }).filter(p => p !== null);
 
@@ -430,7 +447,6 @@ async function syncPlayersFromSheet() {
 
         renderPlayerList();
         
-        // Update view jika pemain yang sedang dipilih ikut tersinkronisasi
         if (selectedPlayer) {
            const updated = players.find(p => p.id === selectedPlayer.id);
            if (updated) {
@@ -440,8 +456,7 @@ async function syncPlayersFromSheet() {
            }
         }
 
-        alert(`✅ Sinkronisasi Berhasil!
-${players.length} pemain ditarik dari Spreadsheet.`);
+        alert(`✅ Sinkronisasi Berhasil!\n${players.length} pemain ditarik dari Spreadsheet.`);
     } catch (err) {
         console.error("Gagal sinkronisasi:", err);
         alert("Gagal menarik data. Pastikan API URL benar dan koneksi internet stabil.");
@@ -494,11 +509,11 @@ function syncAllStars(){
 
 // ================= Render: preview umum =================
 function renderPreview(){
-  document.getElementById('pv-clubname1').textContent = clubSettings.name1 || 'NAMA KLUB';
-  document.getElementById('pv-clubname2').textContent = clubSettings.name2 || 'FUTSAL CLUB';
+  document.getElementById('pv-clubname1').textContent = clubSettings.name1 || 'MNA GEN-Z';
+  document.getElementById('pv-clubname2').textContent = clubSettings.name2 || 'FUTSAL ACADEMY';
   document.getElementById('pv-logo').src = clubSettings.logo || DEFAULT_LOGO;
-  document.getElementById('pv-ig').textContent = clubSettings.instagram || '-';
-  document.getElementById('pv-phone').textContent = clubSettings.phone || '-';
+  document.getElementById('pv-ig').textContent = clubSettings.instagram || 'mna_genz_academy';
+  document.getElementById('pv-phone').textContent = clubSettings.phone || '0812-xxxx-xxxx';
 
   const tw = document.getElementById('inTriwulan').value;
   const ms = document.getElementById('inMusim').value;
@@ -529,11 +544,11 @@ async function saveClubSettings(){
   const btn = document.getElementById('btnSaveClub'); const orig = btn.textContent;
   btn.textContent = 'Menyimpan...'; btn.disabled = true;
   clubSettings = {
-    name1: document.getElementById('inClubName1').value.trim() || 'NAMA KLUB',
-    name2: document.getElementById('inClubName2').value.trim() || 'FUTSAL CLUB',
+    name1: document.getElementById('inClubName1').value.trim() || 'MNA GEN-Z',
+    name2: document.getElementById('inClubName2').value.trim() || 'FUTSAL ACADEMY',
     instagram: document.getElementById('inClubIg').value.trim(),
     phone: document.getElementById('inClubPhone').value.trim(),
-    logo: pendingLogoData || clubSettings.logo || null
+    logo: pendingLogoData || clubSettings.logo || DEFAULT_LOGO
   };
   await DB.setClub(clubSettings);
   renderPreview();
@@ -718,24 +733,101 @@ async function refreshSavedReportsList(){
   });
 }
 
-// ================= Unduh =================
-async function downloadReport(){
-  const btn = document.getElementById('btnDownload'); const orig = btn.textContent;
-  btn.textContent = 'Menyiapkan gambar...'; btn.disabled = true;
+// ================= FUNGSI PDF & WHATSAPP =================
+async function generatePDFBlob() {
+    // Memotret kartu rapor menjadi gambar kualitas tinggi
+    const canvas = await html2canvas(document.getElementById('reportCard'), {
+        scale: 2, 
+        backgroundColor: '#ffffff', 
+        useCORS: true, 
+        allowTaint: true
+    });
+    
+    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+    
+    // Inisiasi kertas PDF berukuran A4 (Portrait)
+    const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+    });
+    
+    // Menghitung rasio gambar agar pas di tengah kertas A4 (lebar 210mm)
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const margin = 10; // Margin 1 cm
+    const imgWidth = pdfWidth - (margin * 2);
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+    // Menempelkan gambar ke PDF
+    pdf.addImage(imgData, 'JPEG', margin, 15, imgWidth, imgHeight);
+    return pdf;
+}
+
+async function downloadReportPDF(){
+  if(!selectedPlayer) return alert('Silakan pilih pemain terlebih dahulu.');
+  
+  const btn = document.getElementById('btnDownloadPDF'); 
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Menyiapkan PDF...'; 
+  btn.disabled = true;
+  
   try{
-    const canvas = await html2canvas(document.getElementById('reportCard'), {scale:2, backgroundColor:'#ffffff', useCORS:true, allowTaint:true});
-    const link = document.createElement('a');
-    const pname = (selectedPlayer ? selectedPlayer.name : 'Pemain').replace(/[^a-zA-Z0-9]+/g,'_');
-    const tw = document.getElementById('inTriwulan').value, ms = document.getElementById('inMusim').value;
-    link.download = 'Rapor_'+pname+'_T'+tw+'_'+ms+'.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    const pdf = await generatePDFBlob();
+    const pname = selectedPlayer.name.replace(/[^a-zA-Z0-9]+/g,'_');
+    const tw = document.getElementById('inTriwulan').value;
+    const ms = document.getElementById('inMusim').value;
+    
+    // Memicu unduhan otomatis
+    pdf.save(`Rapor_${pname}_T${tw}_${ms}.pdf`);
   }catch(err){
-    alert('Gagal membuat gambar rapor: Pastikan link foto (ImgBB) bisa diakses (CORS issue). '+err.message);
+    alert('Gagal membuat PDF: Pastikan link foto (ImgBB) tidak diprivat. '+err.message);
   }finally{
-    btn.textContent = orig; btn.disabled = false;
+    btn.innerHTML = orig; 
+    btn.disabled = false;
   }
 }
+
+async function sendToWhatsApp() {
+    if(!selectedPlayer) return alert('Silakan pilih pemain terlebih dahulu.');
+    if(!selectedPlayer.parentPhone) return alert('Nomor WhatsApp orang tua tidak ditemukan di Database. Pastikan Anda telah mengisi kolom "No. WhatsApp (Ortu)" di Spreadsheet lalu tekan Sinkronisasi.');
+    
+    const btn = document.getElementById('btnSendWA');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '⏳ Memproses...';
+    btn.disabled = true;
+
+    try {
+        // 1. Format Nomor Telepon (Ubah 0 di depan jadi 62)
+        let phoneRaw = selectedPlayer.parentPhone.toString().replace(/\D/g, '');
+        if(phoneRaw.startsWith('0')) {
+            phoneRaw = '62' + phoneRaw.substring(1);
+        }
+
+        // 2. Memicu unduhan PDF (agar pelatih punya filenya untuk dikirim)
+        await downloadReportPDF();
+
+        // 3. Siapkan Text Pesan WhatsApp
+        const parentName = selectedPlayer.parentName || "Bapak/Ibu";
+        const tw = document.getElementById('inTriwulan').value;
+        const ms = document.getElementById('inMusim').value;
+        
+        const message = `Halo ${parentName},\n\nBerikut kami sampaikan Rapor Evaluasi Akademi Futsal MNA GEN-Z untuk ananda *${selectedPlayer.name}* pada periode Triwulan ${tw} Musim ${ms}.\n\n_(Mohon pelatih melampirkan file PDF Rapor yang baru saja diunduh ke dalam chat ini)_\n\nTerima Kasih,\n*Manajemen MNA GEN-Z ACADEMY*`;
+        
+        // 4. Membuka tab WhatsApp Web/App
+        const waUrl = `https://wa.me/${phoneRaw}?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, '_blank');
+        
+    } catch(err) {
+        alert('Gagal memproses pengiriman WhatsApp. ' + err.message);
+    } finally {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+    }
+}
+
+// Menyambungkan tombol ke fungsi
+document.getElementById('btnDownloadPDF').addEventListener('click', downloadReportPDF);
+document.getElementById('btnSendWA').addEventListener('click', sendToWhatsApp);
 
 // ================= Reset semua =================
 async function resetAllData(){
@@ -757,7 +849,7 @@ async function resetAllData(){
 async function init(){
   clubSettings = await DB.getClub() || {};
   if(!clubSettings.name1){
-    clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_genz_academy', phone:'0812-xxxx-xxxx', logo:null };
+    clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_genz_academy', phone:'0812-xxxx-xxxx', logo: DEFAULT_LOGO };
   }
   document.getElementById('inClubName1').value = clubSettings.name1;
   document.getElementById('inClubName2').value = clubSettings.name2;
@@ -785,7 +877,6 @@ async function init(){
   document.getElementById('btnSavePlayer').onclick = savePlayer;
   document.getElementById('btnCancelEditPlayer').onclick = resetPlayerForm;
   document.getElementById('btnSaveReport').onclick = saveReport;
-  document.getElementById('btnDownload').onclick = downloadReport;
   document.getElementById('btnResetAll').onclick = resetAllData;
   document.getElementById('inTriwulan').addEventListener('change', onPeriodChange);
   document.getElementById('inMusim').addEventListener('input', onPeriodChange);
