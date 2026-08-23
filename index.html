@@ -28,7 +28,7 @@
   .topbar{background:#fff;padding:14px 20px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .topbar h1{font-size:16px;margin:0;color:var(--navy);font-weight:900;letter-spacing:.2px;}
   .topbar .note{font-size:11.5px;color:#8a8a94;flex-basis:100%;}
-  .infobanner{background:#eef0ff;color:#40399e;font-size:12px;padding:8px 20px;border-bottom:1px solid #e0e0f5;}
+  .infobanner{background:#eef0ff;color:#40399e;font-size:12px;padding:8px 20px;border-bottom:1px solid #e0e0f5; display:flex; justify-content:space-between; align-items:center;}
 
   .layout{display:flex;gap:24px;padding:20px;max-width:1440px;margin:0 auto;align-items:flex-start;}
   @media (max-width:980px){.layout{flex-direction:column;}.panel-preview{position:static!important;width:100%;}}
@@ -37,26 +37,30 @@
   .panel-preview{flex:1 1 480px;position:sticky;top:18px;display:flex;flex-direction:column;align-items:center;gap:14px;}
 
   .card-section{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,10,60,.08);}
-  .sect-title{font-size:14.5px;margin:0 0 10px;color:var(--navy);font-weight:800;}
+  .sect-title{font-size:14.5px;margin:0 0 10px;color:var(--navy);font-weight:800; display:flex; justify-content:space-between; align-items:center;}
   .hint{font-size:11.5px;color:#8a8a94;margin:6px 0;line-height:1.4;}
 
   .field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
   .field label{font-size:11.5px;font-weight:700;color:#555;}
-  .field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fafafe;}
+  .field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fafafe; transition:border-color 0.2s;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple1); outline:none;}
   .field textarea{resize:vertical;}
   .field-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;}
   .field-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
   .field-row label{font-size:11.5px;font-weight:700;color:#555;}
 
-  .btn{background:var(--purple1);color:#fff;border:none;padding:9px 15px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12.5px;}
+  .btn{background:var(--purple1);color:#fff;border:none;padding:9px 15px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12.5px; transition:transform 0.1s, opacity 0.2s;}
   .btn:hover{background:var(--blue2);}
+  .btn:active{transform:scale(0.97);}
   .btn-secondary{background:#eee;color:#333;}
   .btn-secondary:hover{background:#e0e0e0;}
   .btn-danger{background:#e11d48;color:#fff;}
   .btn-danger:hover{background:#be123c;}
+  .btn-sync{background:#10b981; color:#fff; width:100%; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:8px;}
+  .btn-sync:hover{background:#059669;}
   .btn-small{padding:6px 10px;font-size:11.5px;}
   .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px;}
-  .btn:disabled{opacity:.6;cursor:default;}
+  .btn:disabled{opacity:.6;cursor:default; transform:none;}
 
   .thumb-preview{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#eee;margin-top:4px;display:inline-block;}
 
@@ -68,7 +72,7 @@
   .player-card .ku{font-size:11px;color:#888;}
   .card-btns{display:flex;gap:4px;flex-shrink:0;}
 
-  .selected-box{display:flex;align-items:center;gap:10px;background:#f7f7fb;border-radius:10px;padding:8px 10px;font-size:12.5px;color:#555;margin-bottom:10px;}
+  .selected-box{display:flex;align-items:center;gap:10px;background:#f7f7fb;border-radius:10px;padding:8px 10px;font-size:12.5px;color:#555;margin-bottom:10px; border:1px solid var(--line);}
   .sel-thumb{width:34px;height:34px;border-radius:50%;object-fit:cover;}
 
   .rating-cat-title{font-size:11.5px;font-weight:900;color:var(--purple1);letter-spacing:.5px;margin:12px 0 6px;text-transform:uppercase;}
@@ -81,7 +85,7 @@
   .star-picker span.active{color:var(--gold);}
 
   .saved-reports-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
-  .saved-report-row{display:flex;align-items:center;justify-content:space-between;background:#f7f7fb;padding:6px 10px;border-radius:8px;font-size:12px;}
+  .saved-report-row{display:flex;align-items:center;justify-content:space-between;background:#f7f7fb;padding:6px 10px;border-radius:8px;font-size:12px; border:1px solid var(--line);}
 
   /* ==== REPORT CARD (PREVIEW) ==== */
   .report-card{width:100%;max-width:720px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 10px 32px rgba(30,20,90,.18);}
@@ -138,8 +142,11 @@
 <div id="app" style="display:none;">
   <div class="topbar">
     <h1>🏟️ Rapor Pemain Akademi</h1>
+    <div class="note">MNA GEN-Z ACADEMY</div>
   </div>
-  <div class="infobanner">📌 Data pemain &amp; rapor tersimpan otomatis dan bisa dilihat/diisi oleh siapa pun yang membuka file ini — cocok dipakai bersama tim pelatih.</div>
+  <div class="infobanner">
+    <span>📌 Terhubung otomatis dengan Google Spreadsheet (API). Cukup atur data foto & posisi di Spreadsheet.</span>
+  </div>
 
   <div class="layout">
     <aside class="panel-editor">
@@ -161,28 +168,37 @@
 
       <section class="card-section">
         <h2 class="sect-title">🧑‍🤝‍🧑 Database Pemain</h2>
-        <p class="hint">Tambahkan pemain sekali di sini. Saat membuat rapor, tinggal klik "Pilih" — nama, KU, foto, posisi &amp; kaki dominan otomatis terisi.</p>
-        <div class="field-grid-2">
-          <div class="field"><label>Nama Pemain</label><input type="text" id="inPName" placeholder="cth. Zamzam Bahtiar"></div>
-          <div class="field"><label>Kelas / KU</label><input type="text" id="inPKu" placeholder="cth. Sapphire (U10)"></div>
-          <div class="field"><label>Posisi</label><input type="text" id="inPPosisi" placeholder="cth. Flank"></div>
-          <div class="field"><label>Kaki Dominan</label>
-            <select id="inPFoot">
-              <option value="Kaki Kanan">Kaki Kanan</option>
-              <option value="Kaki Kiri">Kaki Kiri</option>
-              <option value="Dua Kaki">Dua Kaki</option>
-            </select>
-          </div>
+        <p class="hint">Database dihubungkan dengan <b>Google Spreadsheet</b>. Tambahkan link ImgBB di kolom "Foto".</p>
+        
+        <button class="btn btn-sync" id="btnSyncSheet" onclick="syncPlayersFromSheet()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
+          Sinkronisasi Data Spreadsheet
+        </button>
+
+        <div style="border: 1px solid #e0e1e6; padding: 10px; border-radius: 8px; background: #fdfdfd; margin-bottom: 12px; display: none;" id="manualInputArea">
+            <div class="field-grid-2">
+              <div class="field"><label>Nama Pemain</label><input type="text" id="inPName" placeholder="cth. Zamzam"></div>
+              <div class="field"><label>Kelas / KU</label><input type="text" id="inPKu" placeholder="cth. KU-10"></div>
+              <div class="field"><label>Posisi</label><input type="text" id="inPPosisi" placeholder="cth. Flank"></div>
+              <div class="field"><label>Kaki Dominan</label>
+                <select id="inPFoot">
+                  <option value="Kaki Kanan">Kaki Kanan</option>
+                  <option value="Kaki Kiri">Kaki Kiri</option>
+                  <option value="Dua Kaki">Dua Kaki</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row">
+              <label>Foto Pemain</label>
+              <input type="file" id="inPPhoto" accept="image/*">
+              <img id="pPhotoPreview" class="thumb-preview" alt="">
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-small" id="btnSavePlayer">Simpan Manual</button>
+              <button class="btn btn-secondary btn-small" id="btnCancelEditPlayer">Batal</button>
+            </div>
         </div>
-        <div class="field-row">
-          <label>Foto Pemain</label>
-          <input type="file" id="inPPhoto" accept="image/*">
-          <img id="pPhotoPreview" class="thumb-preview" alt="">
-        </div>
-        <div class="btn-row">
-          <button class="btn" id="btnSavePlayer">Simpan Pemain</button>
-          <button class="btn btn-secondary" id="btnCancelEditPlayer">Batal / Pemain Baru</button>
-        </div>
+
         <div id="playerListContainer" class="player-list"></div>
       </section>
 
@@ -206,14 +222,14 @@
         </div>
         <div class="field"><label>Tanggal</label><input type="date" id="inTanggal"></div>
         <div class="btn-row">
-          <button class="btn" id="btnSaveReport">💾 Simpan Laporan</button>
+          <button class="btn" id="btnSaveReport" style="width: 100%;">💾 Simpan Laporan</button>
         </div>
         <div id="savedReportsList" class="saved-reports-list"></div>
       </section>
 
       <section class="card-section">
         <h2 class="sect-title">🗑️ Lainnya</h2>
-        <button class="btn btn-danger btn-small" id="btnResetAll">Hapus Semua Data Akademi</button>
+        <button class="btn btn-danger btn-small" id="btnResetAll" style="width: 100%;">Hapus Semua Data Rapor</button>
       </section>
 
     </aside>
@@ -223,8 +239,8 @@
         <div class="rc-header">
           <img id="pv-logo" class="rc-logo" alt="logo klub">
           <div class="rc-clubname">
-            <span id="pv-clubname1">GARDOE JUNIOR</span>
-            <span class="l2" id="pv-clubname2">FUTSAL CLUB</span>
+            <span id="pv-clubname1">MNA GEN-Z</span>
+            <span class="l2" id="pv-clubname2">FUTSAL ACADEMY</span>
           </div>
         </div>
         <div class="rc-banner">
@@ -232,9 +248,9 @@
           <div class="sub">PEMAIN AKADEMI</div>
           <div class="rc-period" id="pv-period">TRIWULAN 1 MUSIM 2026</div>
           <div class="rc-playername" id="pv-playername">— Pilih Pemain —</div>
-          <div class="rc-photo-wrap"><img class="rc-photo" id="pv-photo" alt="foto pemain"></div>
+          <div class="rc-photo-wrap"><img class="rc-photo" id="pv-photo" alt="foto pemain" crossorigin="anonymous"></div>
         </div>
-        <div class="rc-class" id="pv-class">KELAS —</div>
+        <div class="rc-class" id="pv-class">KATEGORI —</div>
         <div class="rc-grid">
           <div class="rc-category">
             <h3><span class="rc-cat-icon">🏃</span>FISIK</h3>
@@ -276,19 +292,30 @@
           </div>
         </div>
         <div class="rc-contact">
-          <span>📷 <span id="pv-ig">gardoejunior</span></span>
-          <span>📞 <span id="pv-phone">0878-8400-8924</span></span>
+          <span>📷 <span id="pv-ig">mna_genz_academy</span></span>
+          <span>📞 <span id="pv-phone">0812-xxxx-xxxx</span></span>
         </div>
       </div>
       <div class="actions">
-        <button class="btn" id="btnDownload">⬇️ Unduh Rapor sebagai Gambar (PNG)</button>
+        <button class="btn" id="btnDownload">⬇️ Unduh Rapor (PNG)</button>
       </div>
     </main>
   </div>
 </div>
 
 <script>
+// ================= Pengganti window.storage agar aman di semua server (Vercel dll) =================
+if (typeof window.storage === 'undefined') {
+  window.storage = {
+    get: async (key) => { const v = localStorage.getItem(key); return v ? { value: v } : null; },
+    set: async (key, val) => localStorage.setItem(key, val),
+    delete: async (key) => localStorage.removeItem(key)
+  };
+}
+
 // ================= Konstanta =================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
+
 const DEFAULT_AVATAR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="rgb(232,232,238)"/><circle cx="50" cy="38" r="18" fill="rgb(184,188,200)"/><ellipse cx="50" cy="94" rx="34" ry="26" fill="rgb(184,188,200)"/></svg>';
 const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(DEFAULT_AVATAR_SVG);
 const DEFAULT_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="rgb(27,42,99)"/><circle cx="50" cy="46" r="20" fill="none" stroke="white" stroke-width="4"/><path d="M50 32 L57 41 L54 51 L46 51 L43 41 Z" fill="white"/></svg>';
@@ -314,20 +341,20 @@ let pendingLogoData = null;
 let selectedPlayer = null;
 let ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
 
-// ================= Helper: DB (window.storage) =================
+// ================= DB Wrapper =================
 const DB = {
-  async getClub(){ try{ const r=await window.storage.get('club-settings', true); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
-  async setClub(data){ try{ await window.storage.set('club-settings', JSON.stringify(data), true); }catch(e){ console.error(e); } },
-  async listPlayers(){ try{ const r=await window.storage.get('players-index', true); return r?JSON.parse(r.value):[]; }catch(e){ return []; } },
-  async savePlayersIndex(arr){ try{ await window.storage.set('players-index', JSON.stringify(arr), true); }catch(e){ console.error(e); } },
-  async getPlayer(id){ try{ const r=await window.storage.get('player:'+id, true); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
-  async setPlayer(id,data){ try{ await window.storage.set('player:'+id, JSON.stringify(data), true); }catch(e){ console.error(e); } },
-  async deletePlayer(id){ try{ await window.storage.delete('player:'+id, true); }catch(e){ /* mungkin sudah tidak ada */ } },
-  async listReports(playerId){ try{ const r=await window.storage.get('reports-index:'+playerId, true); return r?JSON.parse(r.value):[]; }catch(e){ return []; } },
-  async saveReportsIndex(playerId,arr){ try{ await window.storage.set('reports-index:'+playerId, JSON.stringify(arr), true); }catch(e){ console.error(e); } },
-  async getReport(playerId,key){ try{ const r=await window.storage.get('report:'+playerId+':'+key, true); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
-  async setReport(playerId,key,data){ try{ await window.storage.set('report:'+playerId+':'+key, JSON.stringify(data), true); }catch(e){ console.error(e); } },
-  async deleteReport(playerId,key){ try{ await window.storage.delete('report:'+playerId+':'+key, true); }catch(e){ } }
+  async getClub(){ try{ const r=await window.storage.get('club-settings'); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
+  async setClub(data){ try{ await window.storage.set('club-settings', JSON.stringify(data)); }catch(e){ console.error(e); } },
+  async listPlayers(){ try{ const r=await window.storage.get('players-index'); return r?JSON.parse(r.value):[]; }catch(e){ return []; } },
+  async savePlayersIndex(arr){ try{ await window.storage.set('players-index', JSON.stringify(arr)); }catch(e){ console.error(e); } },
+  async getPlayer(id){ try{ const r=await window.storage.get('player:'+id); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
+  async setPlayer(id,data){ try{ await window.storage.set('player:'+id, JSON.stringify(data)); }catch(e){ console.error(e); } },
+  async deletePlayer(id){ try{ await window.storage.delete('player:'+id); }catch(e){ } },
+  async listReports(playerId){ try{ const r=await window.storage.get('reports-index:'+playerId); return r?JSON.parse(r.value):[]; }catch(e){ return []; } },
+  async saveReportsIndex(playerId,arr){ try{ await window.storage.set('reports-index:'+playerId, JSON.stringify(arr)); }catch(e){ console.error(e); } },
+  async getReport(playerId,key){ try{ const r=await window.storage.get('report:'+playerId+':'+key); return r?JSON.parse(r.value):null; }catch(e){ return null; } },
+  async setReport(playerId,key,data){ try{ await window.storage.set('report:'+playerId+':'+key, JSON.stringify(data)); }catch(e){ console.error(e); } },
+  async deleteReport(playerId,key){ try{ await window.storage.delete('report:'+playerId+':'+key); }catch(e){ } }
 };
 
 function genId(prefix){ return prefix+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -359,6 +386,69 @@ function formatTanggalIndo(iso){
   const d = new Date(iso+'T00:00:00');
   if(isNaN(d.getTime())) return '-';
   return HARI[d.getDay()]+', '+d.getDate()+' '+BULAN[d.getMonth()]+' '+d.getFullYear();
+}
+
+// ================= INTEGRASI GOOGLE SPREADSHEET =================
+async function syncPlayersFromSheet() {
+    const btn = document.getElementById('btnSyncSheet');
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = '⏳ Menyinkronkan...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+        const existing = await DB.listPlayers();
+
+        const sheetPlayers = data.map(row => {
+            const name = row["Nama Pemain"] ? row["Nama Pemain"].toString().trim() : "";
+            if (!name) return null;
+
+            // Mempertahankan ID agar histori rapor tidak hilang
+            const ex = existing.find(e => e.name.toUpperCase() === name.toUpperCase());
+            const pid = ex ? ex.id : genId('p');
+            
+            // Mengambil link foto dari kolom "Foto" (imgbb) jika ada, jika tidak pakai default atau yang ada sebelumnya
+            let photoUrl = row["Foto"] || (ex ? ex.photo : DEFAULT_AVATAR);
+            let positionStr = row["Posisi"] || (ex ? ex.position : "-");
+            let footStr = row["Kaki Dominan"] || row["Dominan"] || (ex ? ex.foot : "Kaki Kanan");
+
+            return {
+                id: pid,
+                name: name,
+                ku: row["Kategori Umur"] || (ex ? ex.ku : "-"),
+                position: positionStr,
+                foot: footStr,
+                photoThumb: photoUrl,
+                photo: photoUrl
+            };
+        }).filter(p => p !== null);
+
+        players = sheetPlayers;
+        await DB.savePlayersIndex(players);
+        for(const p of players) { await DB.setPlayer(p.id, p); }
+
+        renderPlayerList();
+        
+        // Update view jika pemain yang sedang dipilih ikut tersinkronisasi
+        if (selectedPlayer) {
+           const updated = players.find(p => p.id === selectedPlayer.id);
+           if (updated) {
+               selectedPlayer = updated;
+               updateSelectedPlayerBox();
+               renderPreview();
+           }
+        }
+
+        alert(`✅ Sinkronisasi Berhasil!
+${players.length} pemain ditarik dari Spreadsheet.`);
+    } catch (err) {
+        console.error("Gagal sinkronisasi:", err);
+        alert("Gagal menarik data. Pastikan API URL benar dan koneksi internet stabil.");
+    } finally {
+        btn.innerHTML = origHtml;
+        btn.disabled = false;
+    }
 }
 
 // ================= Render: editor rating groups =================
@@ -416,13 +506,13 @@ function renderPreview(){
 
   if(selectedPlayer){
     document.getElementById('pv-playername').textContent = selectedPlayer.name;
-    document.getElementById('pv-class').textContent = ('KELAS '+selectedPlayer.ku).toUpperCase();
+    document.getElementById('pv-class').textContent = ('KATEGORI '+selectedPlayer.ku).toUpperCase();
     document.getElementById('pv-photo').src = selectedPlayer.photo || DEFAULT_AVATAR;
     document.getElementById('pv-posisi').textContent = selectedPlayer.position || '-';
     document.getElementById('pv-dominan').textContent = selectedPlayer.foot || '-';
   } else {
     document.getElementById('pv-playername').textContent = '— Pilih Pemain —';
-    document.getElementById('pv-class').textContent = 'KELAS —';
+    document.getElementById('pv-class').textContent = 'KATEGORI —';
     document.getElementById('pv-photo').src = DEFAULT_AVATAR;
     document.getElementById('pv-posisi').textContent = '-';
     document.getElementById('pv-dominan').textContent = '-';
@@ -459,7 +549,7 @@ async function onLogoChange(e){
 function renderPlayerList(){
   const c = document.getElementById('playerListContainer');
   c.innerHTML = '';
-  if(players.length===0){ const p=document.createElement('p'); p.className='hint'; p.textContent='Belum ada pemain. Tambahkan pemain pertama di atas.'; c.appendChild(p); return; }
+  if(players.length===0){ const p=document.createElement('p'); p.className='hint'; p.textContent='Belum ada pemain. Tekan tombol Sinkronisasi untuk mengambil data.'; c.appendChild(p); return; }
   players.forEach(p=>{
     const card = document.createElement('div'); card.className='player-card';
     const img = document.createElement('img'); img.src = p.photoThumb || DEFAULT_AVATAR; card.appendChild(img);
@@ -469,9 +559,11 @@ function renderPlayerList(){
     card.appendChild(info);
     const btns = document.createElement('div'); btns.className='card-btns';
     const bPilih = document.createElement('button'); bPilih.className='btn btn-small'; bPilih.textContent='Pilih'; bPilih.onclick=()=>selectPlayerForReport(p.id);
-    const bEdit = document.createElement('button'); bEdit.className='btn btn-secondary btn-small'; bEdit.textContent='Edit'; bEdit.onclick=()=>editPlayer(p.id);
-    const bDel = document.createElement('button'); bDel.className='btn btn-danger btn-small'; bDel.textContent='Hapus'; bDel.onclick=()=>deletePlayer(p.id);
-    btns.append(bPilih,bEdit,bDel);
+    const bEdit = document.createElement('button'); bEdit.className='btn btn-secondary btn-small'; bEdit.textContent='Edit Manual'; bEdit.onclick=()=>{
+        document.getElementById('manualInputArea').style.display = 'block';
+        editPlayer(p.id);
+    };
+    btns.append(bPilih,bEdit);
     card.appendChild(btns);
     c.appendChild(card);
   });
@@ -485,6 +577,7 @@ function resetPlayerForm(){
   document.getElementById('pPhotoPreview').src='';
   document.getElementById('pPhotoPreview').style.visibility='hidden';
   document.getElementById('inPPhoto').value='';
+  document.getElementById('manualInputArea').style.display = 'none';
 }
 async function onPlayerPhotoChange(e){
   const f = e.target.files[0]; if(!f) return;
@@ -506,7 +599,7 @@ async function savePlayer(){
   const record = { id, name, ku, position: document.getElementById('inPPosisi').value.trim(), foot: document.getElementById('inPFoot').value, photoThumb: thumb, photo: full };
   await DB.setPlayer(id, record);
   const idx = players.findIndex(p=>p.id===id);
-  const idxEntry = { id, name, ku, photoThumb: thumb };
+  const idxEntry = { id, name, ku, photoThumb: thumb, photo: full, position: record.position, foot: record.foot };
   if(idx>=0) players[idx]=idxEntry; else players.push(idxEntry);
   await DB.savePlayersIndex(players);
   renderPlayerList();
@@ -525,20 +618,6 @@ async function editPlayer(id){
   pendingPhotoThumb = null; pendingPhotoFull = null;
   document.getElementById('inPName').scrollIntoView({behavior:'smooth',block:'center'});
 }
-async function deletePlayer(id){
-  if(!confirm('Hapus pemain ini beserta seluruh riwayat rapornya? Tindakan ini tidak bisa dibatalkan.')) return;
-  const repIdx = await DB.listReports(id);
-  for(const r of repIdx){ await DB.deleteReport(id, r.key); }
-  try{ await window.storage.delete('reports-index:'+id, true); }catch(e){}
-  await DB.deletePlayer(id);
-  players = players.filter(p=>p.id!==id);
-  await DB.savePlayersIndex(players);
-  renderPlayerList();
-  if(selectedPlayer && selectedPlayer.id===id){
-    selectedPlayer = null; renderPreview(); updateSelectedPlayerBox();
-    document.getElementById('savedReportsList').innerHTML='';
-  }
-}
 
 // ================= Laporan / Rapor =================
 function updateSelectedPlayerBox(){
@@ -553,7 +632,7 @@ function updateSelectedPlayerBox(){
   }
 }
 async function selectPlayerForReport(id){
-  const rec = await DB.getPlayer(id); if(!rec) return;
+  const rec = await DB.getPlayer(id) || players.find(p => p.id === id); if(!rec) return;
   selectedPlayer = rec;
   updateSelectedPlayerBox();
   renderPreview();
@@ -576,14 +655,14 @@ async function maybeLoadExistingReport(){
     document.getElementById('inPrestasi').value = rep.prestasi || '';
     document.getElementById('inPelatih').value = rep.pelatih || '';
     document.getElementById('inTanggal').value = rep.tanggal || '';
-    note.textContent = '📄 Laporan periode ini sudah ada — data tersimpan dimuat, silakan ubah jika perlu.';
+    note.textContent = '📄 Laporan periode ini sudah ada — data tersimpan dimuat.';
     note.style.color = '#4c3fc9';
   } else {
     resetRatingsObj();
     document.getElementById('inCatatan').value = '';
     document.getElementById('inPrestasi').value = '';
     if(!document.getElementById('inTanggal').value){ document.getElementById('inTanggal').value = new Date().toISOString().slice(0,10); }
-    note.textContent = '🆕 Belum ada laporan untuk periode ini — isi rating di bawah untuk membuat baru.';
+    note.textContent = '🆕 Belum ada laporan untuk periode ini — isi rating untuk membuat baru.';
     note.style.color = '#8a8a94';
   }
   syncAllStars();
@@ -644,7 +723,7 @@ async function downloadReport(){
   const btn = document.getElementById('btnDownload'); const orig = btn.textContent;
   btn.textContent = 'Menyiapkan gambar...'; btn.disabled = true;
   try{
-    const canvas = await html2canvas(document.getElementById('reportCard'), {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    const canvas = await html2canvas(document.getElementById('reportCard'), {scale:2, backgroundColor:'#ffffff', useCORS:true, allowTaint:true});
     const link = document.createElement('a');
     const pname = (selectedPlayer ? selectedPlayer.name : 'Pemain').replace(/[^a-zA-Z0-9]+/g,'_');
     const tw = document.getElementById('inTriwulan').value, ms = document.getElementById('inMusim').value;
@@ -652,7 +731,7 @@ async function downloadReport(){
     link.href = canvas.toDataURL('image/png');
     link.click();
   }catch(err){
-    alert('Gagal membuat gambar rapor: '+err.message);
+    alert('Gagal membuat gambar rapor: Pastikan link foto (ImgBB) bisa diakses (CORS issue). '+err.message);
   }finally{
     btn.textContent = orig; btn.disabled = false;
   }
@@ -660,17 +739,14 @@ async function downloadReport(){
 
 // ================= Reset semua =================
 async function resetAllData(){
-  if(!confirm('Yakin ingin menghapus SEMUA data pemain, pengaturan klub, dan laporan? Tindakan ini tidak bisa dibatalkan.')) return;
+  if(!confirm('Yakin ingin menghapus SEMUA data rapor yang pernah dibuat?')) return;
   try{
     for(const p of players){
       const repIdx = await DB.listReports(p.id);
       for(const r of repIdx){ await DB.deleteReport(p.id, r.key); }
-      try{ await window.storage.delete('reports-index:'+p.id, true); }catch(e){}
-      await DB.deletePlayer(p.id);
+      try{ await window.storage.delete('reports-index:'+p.id); }catch(e){}
     }
-    try{ await window.storage.delete('players-index', true); }catch(e){}
-    try{ await window.storage.delete('club-settings', true); }catch(e){}
-    alert('Semua data telah dihapus.');
+    alert('Semua data rapor telah dihapus. Daftar pemain tetap aman dari Spreadsheet.');
     location.reload();
   }catch(err){
     alert('Gagal menghapus data: '+err.message);
@@ -681,7 +757,7 @@ async function resetAllData(){
 async function init(){
   clubSettings = await DB.getClub() || {};
   if(!clubSettings.name1){
-    clubSettings = { name1:'GARDOE JUNIOR', name2:'FUTSAL CLUB', instagram:'gardoejunior', phone:'0878-8400-8924', logo:null };
+    clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_genz_academy', phone:'0812-xxxx-xxxx', logo:null };
   }
   document.getElementById('inClubName1').value = clubSettings.name1;
   document.getElementById('inClubName2').value = clubSettings.name2;
@@ -690,6 +766,9 @@ async function init(){
 
   players = await DB.listPlayers();
   renderPlayerList();
+  
+  // Auto-sync di latar belakang
+  syncPlayersFromSheet();
 
   buildAllEditorGroups();
   document.getElementById('inTanggal').value = new Date().toISOString().slice(0,10);
