@@ -11,8 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-<!-- Memakai font Inter (paling stabil di html2canvas) dengan ketebalan 900 untuk efek sporty -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
   :root {
@@ -219,15 +218,18 @@
   }
   
   /* Explicit border radius per corner to simulate overflow hidden */
-  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 20px; background: var(--rc-bg); border-bottom: 2px solid var(--rc-sec); position: relative; z-index: 1; border-top-left-radius: 18px; border-top-right-radius: 18px;}
-  .rc-logo { width: 72px; height: 72px; border-radius: 12px; object-fit: contain; background: #fff; border: 1px solid var(--rc-border); padding: 4px; z-index: 2;}
-  /* Explicit line-heights in PX to fix html2canvas text shifting */
-  .rc-clubname { font-weight: 900; color: var(--rc-text); text-transform: uppercase; line-height: 28px; font-size: 26px; z-index: 2; letter-spacing: -0.5px;}
-  .rc-clubname span { display: block; font-size: 13px; font-weight: 700; color: var(--rc-accent); margin-top: 4px; line-height: 14px; letter-spacing: 0.5px;}
+  .rc-header { display: flex; align-items: center; gap: 20px; padding: 24px 32px 20px; background: var(--rc-bg); border-bottom: 2px solid var(--rc-sec); position: relative; z-index: 1; border-top-left-radius: 18px; border-top-right-radius: 18px;}
+  .rc-logo { width: 84px; height: 84px; border-radius: 14px; object-fit: contain; background: #fff; border: 1px solid var(--rc-border); padding: 6px; z-index: 2;}
   
-  .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--rc-sec); padding: 12px 20px; border-radius: 16px; border: 1px solid var(--rc-border);}
-  .rc-grade-label { font-size: 11px; font-weight: 800; color: var(--rc-text-muted); line-height: 12px; text-transform: uppercase; margin-bottom: 6px;}
-  .rc-grade-value { font-family: 'Inter', sans-serif; font-size: 46px; font-weight: 900; line-height: 46px; color: var(--rc-text-muted); letter-spacing: -1px;}
+  /* Diubah menjadi flex column untuk alignment sempurna dengan logo */
+  .rc-clubname { display: flex; flex-direction: column; justify-content: center; height: 84px; z-index: 2; flex: 1;}
+  #pv-club1 { font-weight: 900; color: var(--rc-text); text-transform: uppercase; line-height: 1; font-size: 36px; letter-spacing: -1px; margin-bottom: 6px;}
+  #pv-club2 { font-size: 16px; font-weight: 800; color: var(--rc-accent); line-height: 1; letter-spacing: 1.5px; text-transform: uppercase;}
+  
+  /* Nilai Akhir Box */
+  .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--rc-sec); width: 100px; height: 84px; border-radius: 16px; border: 1px solid var(--rc-border);}
+  .rc-grade-label { font-size: 11px; font-weight: 800; color: var(--rc-text-muted); text-transform: uppercase; margin-bottom: 2px; line-height: 1;}
+  .rc-grade-value { font-family: 'Inter', sans-serif; font-size: 50px; font-weight: 900; color: var(--rc-text-muted); line-height: 1; letter-spacing: -1px; position: relative; top: -2px;}
 
   /* Removed skew transform from background to prevent bounding box issues in canvas */
   .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 40px; z-index: 1;}
@@ -235,14 +237,17 @@
   /* CRITICAL: Explicit PX line-heights and safe fonts */
   .rc-banner h2 { font-family: 'Inter', sans-serif; color: var(--green); font-size: 48px; margin: 0 0 8px 0; font-weight: 900; line-height: 48px; text-transform: uppercase; letter-spacing: -1px;}
   .rc-banner .sub { font-weight: 700; font-size: 16px; opacity: 0.9; line-height: 20px; margin-top: 0; text-transform: uppercase; letter-spacing: 1px;}
-  .rc-period { margin-top: 16px; font-weight: 700; font-size: 12px; background: rgba(0,0,0,0.25); display: inline-block; padding: 8px 12px; border-radius: 6px; line-height: 14px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1);}
+  
+  /* Metode height + line-height untuk menjamin text berada pas di tengah pada html2canvas */
+  .rc-period { margin-top: 20px; font-weight: 800; font-size: 12px; background: rgba(0,0,0,0.25); display: inline-block; padding: 0 16px; height: 32px; line-height: 32px; border-radius: 8px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); letter-spacing: 0.5px; vertical-align: middle;}
+  
   .rc-playername { margin-top: 24px; color: #fff; font-weight: 900; font-size: 28px; line-height: 32px; text-transform: uppercase; width: 65%; position: relative; z-index: 2;}
 
   .rc-photo-wrap { position: absolute; right: 40px; bottom: 0; width: 180px; height: 180px; z-index: 2; display: flex; align-items: flex-end;}
   .rc-photo { width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));}
 
   /* Fixed KATEGORI Cut Off with solid padding */
-  .rc-class { padding: 24px 32px 12px; font-family: 'Inter', sans-serif; font-weight: 900; color: var(--rc-text); font-size: 24px; background: var(--rc-bg); line-height: 28px; position: relative; z-index: 1; text-transform: uppercase; letter-spacing: -0.5px;}
+  .rc-class { padding: 24px 32px 16px; font-family: 'Inter', sans-serif; font-weight: 900; color: var(--rc-text); font-size: 26px; background: var(--rc-bg); line-height: 28px; position: relative; z-index: 1; text-transform: uppercase; letter-spacing: -0.5px;}
 
   .rc-body { padding: 12px 32px 32px; display: flex; gap: 24px; background: var(--rc-bg); position: relative; z-index: 1;}
   
@@ -251,9 +256,11 @@
   
   .rc-cat { flex: 1; background: var(--rc-sec); border-radius: 12px; padding: 16px; border: 1px solid var(--rc-border); }
   .rc-cat h3 { font-family: 'Inter', sans-serif; color: var(--rc-text); font-weight: 900; font-size: 18px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-border); padding-bottom: 8px; line-height: 20px; text-transform: uppercase; letter-spacing: -0.5px;}
-  .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; line-height: 16px; }
-  .rc-skill .label { color: var(--rc-text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; line-height: 14px; }
-  .rc-stars { font-size: 14px; display: flex; align-items: center; gap: 2px; line-height: 14px;}
+  
+  /* Bintang sejajar dengan teks dengan teknik line-height seragam */
+  .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .rc-skill .label { color: var(--rc-text-muted); font-weight: 800; font-size: 11px; text-transform: uppercase; line-height: 18px; }
+  .rc-stars { font-size: 16px; display: flex; align-items: center; gap: 3px; line-height: 18px; }
   .rc-stars .on { color: var(--gold); }
   .rc-stars .off { color: #d4d4d8; }
 
@@ -263,7 +270,10 @@
 
   .rc-footer { background: var(--rc-bg); padding: 24px 32px; display: flex; gap: 24px; border-top: 2px solid var(--rc-sec); position: relative; z-index: 1; border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;}
   .rc-notes { flex: 1; }
-  .rc-notes h4 { font-family: 'Inter', sans-serif; color: var(--rc-text); font-size: 18px; font-weight: 900; margin: 0 0 12px; display:flex; align-items:center; gap:6px; line-height: 20px; letter-spacing: -0.5px;}
+  /* Icon sejajar di notes h4 */
+  .rc-notes h4 { display: flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif; color: var(--rc-text); font-size: 18px; font-weight: 900; margin: 0 0 12px; line-height: 20px; letter-spacing: -0.5px;}
+  .rc-notes h4 svg { width: 20px; height: 20px; color: var(--rc-text); }
+  
   .rc-notes p { margin: 0; font-size: 13px; line-height: 22px; color: var(--rc-text-muted); background: var(--rc-sec); padding: 16px; border-radius: 12px; border: 1px solid var(--rc-border); min-height: 80px; font-weight: 500;}
   
   .rc-sign-area { width: 220px; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
@@ -535,11 +545,12 @@
 
           <div class="rc-footer">
             <div class="rc-notes">
-              <h4><i data-lucide="message-square" class="h-5 w-5" style="display:inline; vertical-align:middle;"></i> Catatan Pelatih</h4>
+              <!-- Icon sudah diubah untuk menggunakan flex layout yang benar -->
+              <h4><i data-lucide="message-square"></i> Catatan Pelatih</h4>
               <p id="pv-catatan">—</p>
             </div>
             <div class="rc-sign-area">
-              <div class="rc-sign-date" id="pv-tanggal">SBY, 24 Agustus 2026</div>
+              <div class="rc-sign-date" id="pv-tanggal">Trenggalek, 24 Agustus 2026</div>
               <div class="rc-sign-name" id="pv-pelatih">Coach</div>
               <div class="rc-sign-label">PELATIH KEPALA</div>
             </div>
@@ -968,7 +979,8 @@ function triggerPreviewUpdate() {
         const bln = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         if(!isNaN(d.getTime())) {
             const pTgl = document.getElementById('pv-tanggal');
-            if(pTgl) pTgl.innerText = `SBY, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
+            // FIX KOTA SBY KE TRENGGALEK
+            if(pTgl) pTgl.innerText = `Trenggalek, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
         }
     }
     
