@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<title>Rapor Pemain Akademi - Professional Edition</title>
+<title>Rapor Pemain Akademi - Sports Professional Edition</title>
 
 <!-- Libraries Front-End Kualitas Premium -->
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -11,7 +11,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+<!-- Menggunakan font khusus olahraga/teknologi yang lebih kaku dan tidak bermasalah di html2canvas -->
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
   :root {
@@ -26,16 +27,16 @@
     
     /* CSS Variabel untuk Tema Dinamis Rapor */
     --rc-bg: #ffffff;
-    --rc-sec: #f8fafc;
-    --rc-text: #1b2a63;
-    --rc-border: #e2e8f0;
-    --rc-text-muted: #64748b;
+    --rc-sec: #f4f4f5;
+    --rc-text: #18181b;
+    --rc-border: #e4e4e7;
+    --rc-text-muted: #71717a;
     --rc-accent: #7c3aed;
   }
   
   * { box-sizing: border-box; }
   body {
-    margin: 0; font-family: 'DM Sans', sans-serif;
+    margin: 0; font-family: 'Inter', sans-serif;
     background: linear-gradient(135deg, rgba(4, 8, 16, 0.98) 0%, rgba(11, 20, 37, 0.95) 100%);
     color: #f6f8ff; min-height: 100vh; overflow-x: hidden;
   }
@@ -79,8 +80,8 @@
     padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;
   }
   .topbar-brand { display: flex; flex-direction: column; }
-  .topbar-brand h1 { font-size: 18px; margin: 0; color: #fff; font-weight: 900; letter-spacing: 1px; }
-  .topbar-brand span { font-size: 11px; color: var(--green); font-weight: 700; letter-spacing: 1px; }
+  .topbar-brand h1 { font-family: 'Teko', sans-serif; font-size: 26px; margin: 0; color: #fff; font-weight: 700; letter-spacing: 1px; line-height: 1; text-transform: uppercase; }
+  .topbar-brand span { font-size: 10px; color: var(--green); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
   .api-status {
     display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
     background: rgba(183, 255, 40, 0.1); color: var(--green); padding: 6px 14px; border-radius: 20px;
@@ -115,7 +116,6 @@
   /* EDITOR TABS */
   .tab-content { display: none; }
   .tab-content.active { display: block; }
-  /* Remove old animation as View Transitions will handle it */
 
   .card-section {
     background: var(--panel-bg); border-radius: 1.5rem; padding: 24px;
@@ -178,7 +178,7 @@
 
   /* RATINGS PICKER */
   .rating-cat { margin-bottom: 24px; }
-  .rating-title { font-size: 12px; font-weight: 900; color: var(--green); letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dashed var(--line); }
+  .rating-title { font-size: 12px; font-weight: 900; color: var(--green); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dashed var(--line); text-transform: uppercase;}
   .skill-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .skill-label { font-size: 13px; font-weight: 600; color: #e2e8f0; }
   .star-picker { display: flex; gap: 4px; font-size: 24px; cursor: pointer; user-select: none;}
@@ -191,56 +191,88 @@
   .preview-wrapper::-webkit-scrollbar { display: none; }
   
   .report-card {
-    width: 760px; min-width: 760px; border-radius: 24px; overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative;
-    background: var(--rc-bg); color: var(--rc-text); transition: all 0.5s ease;
+    width: 760px; min-width: 760px; 
+    border-radius: 20px; 
+    /* Gunakan inner-wrap untuk menghindari masalah overflow hidden di html2canvas */
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); 
+    background: transparent; color: var(--rc-text); transition: all 0.5s ease;
+    font-family: 'Inter', sans-serif;
   }
   
-  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 16px; background: var(--rc-bg); border-bottom: 1px solid var(--rc-border); }
-  .rc-logo { width: 64px; height: 64px; border-radius: 50%; object-fit: contain; border: 2px solid var(--rc-accent); background: #fff; z-index: 2;}
-  .rc-clubname { font-weight: 900; color: var(--rc-text); text-transform: uppercase; line-height: 1.2; letter-spacing: 0.5px; font-size: 24px; z-index: 2;}
-  .rc-clubname span { display: block; font-size: 14px; font-weight: 800; color: var(--rc-accent); margin-top: 2px; line-height: 1.2; }
+  .rc-inner-wrap {
+    width: 100%; border-radius: 20px; overflow: hidden; background: var(--rc-bg); position: relative;
+    border: 2px solid var(--rc-border);
+  }
+
+  /* Watermark Club Logo */
+  .rc-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    object-fit: contain;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+  }
   
-  .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
-  .rc-grade-label { font-size: 10px; font-weight: 800; color: var(--rc-text-muted); letter-spacing: 1px; line-height: 1; }
-  .rc-grade-value { font-size: 38px; font-weight: 900; line-height: 1; color: var(--rc-text-muted); transition: color 0.3s ease;}
+  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 20px; background: var(--rc-bg); border-bottom: 2px solid var(--rc-sec); position: relative; z-index: 1;}
+  .rc-logo { width: 72px; height: 72px; border-radius: 12px; object-fit: contain; background: #fff; border: 1px solid var(--rc-border); padding: 4px; z-index: 2;}
+  .rc-clubname { font-weight: 800; color: var(--rc-text); text-transform: uppercase; line-height: 1.1; font-size: 26px; z-index: 2;}
+  .rc-clubname span { display: block; font-size: 13px; font-weight: 700; color: var(--rc-accent); margin-top: 4px; line-height: 1.1; letter-spacing: 0.5px;}
+  
+  .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--rc-sec); padding: 10px 20px; border-radius: 16px; border: 1px solid var(--rc-border);}
+  .rc-grade-label { font-size: 11px; font-weight: 800; color: var(--rc-text-muted); line-height: 1; text-transform: uppercase; margin-bottom: 4px;}
+  .rc-grade-value { font-family: 'Teko', sans-serif; font-size: 46px; font-weight: 700; line-height: 0.8; color: var(--rc-text-muted); transition: color 0.3s ease;}
 
-  .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 48px; }
-  .rc-banner h2 { color: var(--green); font-size: 48px; margin: 0; font-weight: 900; letter-spacing: 1px; line-height: 1; }
-  .rc-banner .sub { font-weight: 800; font-size: 18px; letter-spacing: 1px; opacity: 0.9; line-height: 1.2; margin-top: 4px; }
-  .rc-period { margin-top: 16px; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; background: rgba(0,0,0,0.2); display: inline-block; padding: 8px 12px; border-radius: 8px; line-height: 1; }
-  .rc-playername { margin-top: 24px; color: #fff; font-weight: 900; font-size: 32px; line-height: 1.2; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.2); width: 70%; }
+  .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 32px; z-index: 1; overflow: hidden;}
+  /* Sports Graphic Overlay */
+  .rc-banner::after {
+    content: ''; position: absolute; top: 0; right: -50px; width: 300px; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1));
+    transform: skewX(-20deg);
+  }
+  
+  .rc-banner h2 { font-family: 'Teko', sans-serif; color: var(--green); font-size: 56px; margin: 0; font-weight: 600; line-height: 0.8; text-transform: uppercase;}
+  .rc-banner .sub { font-weight: 600; font-size: 16px; opacity: 0.9; line-height: 1.2; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
+  .rc-period { margin-top: 16px; font-weight: 700; font-size: 12px; background: rgba(0,0,0,0.25); display: inline-block; padding: 6px 10px; border-radius: 6px; line-height: 1; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1);}
+  .rc-playername { margin-top: 20px; color: #fff; font-weight: 800; font-size: 30px; line-height: 1.1; text-transform: uppercase; width: 65%; position: relative; z-index: 2;}
 
-  .rc-photo-wrap { position: absolute; right: 32px; top: 50%; transform: translateY(-30%); width: 160px; height: 160px; border-radius: 50%; padding: 6px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-  .rc-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+  .rc-photo-wrap { position: absolute; right: 40px; bottom: 0; width: 180px; height: 180px; z-index: 2; display: flex; align-items: flex-end;}
+  /* Cutout style for sports feel */
+  .rc-photo { width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));}
 
-  /* FIX: Remove negative margin and adjust padding to prevent html2canvas clipping */
-  .rc-class { padding: 24px 32px 8px; font-weight: 900; color: var(--rc-text); font-size: 20px; letter-spacing: 1px; background: var(--rc-sec); line-height: 1.2; }
+  /* Clear fixes for layout */
+  .rc-class { padding: 24px 32px 0px; font-family: 'Teko', sans-serif; font-weight: 600; color: var(--rc-text); font-size: 28px; background: var(--rc-bg); line-height: 1; position: relative; z-index: 1; text-transform: uppercase;}
 
-  .rc-body { padding: 16px 32px 32px; display: grid; grid-template-columns: 1fr 240px; gap: 32px; background: var(--rc-sec); }
-  .rc-skills-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
-  .rc-cat { background: var(--rc-bg); border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--rc-border); transition: transform 0.3s ease; }
-  .rc-cat:hover { transform: scale(1.02); }
-  .rc-cat h3 { color: var(--rc-text); font-weight: 900; font-size: 14px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-sec); padding-bottom: 8px; line-height: 1.2; }
+  .rc-body { padding: 16px 32px 32px; display: flex; gap: 24px; background: var(--rc-bg); position: relative; z-index: 1;}
+  
+  .rc-skills-panel { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .rc-skills-row { display: flex; gap: 16px; }
+  
+  .rc-cat { flex: 1; background: var(--rc-sec); border-radius: 12px; padding: 16px; border: 1px solid var(--rc-border); }
+  .rc-cat h3 { font-family: 'Teko', sans-serif; color: var(--rc-text); font-weight: 600; font-size: 20px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-border); padding-bottom: 4px; line-height: 1; text-transform: uppercase;}
   .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; line-height: 1; }
-  .rc-skill .label { color: var(--rc-accent); font-weight: 800; font-size: 11px; text-transform: uppercase; line-height: 1.2; }
-  .rc-stars { font-size: 14px; letter-spacing: 2px; display: flex; align-items: center; }
+  .rc-skill .label { color: var(--rc-text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; line-height: 1.2; }
+  .rc-stars { font-size: 14px; display: flex; align-items: center; gap: 2px;}
   .rc-stars .on { color: var(--gold); }
-  .rc-stars .off { color: var(--rc-border); }
+  .rc-stars .off { color: #d4d4d8; }
 
-  .rc-chart-area { background: var(--rc-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--rc-border); display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .rc-chart-title { font-size: 12px; font-weight: 900; color: var(--rc-text); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; line-height: 1.2;}
-  #radarContainer { width: 200px; height: 200px; position:relative; }
+  .rc-chart-area { width: 220px; flex-shrink: 0; background: var(--rc-sec); border-radius: 12px; padding: 16px; border: 1px solid var(--rc-border); display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .rc-chart-title { font-family: 'Teko', sans-serif; font-size: 20px; font-weight: 600; color: var(--rc-text); text-transform: uppercase; margin-bottom: 10px; line-height: 1;}
+  #radarContainer { width: 180px; height: 180px; position:relative; }
 
-  .rc-footer { background: var(--rc-bg); padding: 24px 32px; display: flex; gap: 24px; border-top: 1px solid var(--rc-border); }
+  .rc-footer { background: var(--rc-bg); padding: 24px 32px; display: flex; gap: 24px; border-top: 2px solid var(--rc-sec); position: relative; z-index: 1;}
   .rc-notes { flex: 1; }
-  .rc-notes h4 { color: var(--rc-text); font-size: 14px; font-weight: 900; margin: 0 0 8px; display:flex; align-items:center; gap:6px; line-height: 1.2;}
-  .rc-notes p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--rc-text); background: var(--rc-sec); padding: 12px; border-radius: 12px; border: 1px dashed var(--rc-border); min-height: 80px;}
+  .rc-notes h4 { font-family: 'Teko', sans-serif; color: var(--rc-text); font-size: 20px; font-weight: 600; margin: 0 0 8px; display:flex; align-items:center; gap:6px; line-height: 1;}
+  .rc-notes p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--rc-text-muted); background: var(--rc-sec); padding: 16px; border-radius: 12px; border: 1px solid var(--rc-border); min-height: 80px; font-weight: 500;}
   
-  .rc-sign-area { width: 200px; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
+  .rc-sign-area { width: 220px; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
   .rc-sign-date { font-size: 11px; color: var(--rc-text-muted); font-weight: 600; margin-bottom: 30px; line-height: 1.2; }
-  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--rc-text); border-bottom: 1px solid var(--rc-border); padding-bottom: 4px; width: 100%; margin-bottom:4px; line-height: 1.2;}
-  .rc-sign-label { font-size: 10px; color: var(--rc-text-muted); font-weight: 700; letter-spacing: 1px; line-height: 1.2; }
+  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--rc-text); border-bottom: 2px solid var(--rc-border); padding-bottom: 4px; width: 100%; margin-bottom:6px; line-height: 1.2;}
+  .rc-sign-label { font-size: 10px; color: var(--rc-text-muted); font-weight: 700; line-height: 1.2; text-transform: uppercase;}
 
   /* EXPORT ACTIONS */
 
@@ -317,7 +349,7 @@
 <div class="topbar">
   <div class="topbar-brand">
     <h1>🏟️ Rapor Akademi</h1>
-    <span>PROFESSIONAL EDITION</span>
+    <span>SPORTS PROFESSIONAL EDITION</span>
   </div>
   <div class="api-status" id="apiStatus">
     <i data-lucide="wifi" class="h-4 w-4"></i> Standby
@@ -436,74 +468,84 @@
   <section class="preview-panel">
     <div class="preview-wrapper">
       <div class="report-card" id="reportCard">
-        
-        <div class="rc-header">
-          <!-- Logo with CORS proxy -->
-          <img id="pv-logo" class="rc-logo" crossorigin="anonymous" src="https://wsrv.nl/?url=https://i.ibb.co.com/FLyht7HF/LOGO-MNA-GEN-Z.png&w=128&h=128&fit=contain">
-          <div class="rc-clubname">
-            <div id="pv-club1">MNA GEN-Z</div>
-            <span id="pv-club2">FUTSAL ACADEMY</span>
-          </div>
-          <!-- AUTO GRADING BADGE -->
-          <div class="rc-grade-badge">
-              <span class="rc-grade-label">NILAI AKHIR</span>
-              <span id="pv-grade-value" class="rc-grade-value">N/A</span>
-          </div>
-        </div>
-        
-        <div class="rc-banner">
-          <h2 class="title">RAPOR</h2>
-          <div class="sub">EVALUASI PEMAIN</div>
-          <div class="rc-period" id="pv-period">TRIWULAN 1 MUSIM 2026</div>
-          <div class="rc-playername" id="pv-playername">—</div>
-          <div class="rc-photo-wrap">
-              <img class="rc-photo" crossorigin="anonymous" id="pv-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
-          </div>
-        </div>
-        
-        <div class="rc-class" id="pv-class">KATEGORI —</div>
-        
-        <div class="rc-body">
-          <div class="rc-skills-container">
-            <div class="rc-cat">
-              <h3>FISIK</h3>
-              <div class="rc-skill"><span class="label">Atletics</span><div class="rc-stars" id="st-atletics"></div></div>
-              <div class="rc-skill"><span class="label">Agility</span><div class="rc-stars" id="st-agility"></div></div>
-              <div class="rc-skill"><span class="label">Stamina</span><div class="rc-stars" id="st-stamina"></div></div>
+        <div class="rc-inner-wrap">
+          <!-- Watermark Logo -->
+          <img id="pv-watermark" class="rc-watermark" crossorigin="anonymous" src="https://wsrv.nl/?url=https://i.ibb.co.com/FLyht7HF/LOGO-MNA-GEN-Z.png&w=400&h=400&fit=contain">
+          
+          <div class="rc-header">
+            <!-- Logo with CORS proxy -->
+            <img id="pv-logo" class="rc-logo" crossorigin="anonymous" src="https://wsrv.nl/?url=https://i.ibb.co.com/FLyht7HF/LOGO-MNA-GEN-Z.png&w=128&h=128&fit=contain">
+            <div class="rc-clubname">
+              <div id="pv-club1">MNA GEN-Z</div>
+              <span id="pv-club2">FUTSAL ACADEMY</span>
             </div>
-            <div class="rc-cat">
-              <h3>TEKNIK</h3>
-              <div class="rc-skill"><span class="label">Passing</span><div class="rc-stars" id="st-passing"></div></div>
-              <div class="rc-skill"><span class="label">Dribbling</span><div class="rc-stars" id="st-dribbling"></div></div>
-              <div class="rc-skill"><span class="label">Shooting</span><div class="rc-stars" id="st-shooting"></div></div>
-            </div>
-            <div class="rc-cat">
-              <h3>TAKTIK</h3>
-              <div class="rc-skill"><span class="label">Role of Play</span><div class="rc-stars" id="st-roleplay"></div></div>
-            </div>
-            <div class="rc-cat">
-              <h3>MENTAL</h3>
-              <div class="rc-skill"><span class="label">Motivation</span><div class="rc-stars" id="st-motivation"></div></div>
-              <div class="rc-skill"><span class="label">Teamwork</span><div class="rc-stars" id="st-teamwork"></div></div>
-              <div class="rc-skill"><span class="label">Discipline</span><div class="rc-stars" id="st-discipline"></div></div>
+            <!-- AUTO GRADING BADGE -->
+            <div class="rc-grade-badge">
+                <span class="rc-grade-label">NILAI AKHIR</span>
+                <span id="pv-grade-value" class="rc-grade-value">N/A</span>
             </div>
           </div>
           
-          <div class="rc-chart-area">
-            <div class="rc-chart-title">Analisis Atribut</div>
-            <div id="radarContainer"><canvas id="radarChart"></canvas></div>
+          <div class="rc-banner">
+            <h2 class="title">PLAYER REPORT</h2>
+            <div class="sub">PERFORMANCE EVALUATION</div>
+            <div class="rc-period" id="pv-period">TRIWULAN 1 MUSIM 2026</div>
+            <div class="rc-playername" id="pv-playername">—</div>
+            
+            <!-- Modern Sports Cutout Avatar -->
+            <div class="rc-photo-wrap">
+                <img class="rc-photo" crossorigin="anonymous" id="pv-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+            </div>
           </div>
-        </div>
+          
+          <div class="rc-class" id="pv-class">KATEGORI —</div>
+          
+          <div class="rc-body">
+            <div class="rc-skills-panel">
+              <div class="rc-skills-row">
+                <div class="rc-cat">
+                  <h3>FISIK</h3>
+                  <div class="rc-skill"><span class="label">Atletics</span><div class="rc-stars" id="st-atletics"></div></div>
+                  <div class="rc-skill"><span class="label">Agility</span><div class="rc-stars" id="st-agility"></div></div>
+                  <div class="rc-skill"><span class="label">Stamina</span><div class="rc-stars" id="st-stamina"></div></div>
+                </div>
+                <div class="rc-cat">
+                  <h3>TEKNIK</h3>
+                  <div class="rc-skill"><span class="label">Passing</span><div class="rc-stars" id="st-passing"></div></div>
+                  <div class="rc-skill"><span class="label">Dribbling</span><div class="rc-stars" id="st-dribbling"></div></div>
+                  <div class="rc-skill"><span class="label">Shooting</span><div class="rc-stars" id="st-shooting"></div></div>
+                </div>
+              </div>
+              <div class="rc-skills-row">
+                <div class="rc-cat">
+                  <h3>TAKTIK</h3>
+                  <div class="rc-skill"><span class="label">Role of Play</span><div class="rc-stars" id="st-roleplay"></div></div>
+                </div>
+                <div class="rc-cat">
+                  <h3>MENTAL</h3>
+                  <div class="rc-skill"><span class="label">Motivation</span><div class="rc-stars" id="st-motivation"></div></div>
+                  <div class="rc-skill"><span class="label">Teamwork</span><div class="rc-stars" id="st-teamwork"></div></div>
+                  <div class="rc-skill"><span class="label">Discipline</span><div class="rc-stars" id="st-discipline"></div></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="rc-chart-area">
+              <div class="rc-chart-title">Analisis Atribut</div>
+              <div id="radarContainer"><canvas id="radarChart"></canvas></div>
+            </div>
+          </div>
 
-        <div class="rc-footer">
-          <div class="rc-notes">
-            <h4><i data-lucide="message-square" class="h-4 w-4" style="display:inline; vertical-align:middle;"></i> Catatan Pelatih</h4>
-            <p id="pv-catatan">—</p>
-          </div>
-          <div class="rc-sign-area">
-            <div class="rc-sign-date" id="pv-tanggal">SBY, 24 Agustus 2026</div>
-            <div class="rc-sign-name" id="pv-pelatih">Coach</div>
-            <div class="rc-sign-label">PELATIH KEPALA</div>
+          <div class="rc-footer">
+            <div class="rc-notes">
+              <h4><i data-lucide="message-square" class="h-5 w-5" style="display:inline; vertical-align:middle;"></i> Catatan Pelatih</h4>
+              <p id="pv-catatan">—</p>
+            </div>
+            <div class="rc-sign-area">
+              <div class="rc-sign-date" id="pv-tanggal">SBY, 24 Agustus 2026</div>
+              <div class="rc-sign-name" id="pv-pelatih">Coach</div>
+              <div class="rc-sign-label">PELATIH KEPALA</div>
+            </div>
           </div>
         </div>
       </div>
@@ -544,8 +586,8 @@ const DEF_AVATAR = "https://ui-avatars.com/api/?name=Pemain&background=e2e8f0&co
 
 // TEMA WARNA MENGGUNAKAN CSS VARIABLES
 const THEMES = {
-    default: { p1: '#7c3aed', p2: '#3730a3', bg: '#ffffff', sec: '#f8fafc', txt: '#1b2a63', brd: '#e2e8f0', mut: '#64748b', acc: '#7c3aed' },
-    emerald: { p1: '#10b981', p2: '#047857', bg: '#ffffff', sec: '#f8fafc', txt: '#064e3b', brd: '#e2e8f0', mut: '#64748b', acc: '#10b981' },
+    default: { p1: '#7c3aed', p2: '#3730a3', bg: '#ffffff', sec: '#f4f4f5', txt: '#18181b', brd: '#e4e4e7', mut: '#71717a', acc: '#7c3aed' },
+    emerald: { p1: '#10b981', p2: '#047857', bg: '#ffffff', sec: '#f4f4f5', txt: '#064e3b', brd: '#e4e4e7', mut: '#71717a', acc: '#10b981' },
     rose:    { p1: '#e11d48', p2: '#be123c', bg: '#ffffff', sec: '#fff1f2', txt: '#881337', brd: '#fecdd3', mut: '#9f1239', acc: '#e11d48' },
     ocean:   { p1: '#0ea5e9', p2: '#1d4ed8', bg: '#ffffff', sec: '#f0f9ff', txt: '#1e3a8a', brd: '#e0f2fe', mut: '#3b82f6', acc: '#0ea5e9' },
     dark:    { p1: '#1e293b', p2: '#0f172a', bg: '#0f172a', sec: '#1e293b', txt: '#ffffff', brd: '#334155', mut: '#94a3b8', acc: '#b7ff28' }
@@ -636,7 +678,6 @@ function showToast(msg, type='success') {
 }
 
 function switchTab(tabId, btn) {
-    // Utilize Document View Transitions for smooth page morphing
     if (!document.startViewTransition) {
         updateTab(tabId, btn);
         return;
@@ -677,7 +718,7 @@ function changeTheme() {
             myRadarChart.data.datasets[0].pointBackgroundColor = t.p1;
             myRadarChart.data.datasets[0].pointHoverBorderColor = t.p1;
             
-            const textColor = key === 'dark' ? '#ffffff' : '#1b2a63';
+            const textColor = key === 'dark' ? '#ffffff' : '#18181b';
             if (Chart.defaults && Chart.defaults.color) Chart.defaults.color = textColor;
             if (myRadarChart.options.scales.r.pointLabels) myRadarChart.options.scales.r.pointLabels.color = textColor;
             myRadarChart.update();
@@ -690,17 +731,22 @@ function calcGrade() {
     for(let k in ratings) { sum += ratings[k]; count++; }
     const avg = count ? sum/count : 0;
     
-    let grade = "N/A", color = "var(--rc-text-muted)";
-    if(avg === 0) { grade = "N/A"; }
-    else if(avg >= 4.5) { grade = "A+"; color = "#10b981"; } 
-    else if(avg >= 4.0) { grade = "A";  color = "#3b82f6"; } 
-    else if(avg >= 3.0) { grade = "B";  color = "#f59e0b"; } 
-    else if(avg >= 2.0) { grade = "C";  color = "#f97316"; } 
-    else { grade = "D"; color = "#ef4444"; } 
+    // FIFA Style Rating Calculation (1-99 equivalent mapped from 5 stars)
+    // 5 stars = 95-99, 4 stars = 80-89, etc.
+    let gradeValue = Math.round(avg * 19.8);
+    if(gradeValue === 0) gradeValue = "N/A";
+    
+    let color = "var(--rc-text-muted)";
+    if(avg === 0) { color = "var(--rc-text-muted)"; }
+    else if(avg >= 4.5) { color = "#10b981"; } 
+    else if(avg >= 4.0) { color = "#3b82f6"; } 
+    else if(avg >= 3.0) { color = "#f59e0b"; } 
+    else if(avg >= 2.0) { color = "#f97316"; } 
+    else { color = "#ef4444"; } 
     
     const gVal = document.getElementById('pv-grade-value');
     if(gVal) {
-        gVal.innerText = grade;
+        gVal.innerText = gradeValue;
         gVal.style.color = color;
     }
 }
@@ -962,7 +1008,7 @@ function updateRadarChart() {
         myRadarChart.data.datasets[0].pointHoverBorderColor = tColor;
         myRadarChart.update();
     } else {
-        Chart.defaults.font.family = "'DM Sans', sans-serif";
+        Chart.defaults.font.family = "'Inter', sans-serif";
         myRadarChart = new Chart(ctx, {
             type: 'radar',
             data: {
@@ -979,9 +1025,9 @@ function updateRadarChart() {
                 scales: {
                     r: {
                         min: 0, max: 5, ticks: { display: false, stepSize: 1 },
-                        grid: { color: 'rgba(0,0,0,0.06)', circular: true },
+                        grid: { color: 'rgba(0,0,0,0.08)', circular: true },
                         angleLines: { color: 'rgba(0,0,0,0.1)' },
-                        pointLabels: { color: '#1b2a63', font: { size: 10, weight: '900' } }
+                        pointLabels: { color: '#18181b', font: { size: 10, weight: '700', family: "'Inter', sans-serif" } }
                     }
                 },
                 plugins: { legend: { display: false }, tooltip: { enabled: false } }
@@ -1039,23 +1085,30 @@ async function takeSnapshot() {
     if(typeof html2canvas === 'undefined') throw new Error("Modul html2canvas belum dimuat.");
     
     const card = document.getElementById('reportCard');
-    if(!card) throw new Error("Elemen rapor tidak ditemukan.");
+    const inner = card.querySelector('.rc-inner-wrap');
+    if(!inner) throw new Error("Elemen rapor tidak ditemukan.");
     
     // Tunggu font dimuat sepenuhnya agar tidak terjadi pergeseran baselines di html2canvas
     if (document.fonts && document.fonts.ready) {
         await document.fonts.ready;
     }
 
-    const oW = card.style.width, oT = card.style.transform;
-    card.style.width = '760px'; card.style.transform = 'none';
+    // Menggunakan inner wrap untuk snapshot menghindari masalah overflow hidden di html2canvas
+    const oW = inner.style.width, oT = inner.style.transform;
+    inner.style.width = '760px'; inner.style.transform = 'none';
     window.scrollTo(0,0);
 
-    const canvas = await html2canvas(card, {
+    const canvas = await html2canvas(inner, {
         scale: 2, backgroundColor: null, useCORS: true, allowTaint: false,
-        width: 760, windowWidth: 760, scrollY: 0, logging: false
+        width: 760, windowWidth: 760, scrollY: 0, logging: false,
+        onclone: (clonedDoc) => {
+            // Hilangkan box-shadow saat dirender di html2canvas agar ukurannya pas
+            const clonedInner = clonedDoc.querySelector('.rc-inner-wrap');
+            if(clonedInner) clonedInner.style.boxShadow = 'none';
+        }
     });
 
-    card.style.width = oW; card.style.transform = oT;
+    inner.style.width = oW; inner.style.transform = oT;
     return canvas;
 }
 
