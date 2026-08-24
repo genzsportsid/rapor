@@ -11,8 +11,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-<!-- Menggunakan font khusus olahraga/teknologi yang lebih kaku dan tidak bermasalah di html2canvas -->
-<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<!-- Memakai font Inter (paling stabil di html2canvas) dengan ketebalan 900 untuk efek sporty -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
 <style>
   :root {
@@ -41,7 +41,7 @@
     color: #f6f8ff; min-height: 100vh; overflow-x: hidden;
   }
 
-  /* LOADER ELEGAN (ANTI-STUCK) */
+  /* LOADER ELEGAN */
   #loadingScreen {
     position: fixed; inset: 0; z-index: 9999; background: var(--ink);
     display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
@@ -80,8 +80,8 @@
     padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;
   }
   .topbar-brand { display: flex; flex-direction: column; }
-  .topbar-brand h1 { font-family: 'Teko', sans-serif; font-size: 26px; margin: 0; color: #fff; font-weight: 700; letter-spacing: 1px; line-height: 1; text-transform: uppercase; }
-  .topbar-brand span { font-size: 10px; color: var(--green); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .topbar-brand h1 { font-family: 'Inter', sans-serif; font-size: 22px; margin: 0; color: #fff; font-weight: 900; letter-spacing: -0.5px; line-height: 24px; text-transform: uppercase; }
+  .topbar-brand span { font-size: 10px; color: var(--green); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px;}
   .api-status {
     display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
     background: rgba(183, 255, 40, 0.1); color: var(--green); padding: 6px 14px; border-radius: 20px;
@@ -186,21 +186,21 @@
   .star-picker span:hover { color: #fcd34d; transform: scale(1.2); }
   .star-picker span.active { color: var(--gold); }
 
-  /* REPORT CARD PREVIEW (RESOLUSI TERKUNCI UNTUK PDF HD) */
+  /* REPORT CARD PREVIEW - FULLY OPTIMIZED FOR HTML2CANVAS */
   .preview-wrapper { width: 100%; overflow-x: auto; padding-bottom: 20px; display: flex; justify-content: center; }
   .preview-wrapper::-webkit-scrollbar { display: none; }
   
   .report-card {
     width: 760px; min-width: 760px; 
     border-radius: 20px; 
-    /* Gunakan inner-wrap untuk menghindari masalah overflow hidden di html2canvas */
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); 
     background: transparent; color: var(--rc-text); transition: all 0.5s ease;
     font-family: 'Inter', sans-serif;
   }
   
+  /* CRITICAL: No overflow:hidden to prevent clip-path bugs in html2canvas */
   .rc-inner-wrap {
-    width: 100%; border-radius: 20px; overflow: hidden; background: var(--rc-bg); position: relative;
+    width: 100%; border-radius: 20px; background: var(--rc-bg); position: relative;
     border: 2px solid var(--rc-border);
   }
 
@@ -213,66 +213,63 @@
     width: 400px;
     height: 400px;
     object-fit: contain;
-    opacity: 0.03;
+    opacity: 0.04;
     pointer-events: none;
     z-index: 0;
   }
   
-  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 20px; background: var(--rc-bg); border-bottom: 2px solid var(--rc-sec); position: relative; z-index: 1;}
+  /* Explicit border radius per corner to simulate overflow hidden */
+  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 20px; background: var(--rc-bg); border-bottom: 2px solid var(--rc-sec); position: relative; z-index: 1; border-top-left-radius: 18px; border-top-right-radius: 18px;}
   .rc-logo { width: 72px; height: 72px; border-radius: 12px; object-fit: contain; background: #fff; border: 1px solid var(--rc-border); padding: 4px; z-index: 2;}
-  .rc-clubname { font-weight: 800; color: var(--rc-text); text-transform: uppercase; line-height: 1.1; font-size: 26px; z-index: 2;}
-  .rc-clubname span { display: block; font-size: 13px; font-weight: 700; color: var(--rc-accent); margin-top: 4px; line-height: 1.1; letter-spacing: 0.5px;}
+  /* Explicit line-heights in PX to fix html2canvas text shifting */
+  .rc-clubname { font-weight: 900; color: var(--rc-text); text-transform: uppercase; line-height: 28px; font-size: 26px; z-index: 2; letter-spacing: -0.5px;}
+  .rc-clubname span { display: block; font-size: 13px; font-weight: 700; color: var(--rc-accent); margin-top: 4px; line-height: 14px; letter-spacing: 0.5px;}
   
-  .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--rc-sec); padding: 10px 20px; border-radius: 16px; border: 1px solid var(--rc-border);}
-  .rc-grade-label { font-size: 11px; font-weight: 800; color: var(--rc-text-muted); line-height: 1; text-transform: uppercase; margin-bottom: 4px;}
-  .rc-grade-value { font-family: 'Teko', sans-serif; font-size: 46px; font-weight: 700; line-height: 0.8; color: var(--rc-text-muted); transition: color 0.3s ease;}
+  .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--rc-sec); padding: 12px 20px; border-radius: 16px; border: 1px solid var(--rc-border);}
+  .rc-grade-label { font-size: 11px; font-weight: 800; color: var(--rc-text-muted); line-height: 12px; text-transform: uppercase; margin-bottom: 6px;}
+  .rc-grade-value { font-family: 'Inter', sans-serif; font-size: 46px; font-weight: 900; line-height: 46px; color: var(--rc-text-muted); letter-spacing: -1px;}
 
-  .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 32px; z-index: 1; overflow: hidden;}
-  /* Sports Graphic Overlay */
-  .rc-banner::after {
-    content: ''; position: absolute; top: 0; right: -50px; width: 300px; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1));
-    transform: skewX(-20deg);
-  }
+  /* Removed skew transform from background to prevent bounding box issues in canvas */
+  .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 40px; z-index: 1;}
   
-  .rc-banner h2 { font-family: 'Teko', sans-serif; color: var(--green); font-size: 56px; margin: 0; font-weight: 600; line-height: 0.8; text-transform: uppercase;}
-  .rc-banner .sub { font-weight: 600; font-size: 16px; opacity: 0.9; line-height: 1.2; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
-  .rc-period { margin-top: 16px; font-weight: 700; font-size: 12px; background: rgba(0,0,0,0.25); display: inline-block; padding: 6px 10px; border-radius: 6px; line-height: 1; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1);}
-  .rc-playername { margin-top: 20px; color: #fff; font-weight: 800; font-size: 30px; line-height: 1.1; text-transform: uppercase; width: 65%; position: relative; z-index: 2;}
+  /* CRITICAL: Explicit PX line-heights and safe fonts */
+  .rc-banner h2 { font-family: 'Inter', sans-serif; color: var(--green); font-size: 48px; margin: 0 0 8px 0; font-weight: 900; line-height: 48px; text-transform: uppercase; letter-spacing: -1px;}
+  .rc-banner .sub { font-weight: 700; font-size: 16px; opacity: 0.9; line-height: 20px; margin-top: 0; text-transform: uppercase; letter-spacing: 1px;}
+  .rc-period { margin-top: 16px; font-weight: 700; font-size: 12px; background: rgba(0,0,0,0.25); display: inline-block; padding: 8px 12px; border-radius: 6px; line-height: 14px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1);}
+  .rc-playername { margin-top: 24px; color: #fff; font-weight: 900; font-size: 28px; line-height: 32px; text-transform: uppercase; width: 65%; position: relative; z-index: 2;}
 
   .rc-photo-wrap { position: absolute; right: 40px; bottom: 0; width: 180px; height: 180px; z-index: 2; display: flex; align-items: flex-end;}
-  /* Cutout style for sports feel */
   .rc-photo { width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));}
 
-  /* Clear fixes for layout */
-  .rc-class { padding: 24px 32px 0px; font-family: 'Teko', sans-serif; font-weight: 600; color: var(--rc-text); font-size: 28px; background: var(--rc-bg); line-height: 1; position: relative; z-index: 1; text-transform: uppercase;}
+  /* Fixed KATEGORI Cut Off with solid padding */
+  .rc-class { padding: 24px 32px 12px; font-family: 'Inter', sans-serif; font-weight: 900; color: var(--rc-text); font-size: 24px; background: var(--rc-bg); line-height: 28px; position: relative; z-index: 1; text-transform: uppercase; letter-spacing: -0.5px;}
 
-  .rc-body { padding: 16px 32px 32px; display: flex; gap: 24px; background: var(--rc-bg); position: relative; z-index: 1;}
+  .rc-body { padding: 12px 32px 32px; display: flex; gap: 24px; background: var(--rc-bg); position: relative; z-index: 1;}
   
   .rc-skills-panel { flex: 1; display: flex; flex-direction: column; gap: 16px; }
   .rc-skills-row { display: flex; gap: 16px; }
   
   .rc-cat { flex: 1; background: var(--rc-sec); border-radius: 12px; padding: 16px; border: 1px solid var(--rc-border); }
-  .rc-cat h3 { font-family: 'Teko', sans-serif; color: var(--rc-text); font-weight: 600; font-size: 20px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-border); padding-bottom: 4px; line-height: 1; text-transform: uppercase;}
-  .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; line-height: 1; }
-  .rc-skill .label { color: var(--rc-text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; line-height: 1.2; }
-  .rc-stars { font-size: 14px; display: flex; align-items: center; gap: 2px;}
+  .rc-cat h3 { font-family: 'Inter', sans-serif; color: var(--rc-text); font-weight: 900; font-size: 18px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-border); padding-bottom: 8px; line-height: 20px; text-transform: uppercase; letter-spacing: -0.5px;}
+  .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; line-height: 16px; }
+  .rc-skill .label { color: var(--rc-text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; line-height: 14px; }
+  .rc-stars { font-size: 14px; display: flex; align-items: center; gap: 2px; line-height: 14px;}
   .rc-stars .on { color: var(--gold); }
   .rc-stars .off { color: #d4d4d8; }
 
   .rc-chart-area { width: 220px; flex-shrink: 0; background: var(--rc-sec); border-radius: 12px; padding: 16px; border: 1px solid var(--rc-border); display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .rc-chart-title { font-family: 'Teko', sans-serif; font-size: 20px; font-weight: 600; color: var(--rc-text); text-transform: uppercase; margin-bottom: 10px; line-height: 1;}
+  .rc-chart-title { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 900; color: var(--rc-text); text-transform: uppercase; margin-bottom: 12px; line-height: 20px; letter-spacing: -0.5px;}
   #radarContainer { width: 180px; height: 180px; position:relative; }
 
-  .rc-footer { background: var(--rc-bg); padding: 24px 32px; display: flex; gap: 24px; border-top: 2px solid var(--rc-sec); position: relative; z-index: 1;}
+  .rc-footer { background: var(--rc-bg); padding: 24px 32px; display: flex; gap: 24px; border-top: 2px solid var(--rc-sec); position: relative; z-index: 1; border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;}
   .rc-notes { flex: 1; }
-  .rc-notes h4 { font-family: 'Teko', sans-serif; color: var(--rc-text); font-size: 20px; font-weight: 600; margin: 0 0 8px; display:flex; align-items:center; gap:6px; line-height: 1;}
-  .rc-notes p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--rc-text-muted); background: var(--rc-sec); padding: 16px; border-radius: 12px; border: 1px solid var(--rc-border); min-height: 80px; font-weight: 500;}
+  .rc-notes h4 { font-family: 'Inter', sans-serif; color: var(--rc-text); font-size: 18px; font-weight: 900; margin: 0 0 12px; display:flex; align-items:center; gap:6px; line-height: 20px; letter-spacing: -0.5px;}
+  .rc-notes p { margin: 0; font-size: 13px; line-height: 22px; color: var(--rc-text-muted); background: var(--rc-sec); padding: 16px; border-radius: 12px; border: 1px solid var(--rc-border); min-height: 80px; font-weight: 500;}
   
   .rc-sign-area { width: 220px; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
-  .rc-sign-date { font-size: 11px; color: var(--rc-text-muted); font-weight: 600; margin-bottom: 30px; line-height: 1.2; }
-  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--rc-text); border-bottom: 2px solid var(--rc-border); padding-bottom: 4px; width: 100%; margin-bottom:6px; line-height: 1.2;}
-  .rc-sign-label { font-size: 10px; color: var(--rc-text-muted); font-weight: 700; line-height: 1.2; text-transform: uppercase;}
+  .rc-sign-date { font-size: 11px; color: var(--rc-text-muted); font-weight: 600; margin-bottom: 30px; line-height: 14px; }
+  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--rc-text); border-bottom: 2px solid var(--rc-border); padding-bottom: 6px; width: 100%; margin-bottom:6px; line-height: 18px;}
+  .rc-sign-label { font-size: 10px; color: var(--rc-text-muted); font-weight: 700; line-height: 14px; text-transform: uppercase;}
 
   /* EXPORT ACTIONS */
 
@@ -609,7 +606,7 @@ const DB = {
 function safeStyle(el, prop, val) { if(el && el.style) el.style[prop] = val; }
 
 // ==========================================
-// INIT & CORE FUNCTIONS (FAILSAFE LOADER)
+// INIT & CORE FUNCTIONS
 // ==========================================
 window.addEventListener("load", () => {
     const failsafe = setTimeout(() => { 
@@ -732,7 +729,6 @@ function calcGrade() {
     const avg = count ? sum/count : 0;
     
     // FIFA Style Rating Calculation (1-99 equivalent mapped from 5 stars)
-    // 5 stars = 95-99, 4 stars = 80-89, etc.
     let gradeValue = Math.round(avg * 19.8);
     if(gradeValue === 0) gradeValue = "N/A";
     
@@ -1102,9 +1098,10 @@ async function takeSnapshot() {
         scale: 2, backgroundColor: null, useCORS: true, allowTaint: false,
         width: 760, windowWidth: 760, scrollY: 0, logging: false,
         onclone: (clonedDoc) => {
-            // Hilangkan box-shadow saat dirender di html2canvas agar ukurannya pas
             const clonedInner = clonedDoc.querySelector('.rc-inner-wrap');
-            if(clonedInner) clonedInner.style.boxShadow = 'none';
+            if(clonedInner) {
+                clonedInner.style.boxShadow = 'none'; // Buang bayangan saat dicetak
+            }
         }
     });
 
