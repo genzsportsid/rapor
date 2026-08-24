@@ -35,12 +35,13 @@
     overflow-x: hidden;
   }
 
-  /* LOADER ELEGAN */
+  /* LOADER ELEGAN (ANTI-STUCK) */
   #loadingScreen {
     position: fixed; inset: 0; z-index: 9999;
     background: var(--ink);
     display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
     color: var(--green); font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
   }
   .loader-ring {
     width: 50px; height: 50px; border: 3px solid rgba(183, 255, 40, 0.1);
@@ -87,11 +88,9 @@
   /* RESPONSIVE BEHAVIOR */
   @media (max-width: 1023px) {
     .dashboard { padding: 16px; gap: 16px; }
-    /* Scroll Menu Horizontal di HP */
     .sidebar-menu { 
         display: flex; overflow-x: auto; gap: 8px; width: 100%; 
         padding-bottom: 8px; margin-bottom: 4px;
-        /* Sembunyikan scrollbar */
         -ms-overflow-style: none; scrollbar-width: none;
     }
     .sidebar-menu::-webkit-scrollbar { display: none; }
@@ -130,8 +129,8 @@
   }
   
   .section-title { 
-      font-size: 16px; color: #fff; font-weight: 800; margin: 0; 
-      display: flex; align-items: center; gap: 10px; 
+      font-size: 16px; color: #fff; font-weight: 800; margin: 0 0 20px; 
+      display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 12px; 
   }
   .hint { font-size: 12px; color: #94a3b8; margin: 0 0 16px; line-height: 1.5; }
 
@@ -171,7 +170,6 @@
 
   /* PLAYER LIST */
   .player-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
-  /* Styling scrollbar untuk list */
   .player-list::-webkit-scrollbar { width: 4px; }
   .player-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
   .player-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
@@ -199,19 +197,27 @@
 
   /* REPORT CARD PREVIEW (STRICTLY CONSTRAINED FOR PDF) */
   .preview-wrapper { width: 100%; overflow-x: auto; padding-bottom: 20px; display: flex; justify-content: center; }
-  /* Sembunyikan scrollbar di wrapper mobile agar lebih bersih */
   .preview-wrapper::-webkit-scrollbar { display: none; }
   
   .report-card {
     width: 760px; min-width: 760px; background: #ffffff; border-radius: 24px; overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); color: #1e293b;
     position: relative;
+    /* Transisi tema warna rapor */
+    transition: background 0.5s ease;
   }
   
-  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 16px; background: #fff; }
-  .rc-logo { width: 64px; height: 64px; border-radius: 50%; object-fit: contain; border: 2px solid var(--navy); background: #fff; }
-  .rc-clubname { font-weight: 900; color: var(--navy); text-transform: uppercase; line-height: 1.1; letter-spacing: 0.5px; font-size: 24px; }
+  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 16px; background: #fff; position: relative;}
+  .rc-logo { width: 64px; height: 64px; border-radius: 50%; object-fit: contain; border: 2px solid var(--navy); background: #fff; z-index: 2;}
+  .rc-clubname { font-weight: 900; color: var(--navy); text-transform: uppercase; line-height: 1.1; letter-spacing: 0.5px; font-size: 24px; z-index: 2;}
   .rc-clubname span { display: block; font-size: 14px; font-weight: 800; color: var(--purple1); margin-top: 4px; }
+  
+  /* LENCANA NILAI (GRADE BADGE) */
+  .rc-grade-badge {
+      margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; justify-content: center;
+  }
+  .rc-grade-label { font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
+  .rc-grade-value { font-size: 38px; font-weight: 900; line-height: 1; color: #cbd5e1; transition: color 0.3s ease;}
 
   .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 48px; }
   .rc-banner h2 { color: var(--green); font-size: 48px; margin: 0; font-weight: 900; letter-spacing: 1px; line-height: 1; }
@@ -252,8 +258,8 @@
   /* EXPORT ACTIONS */
   .export-panel { background: var(--panel-bg); border-radius: 1.5rem; padding: 24px; border: 1px solid var(--line); margin-top: 24px; }
   .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .btn-wa{background:rgba(37, 211, 102, 0.15);color:#25D366; border-color:rgba(37, 211, 102, 0.3); font-size:14px; padding:14px;}
-  .btn-wa:hover{background:#25D366; color:#fff;}
+  .btn-wa { background: rgba(37, 211, 102, 0.15); color: #25D366; border-color: rgba(37, 211, 102, 0.3); font-size: 14px; padding: 14px; }
+  .btn-wa:hover { background: #25D366; color: #fff; }
 </style>
 </head>
 <body>
@@ -270,7 +276,7 @@
 <div class="topbar">
   <div class="topbar-brand">
     <h1>🏟️ Rapor Akademi</h1>
-    <span>EDISI PROFESIONAL</span>
+    <span>EDISI CLAUDE PRO</span>
   </div>
   <div class="api-status" id="apiStatus">
     <i data-lucide="wifi" class="h-4 w-4"></i> Standby
@@ -283,7 +289,7 @@
   <aside class="sidebar-menu">
     <button class="menu-btn active" onclick="switchTab('tab-db', this)"><i data-lucide="users" class="h-5 w-5"></i> Database Pemain</button>
     <button class="menu-btn" onclick="switchTab('tab-rapor', this)"><i data-lucide="clipboard-edit" class="h-5 w-5"></i> Edit Rapor</button>
-    <button class="menu-btn" onclick="switchTab('tab-settings', this)"><i data-lucide="settings" class="h-5 w-5"></i> Pengaturan Klub</button>
+    <button class="menu-btn" onclick="switchTab('tab-settings', this)"><i data-lucide="sliders" class="h-5 w-5"></i> Pengaturan Global</button>
   </aside>
 
   <!-- EDITOR AREA -->
@@ -301,7 +307,7 @@
         <h3 class="font-bold text-sm text-white mb-3 flex items-center gap-2"><i data-lucide="list" class="h-4 w-4"></i> Daftar Pemain</h3>
         <div class="field relative">
             <i data-lucide="search" class="absolute left-4 top-3.5 h-4 w-4 text-slate-400"></i>
-            <input type="text" id="searchPlayer" placeholder="Cari nama pemain..." style="padding-left:42px;">
+            <input type="text" id="searchPlayer" placeholder="Cari nama pemain..." style="padding-left:42px;" onkeyup="filterPlayers()">
         </div>
         <div id="playerListContainer" class="player-list"></div>
       </div>
@@ -314,7 +320,7 @@
         <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
             <h2 class="section-title border-0 mb-0 pb-0"><i data-lucide="pen-tool" class="h-5 w-5 text-purple-400"></i> Pengisian Rapor</h2>
             <div id="reportStatus">
-                <span class="text-slate-400 bg-slate-800 px-3 py-1 rounded-full text-xs font-bold border border-slate-700">DRAFT</span>
+                <span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest"><i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG</span>
             </div>
         </div>
         
@@ -327,19 +333,19 @@
 
         <div class="grid-2">
           <div class="field"><label>Triwulan</label>
-            <select id="inTriwulan">
+            <select id="inTriwulan" onchange="checkSavedReport()">
               <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
             </select>
           </div>
-          <div class="field"><label>Tahun / Musim</label><input type="number" id="inMusim"></div>
+          <div class="field"><label>Tahun / Musim</label><input type="number" id="inMusim" onchange="checkSavedReport()"></div>
         </div>
 
         <div id="ratingInputs"></div>
 
-        <div class="field mt-5"><label>Catatan Pelatih</label><textarea id="inCatatan" placeholder="Ketik evaluasi di sini..."></textarea></div>
+        <div class="field mt-5"><label>Catatan Pelatih</label><textarea id="inCatatan" placeholder="Ketik evaluasi di sini..." oninput="triggerPreviewUpdate()"></textarea></div>
         <div class="grid-2">
-          <div class="field"><label>Nama Pelatih</label><input type="text" id="inPelatih" placeholder="cth. Coach Fulan"></div>
-          <div class="field"><label>Tanggal Rapor</label><input type="date" id="inTanggal"></div>
+          <div class="field"><label>Nama Pelatih</label><input type="text" id="inPelatih" placeholder="cth. Coach Fulan" oninput="triggerPreviewUpdate()"></div>
+          <div class="field"><label>Tanggal Rapor</label><input type="date" id="inTanggal" oninput="triggerPreviewUpdate()"></div>
         </div>
         
         <div class="flex gap-3 mt-4">
@@ -352,11 +358,21 @@
     <!-- TAB 3: PENGATURAN -->
     <div id="tab-settings" class="tab-content">
       <div class="card-section">
-        <h2 class="section-title mb-5 pb-4"><i data-lucide="sliders" class="h-5 w-5 text-blue-400"></i> Pengaturan Global</h2>
-        <div class="field"><label>Nama Baris 1</label><input type="text" id="inClub1"></div>
-        <div class="field"><label>Nama Baris 2</label><input type="text" id="inClub2"></div>
-        <div class="field"><label>Instagram</label><input type="text" id="inIg"></div>
-        <div class="field"><label>No WA / Telp</label><input type="text" id="inPhone"></div>
+        <h2 class="section-title mb-5 pb-4"><i data-lucide="palette" class="h-5 w-5 text-blue-400"></i> Pengaturan Global</h2>
+        
+        <div class="field"><label>Tema Warna Rapor</label>
+            <select id="inTheme" onchange="changeTheme()">
+                <option value="default">Ungu Akademi (Default)</option>
+                <option value="emerald">Hijau Emerald</option>
+                <option value="rose">Merah Merona (Rose)</option>
+                <option value="ocean">Biru Samudra (Ocean)</option>
+                <option value="dark">Mode Gelap Keren (Dark Neon)</option>
+            </select>
+        </div>
+
+        <div class="field"><label>Nama Baris 1</label><input type="text" id="inClub1" oninput="triggerPreviewUpdate()"></div>
+        <div class="field"><label>Nama Baris 2</label><input type="text" id="inClub2" oninput="triggerPreviewUpdate()"></div>
+        <div class="field"><label>No WA / Telp Klub</label><input type="text" id="inPhone" oninput="triggerPreviewUpdate()"></div>
         <button class="btn btn-secondary" style="width:100%; margin-top:8px;" onclick="saveSettings()"><i data-lucide="save" class="h-4 w-4"></i> Simpan Pengaturan</button>
         
         <hr class="border-white/10 my-8">
@@ -377,6 +393,11 @@
           <div class="rc-clubname">
             <div id="pv-club1">MNA GEN-Z</div>
             <span id="pv-club2">FUTSAL ACADEMY</span>
+          </div>
+          <!-- AUTO GRADING BADGE -->
+          <div class="rc-grade-badge">
+              <span class="rc-grade-label">NILAI AKHIR</span>
+              <span id="pv-grade-value" class="rc-grade-value">N/A</span>
           </div>
         </div>
         
@@ -460,6 +481,15 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwM
 const DEF_LOGO = "https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png";
 const DEF_AVATAR = "https://ui-avatars.com/api/?name=Pemain&background=e2e8f0&color=475569&size=200";
 
+// TEMA WARNA (THEME SWITCHER)
+const THEMES = {
+    default: { p1: '#7c3aed', p2: '#3730a3', text: '#fff' },
+    emerald: { p1: '#10b981', p2: '#047857', text: '#fff' },
+    rose:    { p1: '#e11d48', p2: '#be123c', text: '#fff' },
+    ocean:   { p1: '#0ea5e9', p2: '#1d4ed8', text: '#fff' },
+    dark:    { p1: '#1e293b', p2: '#0f172a', text: '#b7ff28' }
+};
+
 // State
 let players = [];
 let selPlayer = null;
@@ -474,8 +504,14 @@ const DB = {
 };
 
 // ==========================================
-// INIT & CORE FUNCTIONS
+// INIT & CORE FUNCTIONS (FAILSAFE LOADER)
 // ==========================================
+// Loader akan hilang maksimal dalam 4 detik walau gagal muat
+const failsafeTimeout = setTimeout(() => {
+    hideLoader();
+    showToast("Sistem dimuat dalam Mode Offline/Terbatas.", "error");
+}, 4000);
+
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.jsPDF = window.jspdf.jsPDF;
@@ -485,45 +521,36 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('inTanggal').valueAsDate = new Date();
         document.getElementById('inMusim').value = new Date().getFullYear();
 
-        // Setup Event Listeners untuk Live Preview & Perubahan Periode
-        const inputsToWatch = ['inCatatan', 'inPelatih', 'inTanggal', 'inClub1', 'inClub2'];
-        inputsToWatch.forEach(id => {
-            document.getElementById(id).addEventListener('input', triggerPreviewUpdate);
-        });
-        
-        // Event Listener Khusus: Jika Triwulan atau Musim berubah, LOAD DATA LAMA!
-        document.getElementById('inTriwulan').addEventListener('change', checkSavedReport);
-        document.getElementById('inMusim').addEventListener('change', checkSavedReport);
-        document.getElementById('searchPlayer').addEventListener('input', filterPlayers);
-
         // Load Settings
-        const s = DB.get('pro_settings') || { club1: 'MNA GEN-Z', club2: 'FUTSAL ACADEMY' };
+        const s = DB.get('pro_settings') || { club1: 'MNA GEN-Z', club2: 'FUTSAL ACADEMY', theme: 'default' };
         document.getElementById('inClub1').value = s.club1;
         document.getElementById('inClub2').value = s.club2;
+        document.getElementById('inTheme').value = s.theme || 'default';
+        changeTheme(); // Apply theme
         
         // Render UI
         buildStarsUI();
         players = DB.get('pro_players') || [];
         renderPlayers(players);
         
-        // Lepas layar loading dengan halus
-        setTimeout(() => {
-            document.getElementById('loadingScreen').style.opacity = '0';
-            document.getElementById('loadingScreen').style.transition = 'opacity 0.5s ease';
-            setTimeout(() => {
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'flex';
-                triggerPreviewUpdate(); // Render awal
-            }, 500);
-        }, 800);
+        // Lepas layar loading dengan normal
+        clearTimeout(failsafeTimeout);
+        setTimeout(() => { hideLoader(); triggerPreviewUpdate(); }, 600);
 
     } catch(err) {
-        alert("Gagal memuat aplikasi: " + err.message);
-        document.getElementById('loadingText').innerText = "SYSTEM ERROR";
+        clearTimeout(failsafeTimeout);
+        hideLoader();
+        showToast("Terjadi kesalahan sistem: " + err.message, "error");
     }
 });
 
-// Toast Notif Animasi
+function hideLoader() {
+    const ls = document.getElementById('loadingScreen');
+    ls.style.opacity = '0';
+    ls.style.visibility = 'hidden';
+    document.getElementById('mainApp').style.display = 'flex';
+}
+
 function showToast(msg, type='success') {
     const c = document.getElementById('toast-container');
     const t = document.createElement('div');
@@ -534,12 +561,86 @@ function showToast(msg, type='success') {
     setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(), 400); }, 3500);
 }
 
-// Navigasi Tab Modern
 function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     btn.classList.add('active');
+}
+
+// ==========================================
+// TEMA WARNA & AUTO GRADING
+// ==========================================
+function changeTheme() {
+    const key = document.getElementById('inTheme').value;
+    const t = THEMES[key] || THEMES.default;
+    document.documentElement.style.setProperty('--purple1', t.p1);
+    document.documentElement.style.setProperty('--blue2', t.p2);
+    
+    // Khusus tema Dark, ganti warna text title rapor
+    const titleObj = document.querySelector('.rc-banner h2.title');
+    if(key === 'dark') {
+        titleObj.style.color = t.text;
+        document.getElementById('reportCard').style.backgroundColor = "#0f172a";
+        document.querySelector('.rc-header').style.backgroundColor = "#0f172a";
+        document.querySelector('.rc-clubname').style.color = "#fff";
+        document.querySelector('.rc-body').style.backgroundColor = "#1e293b";
+        document.querySelectorAll('.rc-cat').forEach(el => {el.style.backgroundColor = "#0f172a"; el.style.borderColor = "#334155";});
+        document.querySelectorAll('.rc-cat h3').forEach(el => {el.style.color = "#fff"; el.style.borderBottomColor = "#334155";});
+        document.querySelectorAll('.rc-skill .label').forEach(el => {el.style.color = t.text;});
+        document.querySelector('.rc-chart-area').style.backgroundColor = "#0f172a";
+        document.querySelector('.rc-chart-area').style.borderColor = "#334155";
+        document.querySelector('.rc-chart-title').style.color = "#fff";
+        document.querySelector('.rc-footer').style.backgroundColor = "#0f172a";
+        document.querySelector('.rc-footer').style.borderColor = "#334155";
+        document.querySelector('.rc-notes p').style.backgroundColor = "#1e293b";
+        document.querySelector('.rc-notes p').style.borderColor = "#334155";
+        document.querySelector('.rc-notes p').style.color = "#cbd5e1";
+        document.querySelector('.rc-sign').style.backgroundColor = "#1e293b";
+        document.querySelector('.rc-sign-name').style.color = "#fff";
+        document.querySelector('.rc-sign-name').style.borderBottomColor = "#334155";
+        document.querySelector('.rc-class').style.color = "#fff";
+    } else {
+        // Reset to Light Report Card
+        titleObj.style.color = 'var(--green)';
+        document.getElementById('reportCard').style.backgroundColor = "#ffffff";
+        document.querySelector('.rc-header').style.backgroundColor = "#ffffff";
+        document.querySelector('.rc-clubname').style.color = "var(--navy)";
+        document.querySelector('.rc-body').style.backgroundColor = "#f8fafc";
+        document.querySelectorAll('.rc-cat').forEach(el => {el.style.backgroundColor = "#ffffff"; el.style.borderColor = "#e2e8f0";});
+        document.querySelectorAll('.rc-cat h3').forEach(el => {el.style.color = "var(--navy)"; el.style.borderBottomColor = "#f1f5f9";});
+        document.querySelectorAll('.rc-skill .label').forEach(el => {el.style.color = "var(--purple1)";});
+        document.querySelector('.rc-chart-area').style.backgroundColor = "#ffffff";
+        document.querySelector('.rc-chart-area').style.borderColor = "#e2e8f0";
+        document.querySelector('.rc-chart-title').style.color = "var(--navy)";
+        document.querySelector('.rc-footer').style.backgroundColor = "#ffffff";
+        document.querySelector('.rc-footer').style.borderColor = "#e2e8f0";
+        document.querySelector('.rc-notes p').style.backgroundColor = "#f8fafc";
+        document.querySelector('.rc-notes p').style.borderColor = "#cbd5e1";
+        document.querySelector('.rc-notes p').style.color = "#475569";
+        document.querySelector('.rc-sign').style.backgroundColor = "#ffffff";
+        document.querySelector('.rc-sign-name').style.color = "var(--navy)";
+        document.querySelector('.rc-sign-name').style.borderBottomColor = "#cbd5e1";
+        document.querySelector('.rc-class').style.color = "var(--navy)";
+    }
+}
+
+function calcGrade() {
+    let sum = 0, count = 0;
+    for(let k in ratings) { sum += ratings[k]; count++; }
+    const avg = count ? sum/count : 0;
+    
+    let grade = "N/A", color = "#cbd5e1"; // default
+    if(avg === 0) { grade = "N/A"; color = "#cbd5e1"; }
+    else if(avg >= 4.5) { grade = "A+"; color = "#10b981"; }
+    else if(avg >= 4.0) { grade = "A";  color = "#3b82f6"; }
+    else if(avg >= 3.0) { grade = "B";  color = "#f59e0b"; }
+    else if(avg >= 2.0) { grade = "C";  color = "#f97316"; }
+    else { grade = "D"; color = "#ef4444"; }
+    
+    const gVal = document.getElementById('pv-grade-value');
+    gVal.innerText = grade;
+    gVal.style.color = color;
 }
 
 // ==========================================
@@ -630,7 +731,6 @@ function selectPlayer(id) {
     }
 }
 
-// Fungsi mengecek apakah rapor untuk pemain ini di periode ini sudah ada di Memory HP
 function checkSavedReport() {
     if(!selPlayer) return;
     
@@ -641,15 +741,13 @@ function checkSavedReport() {
     const statusBadge = document.getElementById('reportStatus');
     
     if(savedData) {
-        // Load data yang ada
         ratings = savedData.ratings || {};
         document.getElementById('inCatatan').value = savedData.cat || "";
         statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
         showToast("Memuat draf rapor tersimpan.");
     } else {
-        // Reset jadi 0
         resetFormRapor(true); 
-        statusBadge.innerHTML = '<span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest"><i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Draf Baru</span>';
+        statusBadge.innerHTML = '<span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest"><i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG</span>';
     }
     
     updateStarsUI();
@@ -703,14 +801,12 @@ window.setRate = function(key, val) {
 function updateStarsUI() {
     skillKeys.forEach(k => {
         const val = ratings[k] || 0;
-        // Update Editor UI
         const picker = document.querySelector(`.star-picker[data-key="${k}"]`);
         if(picker) {
             picker.querySelectorAll('span').forEach((sp, i) => {
                 sp.classList.toggle('active', i < val);
             });
         }
-        // Update Preview Card UI
         const pv = document.getElementById(`st-${k}`);
         if(pv) {
             pv.innerHTML = '';
@@ -747,6 +843,7 @@ function triggerPreviewUpdate() {
     document.getElementById('pv-pelatih').innerText = document.getElementById('inPelatih').value || "Coach";
 
     updateRadarChart();
+    calcGrade();
 }
 
 function updateRadarChart() {
@@ -763,8 +860,14 @@ function updateRadarChart() {
     const dTaktik = ratings.roleplay || 0;
     const dMental = calcAvg(['motivation','teamwork','discipline']);
 
+    // Ambil warna tema
+    const pColor = getComputedStyle(document.documentElement).getPropertyValue('--purple1').trim() || '#7c3aed';
+
     if(myRadarChart) {
         myRadarChart.data.datasets[0].data = [dFisik, dTeknik, dTaktik, dMental];
+        myRadarChart.data.datasets[0].borderColor = pColor;
+        myRadarChart.data.datasets[0].pointBackgroundColor = pColor;
+        myRadarChart.data.datasets[0].pointHoverBorderColor = pColor;
         myRadarChart.update();
     } else {
         Chart.defaults.font.family = "'DM Sans', sans-serif";
@@ -775,17 +878,17 @@ function updateRadarChart() {
                 datasets: [{
                     label: 'Atribut',
                     data: [dFisik, dTeknik, dTaktik, dMental],
-                    backgroundColor: 'rgba(183, 255, 40, 0.4)', // Neon Green Tint
-                    borderColor: '#b7ff28',
-                    pointBackgroundColor: '#b7ff28',
+                    backgroundColor: 'rgba(183, 255, 40, 0.4)', 
+                    borderColor: pColor,
+                    pointBackgroundColor: pColor,
                     pointBorderColor: '#fff',
                     pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: '#b7ff28',
+                    pointHoverBorderColor: pColor,
                     borderWidth: 2,
                 }]
             },
             options: {
-                animation: false, // MATIKAN ANIMASI AGAR BISA DIFOTO HTML2CANVAS
+                animation: false, 
                 responsive: true, maintainAspectRatio: false,
                 scales: {
                     r: {
@@ -802,7 +905,11 @@ function updateRadarChart() {
 }
 
 function saveSettings() {
-    DB.set('pro_settings', { club1: document.getElementById('inClub1').value, club2: document.getElementById('inClub2').value });
+    DB.set('pro_settings', { 
+        club1: document.getElementById('inClub1').value, 
+        club2: document.getElementById('inClub2').value,
+        theme: document.getElementById('inTheme').value
+    });
     showToast("Pengaturan global berhasil disimpan.");
 }
 
@@ -811,10 +918,8 @@ function saveReport() {
     const tw = document.getElementById('inTriwulan').value;
     const ms = document.getElementById('inMusim').value;
     
-    // Simpan ke localStorage
     DB.set(`rapor_${selPlayer.id}_${tw}_${ms}`, { ratings: ratings, cat: document.getElementById('inCatatan').value });
     
-    // Update Badge
     const statusBadge = document.getElementById('reportStatus');
     statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
     lucide.createIcons();
@@ -822,10 +927,9 @@ function saveReport() {
     showToast("Data Rapor berhasil disimpan secara aman.");
 }
 
+// BUG FIXED: Format multi-line string yang membuat error telah diubah menggunakan `\n` standar
 function clearAllData() {
-    if(confirm("PERINGATAN KERAS!
-
-Apakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
+    if(confirm("PERINGATAN KERAS!\n\nApakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
         localStorage.clear();
         location.reload();
     }
@@ -838,7 +942,6 @@ async function takeSnapshot() {
     const card = document.getElementById('reportCard');
     const oW = card.style.width, oT = card.style.transform;
     
-    // Kunci mutlak ukuran kartu agar saat difoto di HP sekecil apapun tidak melipat/terpotong
     card.style.width = '760px';
     card.style.transform = 'none';
     window.scrollTo(0,0);
@@ -865,7 +968,6 @@ window.exportFile = async function(fmt) {
 
         if(fmt === 'pdf') {
             const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-            // A4 Width = 210mm. Beri margin 15mm. Sisa 180mm.
             const w = 180, h = (cvs.height * w) / cvs.width;
             pdf.addImage(cvs.toDataURL('image/jpeg', 1.0), 'JPEG', 15, 20, w, h);
             pdf.save(fname + '.pdf');
@@ -877,7 +979,7 @@ window.exportFile = async function(fmt) {
         }
         showToast("Ekspor dokumen berhasil!");
     } catch(err) {
-        showToast("Gagal memproses gambar: Gambar mungkin dikunci oleh server luar.", "error");
+        showToast("Gagal memproses gambar. Pastikan gambar tidak dikunci server.", "error");
     } finally {
         btns.forEach(b => b.disabled = false);
     }
@@ -893,14 +995,7 @@ window.sendWA = async function() {
     setTimeout(() => {
         const tw = document.getElementById('inTriwulan').value;
         const ms = document.getElementById('inMusim').value;
-        const txt = `Halo Bapak/Ibu Wali dari *${selPlayer.name}*,
-
-Berikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan ${tw} Musim ${ms}.
-
-_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_
-
-Terima kasih atas dukungannya,
-*Manajemen MNA GEN-Z ACADEMY*`;
+        const txt = `Halo Bapak/Ibu Wali dari *${selPlayer.name}*,\n\nBerikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan ${tw} Musim ${ms}.\n\n_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_\n\nTerima kasih atas dukungannya,\n*Manajemen MNA GEN-Z ACADEMY*`;
         window.open(`https://wa.me/${selPlayer.phone}?text=${encodeURIComponent(txt)}`, '_blank');
     }, 1500);
 }
