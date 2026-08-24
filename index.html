@@ -45,6 +45,7 @@
     position: fixed; inset: 0; z-index: 9999; background: var(--ink);
     display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
     color: var(--green); font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
   }
   .loader-ring {
     width: 60px; height: 60px; border: 4px solid rgba(183, 255, 40, 0.1);
@@ -52,11 +53,12 @@
     animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+  #loadingText { opacity: 0.8; font-size: 12px; }
 
   /* TOAST NOTIFICATION */
   #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
   .toast {
-    background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line); color: white; padding: 16px 20px; border-radius: 12px;
+    background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line); color: white; padding: 14px 20px; border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
     display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600;
     transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -176,7 +178,7 @@
   .star-picker span:hover { color: #fcd34d; transform: scale(1.1); }
   .star-picker span.active { color: var(--gold); }
 
-  /* REPORT CARD PREVIEW */
+  /* REPORT CARD PREVIEW (STRICTLY CONSTRAINED FOR PDF) */
   .preview-wrapper { width: 100%; overflow-x: auto; padding-bottom: 20px; display: flex; justify-content: center; }
   .preview-wrapper::-webkit-scrollbar { display: none; }
   
@@ -279,7 +281,8 @@
       </div>
 
       <div class="card-section">
-        <h2 class="section-title"><i data-lucide="database" class="h-5 w-5 text-green-400"></i> Sinkronisasi Data</h2>
+        <h2 class="section-title mb-5 pb-4"><i data-lucide="database" class="h-5 w-5 text-green-400"></i> Sinkronisasi Data</h2>
+        <p class="hint">Hubungkan dengan Google Spreadsheet untuk menarik data terbaru secara instan.</p>
         <button class="btn btn-primary" style="width:100%; margin-bottom:24px;" id="btnSyncSheet" onclick="syncPlayers()">
           <i data-lucide="refresh-cw" class="h-4 w-4"></i> Tarik Data Spreadsheet
         </button>
@@ -473,6 +476,7 @@ let selPlayer = null;
 let ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
 let myRadarChart = null;
 
+// Database Lokal Aman (Anti-Error Vercel)
 const DB = {
     get: (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch(e){ return null; } },
     set: (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} },
@@ -482,12 +486,17 @@ const DB = {
 // ==========================================
 // INIT & CORE FUNCTIONS (FAILSAFE LOADER)
 // ==========================================
-// Mencegah stuck jika terjadi error tidak terduga
-const failsafe = setTimeout(() => { hideLoader(); showToast("Mode Pemulihan Aktif.", "error"); }, 4000);
-
 document.addEventListener("DOMContentLoaded", () => {
+    
+    // Timer Penyelamat - Jika ada error gaib, paksa loading hilang dalam 4 detik
+    const failsafe = setTimeout(() => { 
+        hideLoader(); 
+        showToast("Sistem dilanjutkan dalam Mode Pemulihan.", "error"); 
+    }, 4000);
+
     try {
-        window.jsPDF = window.jspdf.jsPDF;
+        // Cek jika library belum dimuat
+        if (window.jspdf) window.jsPDF = window.jspdf.jsPDF;
         lucide.createIcons();
         
         document.getElementById('inTanggal').valueAsDate = new Date();
@@ -504,8 +513,21 @@ document.addEventListener("DOMContentLoaded", () => {
         players = DB.get('pro_players') || [];
         renderPlayers(players);
         
+        // Hapus Failsafe karena tidak ada error
         clearTimeout(failsafe);
-        setTimeout(() => { hideLoader(); triggerPreviewUpdate(); }, 600);
+        
+        // Animasi Teks Loading
+        const loadTxt = document.getElementById('loadingText');
+        if(loadTxt) {
+            loadTxt.innerText = "Memuat Modul UI...";
+            setTimeout(() => { loadTxt.innerText = "Menyambungkan Database..."; }, 200);
+            setTimeout(() => { loadTxt.innerText = "Menggambar Radar..."; }, 400);
+        }
+
+        setTimeout(() => { 
+            hideLoader(); 
+            triggerPreviewUpdate(); 
+        }, 600);
 
     } catch(err) {
         clearTimeout(failsafe);
@@ -520,7 +542,10 @@ function hideLoader() {
     if(ls) {
         ls.style.opacity = '0';
         ls.style.visibility = 'hidden';
-        setTimeout(() => { ls.style.display = 'none'; document.getElementById('mainApp').style.display = 'flex'; }, 500);
+        setTimeout(() => { 
+            ls.style.display = 'none'; 
+            document.getElementById('mainApp').style.display = 'flex'; 
+        }, 400);
     }
 }
 
@@ -565,8 +590,12 @@ function changeTheme() {
             myRadarChart.data.datasets[0].pointHoverBorderColor = t.p1;
             
             const textColor = key === 'dark' ? '#ffffff' : '#1b2a63';
-            Chart.defaults.color = textColor;
-            myRadarChart.options.scales.r.pointLabels.color = textColor;
+            if (Chart.defaults && Chart.defaults.color) {
+                Chart.defaults.color = textColor;
+            }
+            if (myRadarChart.options.scales.r.pointLabels) {
+                 myRadarChart.options.scales.r.pointLabels.color = textColor;
+            }
             myRadarChart.update();
         }
     } catch(err) { console.error("Theme Error:", err); }
@@ -579,15 +608,17 @@ function calcGrade() {
     
     let grade = "N/A", color = "var(--rc-text-muted)";
     if(avg === 0) { grade = "N/A"; }
-    else if(avg >= 4.5) { grade = "A+"; color = "#10b981"; } // Emerald
-    else if(avg >= 4.0) { grade = "A";  color = "#3b82f6"; } // Blue
-    else if(avg >= 3.0) { grade = "B";  color = "#f59e0b"; } // Amber
-    else if(avg >= 2.0) { grade = "C";  color = "#f97316"; } // Orange
-    else { grade = "D"; color = "#ef4444"; } // Red
+    else if(avg >= 4.5) { grade = "A+"; color = "#10b981"; } 
+    else if(avg >= 4.0) { grade = "A";  color = "#3b82f6"; } 
+    else if(avg >= 3.0) { grade = "B";  color = "#f59e0b"; } 
+    else if(avg >= 2.0) { grade = "C";  color = "#f97316"; } 
+    else { grade = "D"; color = "#ef4444"; } 
     
     const gVal = document.getElementById('pv-grade-value');
-    gVal.innerText = grade;
-    gVal.style.color = color;
+    if(gVal) {
+        gVal.innerText = grade;
+        gVal.style.color = color;
+    }
 }
 
 // ==========================================
@@ -622,10 +653,13 @@ async function syncPlayers() {
 
         DB.set('pro_players', players);
         renderPlayers(players);
-        document.getElementById('stat-total').innerText = players.length;
+        
+        const stTotal = document.getElementById('stat-total');
+        if(stTotal) stTotal.innerText = players.length;
         
         const now = new Date();
-        document.getElementById('stat-sync').innerText = `${now.getHours()}:${(now.getMinutes()<10?'0':'')+now.getMinutes()}`;
+        const stSync = document.getElementById('stat-sync');
+        if(stSync) stSync.innerText = `${now.getHours()}:${(now.getMinutes()<10?'0':'')+now.getMinutes()}`;
 
         showToast(`Sukses! ${players.length} pemain ditarik.`);
         apiStatus.innerHTML = '<i data-lucide="check" class="h-4 w-4"></i> Online';
@@ -657,7 +691,8 @@ function renderPlayers(arr) {
         `;
         c.appendChild(div);
     });
-    if(players.length) document.getElementById('stat-total').innerText = players.length;
+    const stTotal = document.getElementById('stat-total');
+    if(players.length && stTotal) stTotal.innerText = players.length;
 }
 
 function filterPlayers() {
@@ -685,11 +720,11 @@ function checkSavedReport() {
     if(savedData) {
         ratings = savedData.ratings || {};
         document.getElementById('inCatatan').value = savedData.cat || "";
-        statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
+        if(statusBadge) statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
         showToast("Memuat draf rapor tersimpan.");
     } else {
         resetFormRapor(true); 
-        statusBadge.innerHTML = '<span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest"><i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG</span>';
+        if(statusBadge) statusBadge.innerHTML = '<span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest"><i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG</span>';
     }
     updateStarsUI(); triggerPreviewUpdate(); lucide.createIcons();
 }
@@ -714,6 +749,7 @@ const cats = [
 
 function buildStarsUI() {
     const root = document.getElementById('ratingInputs');
+    if(!root) return;
     cats.forEach(c => {
         const title = document.createElement('div'); title.className = 'rating-cat';
         title.innerHTML = `<div class="rating-title">${c.n}</div>`;
@@ -756,9 +792,14 @@ function updateStarsUI() {
 }
 
 function triggerPreviewUpdate() {
-    document.getElementById('pv-club1').innerText = document.getElementById('inClub1').value || 'MNA GEN-Z';
-    document.getElementById('pv-club2').innerText = document.getElementById('inClub2').value || 'FUTSAL ACADEMY';
-    document.getElementById('pv-period').innerText = `TRIWULAN ${document.getElementById('inTriwulan').value} MUSIM ${document.getElementById('inMusim').value}`;
+    const cb1 = document.getElementById('pv-club1');
+    if(cb1) cb1.innerText = document.getElementById('inClub1').value || 'MNA GEN-Z';
+    
+    const cb2 = document.getElementById('pv-club2');
+    if(cb2) cb2.innerText = document.getElementById('inClub2').value || 'FUTSAL ACADEMY';
+    
+    const pvP = document.getElementById('pv-period');
+    if(pvP) pvP.innerText = `TRIWULAN ${document.getElementById('inTriwulan').value} MUSIM ${document.getElementById('inMusim').value}`;
     
     if(selPlayer) {
         document.getElementById('pv-playername').innerText = selPlayer.name;
@@ -766,19 +807,25 @@ function triggerPreviewUpdate() {
         document.getElementById('pv-photo').src = selPlayer.photo;
     }
     
-    document.getElementById('pv-catatan').innerText = document.getElementById('inCatatan').value || "Belum ada evaluasi.";
+    const pCat = document.getElementById('pv-catatan');
+    if(pCat) pCat.innerText = document.getElementById('inCatatan').value || "Belum ada evaluasi.";
     
     const d = new Date(document.getElementById('inTanggal').value);
     const bln = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    if(!isNaN(d.getTime())) document.getElementById('pv-tanggal').innerText = `SBY, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
+    if(!isNaN(d.getTime())) {
+        const pTgl = document.getElementById('pv-tanggal');
+        if(pTgl) pTgl.innerText = `SBY, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
+    }
     
-    document.getElementById('pv-pelatih').innerText = document.getElementById('inPelatih').value || "Coach";
+    const pPel = document.getElementById('pv-pelatih');
+    if(pPel) pPel.innerText = document.getElementById('inPelatih').value || "Coach";
 
     updateRadarChart();
     calcGrade();
 }
 
 function updateRadarChart() {
+    if(typeof Chart === 'undefined') return;
     const ctx = document.getElementById('radarChart');
     if(!ctx) return;
     
@@ -847,20 +894,20 @@ function saveReport() {
     DB.set(`rapor_${selPlayer.id}_${tw}_${ms}`, { ratings: ratings, cat: document.getElementById('inCatatan').value });
     
     const statusBadge = document.getElementById('reportStatus');
-    statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
-    lucide.createIcons();
+    if(statusBadge) {
+        statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
+        lucide.createIcons();
+    }
     
-    // Update dashboard stat rapor
-    const rCount = parseInt(document.getElementById('stat-rapor').innerText) + 1;
-    document.getElementById('stat-rapor').innerText = rCount;
+    const rStat = document.getElementById('stat-rapor');
+    if(rStat) rStat.innerText = parseInt(rStat.innerText) + 1;
     
     showToast("Data Rapor berhasil disimpan secara aman.");
 }
 
+// Single line string literal strictly applied to prevent parsing issues
 function clearAllData() {
-    if(confirm("PERINGATAN KERAS!
-
-Apakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
+    if(confirm("PERINGATAN KERAS!\n\nApakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
         localStorage.clear();
         location.reload();
     }
@@ -870,6 +917,8 @@ Apakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perang
 // EKSPOR PROFESIONAL
 // ==========================================
 async function takeSnapshot() {
+    if(typeof html2canvas === 'undefined') throw new Error("Modul html2canvas belum dimuat.");
+    
     const card = document.getElementById('reportCard');
     const oW = card.style.width, oT = card.style.transform;
     card.style.width = '760px'; card.style.transform = 'none';
@@ -892,16 +941,19 @@ window.exportFile = async function(fmt) {
     
     const btnId = 'btnExport' + fmt.toUpperCase();
     const btn = document.getElementById(btnId);
-    const oldHtml = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Proses...';
-    lucide.createIcons();
-    showToast(`Memproses ${fmt.toUpperCase()}...`);
+    const oldHtml = btn ? btn.innerHTML : "";
+    if(btn) {
+        btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Proses...';
+        lucide.createIcons();
+    }
+    showToast(`Memproses dokumen ${fmt.toUpperCase()}... Mohon tunggu.`);
 
     try {
         const cvs = await takeSnapshot();
         const fname = `Rapor_${selPlayer.name}_T${document.getElementById('inTriwulan').value}_${document.getElementById('inMusim').value}`;
 
         if(fmt === 'pdf') {
+            if(typeof jsPDF === 'undefined') throw new Error("Modul jsPDF belum dimuat.");
             const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
             const w = 190, h = (cvs.height * w) / cvs.width;
             pdf.addImage(cvs.toDataURL('image/jpeg', 1.0), 'JPEG', 10, 15, w, h);
@@ -918,7 +970,7 @@ window.exportFile = async function(fmt) {
         console.error(err);
     } finally {
         btns.forEach(b => b.disabled = false);
-        btn.innerHTML = oldHtml;
+        if(btn) btn.innerHTML = oldHtml;
         lucide.createIcons();
     }
 };
@@ -933,14 +985,7 @@ window.sendWA = async function() {
     setTimeout(() => {
         const tw = document.getElementById('inTriwulan').value;
         const ms = document.getElementById('inMusim').value;
-        const txt = `Halo Bapak/Ibu Wali dari *${selPlayer.name}*,
-
-Berikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan ${tw} Musim ${ms}.
-
-_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_
-
-Terima kasih atas dukungannya,
-*Manajemen MNA GEN-Z ACADEMY*`;
+        const txt = "Halo Bapak/Ibu Wali dari *" + selPlayer.name + "*,\n\nBerikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan " + tw + " Musim " + ms + ".\n\n_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_\n\nTerima kasih atas dukungannya,\n*Manajemen MNA GEN-Z ACADEMY*";
         window.open(`https://wa.me/${selPlayer.phone}?text=${encodeURIComponent(txt)}`, '_blank');
     }, 1500);
 }
