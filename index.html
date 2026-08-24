@@ -198,49 +198,52 @@
   
   .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 16px; background: var(--rc-bg); border-bottom: 1px solid var(--rc-border); }
   .rc-logo { width: 64px; height: 64px; border-radius: 50%; object-fit: contain; border: 2px solid var(--rc-accent); background: #fff; z-index: 2;}
-  .rc-clubname { font-weight: 900; color: var(--rc-text); text-transform: uppercase; line-height: 1.1; letter-spacing: 0.5px; font-size: 24px; z-index: 2;}
-  .rc-clubname span { display: block; font-size: 14px; font-weight: 800; color: var(--rc-accent); margin-top: 4px; }
+  .rc-clubname { font-weight: 900; color: var(--rc-text); text-transform: uppercase; line-height: 1.2; letter-spacing: 0.5px; font-size: 24px; z-index: 2;}
+  .rc-clubname span { display: block; font-size: 14px; font-weight: 800; color: var(--rc-accent); margin-top: 2px; line-height: 1.2; }
   
   .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
-  .rc-grade-label { font-size: 10px; font-weight: 800; color: var(--rc-text-muted); letter-spacing: 1px; }
+  .rc-grade-label { font-size: 10px; font-weight: 800; color: var(--rc-text-muted); letter-spacing: 1px; line-height: 1; }
   .rc-grade-value { font-size: 38px; font-weight: 900; line-height: 1; color: var(--rc-text-muted); transition: color 0.3s ease;}
 
   .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 48px; }
   .rc-banner h2 { color: var(--green); font-size: 48px; margin: 0; font-weight: 900; letter-spacing: 1px; line-height: 1; }
-  .rc-banner .sub { font-weight: 800; font-size: 18px; letter-spacing: 1px; opacity: 0.9; }
-  .rc-period { margin-top: 20px; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; background: rgba(0,0,0,0.2); display: inline-block; padding: 6px 12px; border-radius: 8px; }
+  .rc-banner .sub { font-weight: 800; font-size: 18px; letter-spacing: 1px; opacity: 0.9; line-height: 1.2; margin-top: 4px; }
+  .rc-period { margin-top: 16px; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; background: rgba(0,0,0,0.2); display: inline-block; padding: 8px 12px; border-radius: 8px; line-height: 1; }
   .rc-playername { margin-top: 24px; color: #fff; font-weight: 900; font-size: 32px; line-height: 1.2; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.2); width: 70%; }
 
   .rc-photo-wrap { position: absolute; right: 32px; top: 50%; transform: translateY(-30%); width: 160px; height: 160px; border-radius: 50%; padding: 6px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
   .rc-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-  .rc-body { padding: 24px 32px; display: grid; grid-template-columns: 1fr 240px; gap: 32px; background: var(--rc-sec); }
+  /* FIX: Remove negative margin and adjust padding to prevent html2canvas clipping */
+  .rc-class { padding: 24px 32px 8px; font-weight: 900; color: var(--rc-text); font-size: 20px; letter-spacing: 1px; background: var(--rc-sec); line-height: 1.2; }
+
+  .rc-body { padding: 16px 32px 32px; display: grid; grid-template-columns: 1fr 240px; gap: 32px; background: var(--rc-sec); }
   .rc-skills-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
   .rc-cat { background: var(--rc-bg); border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--rc-border); transition: transform 0.3s ease; }
   .rc-cat:hover { transform: scale(1.02); }
-  .rc-cat h3 { color: var(--rc-text); font-weight: 900; font-size: 14px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-sec); padding-bottom: 8px; }
-  .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .rc-skill .label { color: var(--rc-accent); font-weight: 800; font-size: 11px; text-transform: uppercase; }
-  .rc-stars { font-size: 14px; letter-spacing: 2px; }
+  .rc-cat h3 { color: var(--rc-text); font-weight: 900; font-size: 14px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-sec); padding-bottom: 8px; line-height: 1.2; }
+  .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; line-height: 1; }
+  .rc-skill .label { color: var(--rc-accent); font-weight: 800; font-size: 11px; text-transform: uppercase; line-height: 1.2; }
+  .rc-stars { font-size: 14px; letter-spacing: 2px; display: flex; align-items: center; }
   .rc-stars .on { color: var(--gold); }
   .rc-stars .off { color: var(--rc-border); }
 
   .rc-chart-area { background: var(--rc-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--rc-border); display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .rc-chart-title { font-size: 12px; font-weight: 900; color: var(--rc-text); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;}
+  .rc-chart-title { font-size: 12px; font-weight: 900; color: var(--rc-text); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; line-height: 1.2;}
   #radarContainer { width: 200px; height: 200px; position:relative; }
 
   .rc-footer { background: var(--rc-bg); padding: 24px 32px; display: flex; gap: 24px; border-top: 1px solid var(--rc-border); }
   .rc-notes { flex: 1; }
-  .rc-notes h4 { color: var(--rc-text); font-size: 14px; font-weight: 900; margin: 0 0 8px; display:flex; align-items:center; gap:6px;}
+  .rc-notes h4 { color: var(--rc-text); font-size: 14px; font-weight: 900; margin: 0 0 8px; display:flex; align-items:center; gap:6px; line-height: 1.2;}
   .rc-notes p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--rc-text); background: var(--rc-sec); padding: 12px; border-radius: 12px; border: 1px dashed var(--rc-border); min-height: 80px;}
   
   .rc-sign-area { width: 200px; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
-  .rc-sign-date { font-size: 11px; color: var(--rc-text-muted); font-weight: 600; margin-bottom: 30px; }
-  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--rc-text); border-bottom: 1px solid var(--rc-border); padding-bottom: 4px; width: 100%; margin-bottom:4px;}
-  .rc-sign-label { font-size: 10px; color: var(--rc-text-muted); font-weight: 700; letter-spacing: 1px; }
-  .rc-class { padding: 20px 32px 0px; font-weight: 900; color: var(--rc-text); font-size: 20px; letter-spacing: 1px; background: var(--rc-sec); margin-bottom:-10px;}
+  .rc-sign-date { font-size: 11px; color: var(--rc-text-muted); font-weight: 600; margin-bottom: 30px; line-height: 1.2; }
+  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--rc-text); border-bottom: 1px solid var(--rc-border); padding-bottom: 4px; width: 100%; margin-bottom:4px; line-height: 1.2;}
+  .rc-sign-label { font-size: 10px; color: var(--rc-text-muted); font-weight: 700; letter-spacing: 1px; line-height: 1.2; }
 
   /* EXPORT ACTIONS */
+
   .export-panel { background: var(--panel-bg); border-radius: 1.5rem; padding: 24px; border: 1px solid var(--line); margin-top: 24px; }
   .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
   .btn-wa { background: rgba(37, 211, 102, 0.15); color: #25D366; border-color: rgba(37, 211, 102, 0.3); font-size: 14px; padding: 14px; }
@@ -435,8 +438,8 @@
       <div class="report-card" id="reportCard">
         
         <div class="rc-header">
-          <!-- Gambar logo diload secara normal tanpa crossorigin untuk mencegah error loading -->
-          <img id="pv-logo" class="rc-logo" src="https://i.ibb.co/5grgbXSs/LOGO-MNA-GEN-Z.png">
+          <!-- Logo with CORS proxy -->
+          <img id="pv-logo" class="rc-logo" crossorigin="anonymous" src="https://wsrv.nl/?url=https://i.ibb.co.com/FLyht7HF/LOGO-MNA-GEN-Z.png&w=128&h=128&fit=contain">
           <div class="rc-clubname">
             <div id="pv-club1">MNA GEN-Z</div>
             <span id="pv-club2">FUTSAL ACADEMY</span>
@@ -454,7 +457,7 @@
           <div class="rc-period" id="pv-period">TRIWULAN 1 MUSIM 2026</div>
           <div class="rc-playername" id="pv-playername">—</div>
           <div class="rc-photo-wrap">
-              <img class="rc-photo" id="pv-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+              <img class="rc-photo" crossorigin="anonymous" id="pv-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
           </div>
         </div>
         
@@ -726,7 +729,7 @@ async function syncPlayers() {
                 id: name.toLowerCase().replace(/[^a-z0-9]/g,'_'),
                 name: name.toUpperCase(),
                 ku: r["Kategori Umur"] || "-",
-                photo: r["Foto"] || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=b7ff28&color=070b13&size=200`,
+                photo: r["Foto"] ? `https://wsrv.nl/?url=${encodeURIComponent(r["Foto"])}&w=256&h=256&fit=cover` : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=b7ff28&color=070b13&size=200`,
                 phone: phone
             };
         }).filter(p => p);
@@ -769,7 +772,7 @@ function renderPlayers(arr) {
         const div = document.createElement('div');
         div.className = 'player-card';
         div.innerHTML = `
-            <img src="${p.photo}" onerror="this.src='${DEF_AVATAR}'">
+            <img src="${p.photo}" onerror="this.src='${DEF_AVATAR}'" crossorigin="anonymous">
             <div class="info">
                 <div class="name" title="${p.name}">${p.name}</div>
                 <div class="ku">${p.ku}</div>
@@ -794,7 +797,7 @@ function selectPlayer(id) {
     if(selPlayer) {
         const infoEl = document.getElementById('selectedPlayerInfo');
         if(infoEl) {
-            infoEl.innerHTML = `<img src="${selPlayer.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #b7ff28;" onerror="this.src='${DEF_AVATAR}'"> <span class="truncate">${selPlayer.name}</span>`;
+            infoEl.innerHTML = `<img src="${selPlayer.photo}" crossorigin="anonymous" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #b7ff28;" onerror="this.src='${DEF_AVATAR}'"> <span class="truncate">${selPlayer.name}</span>`;
         }
         const menus = document.querySelectorAll('.menu-btn');
         if(menus.length > 1) switchTab('tab-rapor', menus[1]);
@@ -1037,6 +1040,11 @@ async function takeSnapshot() {
     
     const card = document.getElementById('reportCard');
     if(!card) throw new Error("Elemen rapor tidak ditemukan.");
+    
+    // Tunggu font dimuat sepenuhnya agar tidak terjadi pergeseran baselines di html2canvas
+    if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+    }
 
     const oW = card.style.width, oT = card.style.transform;
     card.style.width = '760px'; card.style.transform = 'none';
