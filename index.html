@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <title>Rapor Pemain Akademi - Claude Pro Edition</title>
 
-<!-- Libraries Kualitas Tinggi -->
+<!-- Libraries Front-End Kualitas Premium -->
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -21,10 +21,10 @@
     --green: #b7ff28;
     --gold: #fbbf24;
     --ink: #070b13;
-    --panel-bg: rgba(15, 23, 42, 0.6);
-    --line: rgba(255, 255, 255, 0.1);
+    --panel-bg: rgba(15, 23, 42, 0.65);
+    --line: rgba(255, 255, 255, 0.12);
     
-    /* Dynamic Theme Variables untuk Rapor */
+    /* CSS Variabel untuk Tema Dinamis Rapor */
     --rc-bg: #ffffff;
     --rc-sec: #f8fafc;
     --rc-text: #1b2a63;
@@ -45,7 +45,7 @@
     position: fixed; inset: 0; z-index: 9999; background: var(--ink);
     display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
     color: var(--green); font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
-    transition: opacity 0.4s ease, visibility 0.4s ease;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
   }
   .loader-ring {
     width: 60px; height: 60px; border: 4px solid rgba(183, 255, 40, 0.1);
@@ -53,10 +53,16 @@
     animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  #loadingText { opacity: 0.8; font-size: 12px; }
+
+  /* OVERLAY PROSES EKSPOR */
+  #exportOverlay {
+    position: fixed; inset: 0; z-index: 10000; background: rgba(7, 11, 19, 0.85); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+    color: white; font-weight: 700; letter-spacing: 1px;
+  }
 
   /* TOAST NOTIFICATION */
-  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
+  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10001; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
   .toast {
     background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line); color: white; padding: 14px 20px; border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
@@ -148,7 +154,8 @@
   }
   .btn:hover { transform: translateY(-2px); }
   .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(1); }
+  
   .btn-primary { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(183,255,40,0.2); }
   .btn-primary:hover { background: #9de018; }
   .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
@@ -178,7 +185,7 @@
   .star-picker span:hover { color: #fcd34d; transform: scale(1.1); }
   .star-picker span.active { color: var(--gold); }
 
-  /* REPORT CARD PREVIEW (STRICTLY CONSTRAINED FOR PDF) */
+  /* REPORT CARD PREVIEW (RESOLUSI TERKUNCI UNTUK PDF HD) */
   .preview-wrapper { width: 100%; overflow-x: auto; padding-bottom: 20px; display: flex; justify-content: center; }
   .preview-wrapper::-webkit-scrollbar { display: none; }
   
@@ -246,6 +253,12 @@
   <div id="loadingText">Menyiapkan Sistem Pro...</div>
 </div>
 
+<!-- OVERLAY PROSES -->
+<div id="exportOverlay">
+    <div class="loader-ring" style="width:40px; height:40px; border-width:3px;"></div>
+    <div id="exportOverlayText">Mengekspor Dokumen...</div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
 
@@ -281,8 +294,7 @@
       </div>
 
       <div class="card-section">
-        <h2 class="section-title mb-5 pb-4"><i data-lucide="database" class="h-5 w-5 text-green-400"></i> Sinkronisasi Data</h2>
-        <p class="hint">Hubungkan dengan Google Spreadsheet untuk menarik data terbaru secara instan.</p>
+        <h2 class="section-title"><i data-lucide="database" class="h-5 w-5 text-green-400"></i> Sinkronisasi Data</h2>
         <button class="btn btn-primary" style="width:100%; margin-bottom:24px;" id="btnSyncSheet" onclick="syncPlayers()">
           <i data-lucide="refresh-cw" class="h-4 w-4"></i> Tarik Data Spreadsheet
         </button>
@@ -303,7 +315,9 @@
         <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
             <h2 class="section-title border-0 mb-0 pb-0"><i data-lucide="pen-tool" class="h-5 w-5 text-purple-400"></i> Pengisian Rapor</h2>
             <div id="reportStatus">
-                <span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest"><i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG</span>
+                <span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest">
+                    <i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG
+                </span>
             </div>
         </div>
         
@@ -372,7 +386,8 @@
       <div class="report-card" id="reportCard">
         
         <div class="rc-header">
-          <img id="pv-logo" class="rc-logo" src="https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png" crossorigin="anonymous">
+          <!-- Gambar logo diload secara normal tanpa crossorigin untuk mencegah error loading -->
+          <img id="pv-logo" class="rc-logo" src="https://i.ibb.co/5grgbXSs/LOGO-MNA-GEN-Z.png">
           <div class="rc-clubname">
             <div id="pv-club1">MNA GEN-Z</div>
             <span id="pv-club2">FUTSAL ACADEMY</span>
@@ -389,7 +404,9 @@
           <div class="sub">EVALUASI PEMAIN</div>
           <div class="rc-period" id="pv-period">TRIWULAN 1 MUSIM 2026</div>
           <div class="rc-playername" id="pv-playername">—</div>
-          <div class="rc-photo-wrap"><img class="rc-photo" id="pv-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" crossorigin="anonymous"></div>
+          <div class="rc-photo-wrap">
+              <img class="rc-photo" id="pv-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+          </div>
         </div>
         
         <div class="rc-class" id="pv-class">KATEGORI —</div>
@@ -444,11 +461,11 @@
     <div class="export-panel w-full max-w-[760px] mx-auto">
       <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2"><i data-lucide="download" class="h-4 w-4 text-green-400"></i> Ekspor Dokumen</h3>
       <div class="export-grid">
-        <button class="btn btn-secondary action-btn" id="btnExportPDF" onclick="exportFile('pdf')"><i data-lucide="file-text" class="h-4 w-4"></i> Cetak PDF</button>
-        <button class="btn btn-secondary action-btn" id="btnExportPNG" onclick="exportFile('png')"><i data-lucide="image" class="h-4 w-4"></i> Simpan PNG</button>
-        <button class="btn btn-secondary action-btn" id="btnExportJPG" onclick="exportFile('jpg')"><i data-lucide="image" class="h-4 w-4"></i> Simpan JPG</button>
+        <button class="btn btn-secondary action-btn" onclick="exportFile('pdf')"><i data-lucide="file-text" class="h-4 w-4"></i> Cetak PDF</button>
+        <button class="btn btn-secondary action-btn" onclick="exportFile('png')"><i data-lucide="image" class="h-4 w-4"></i> Simpan PNG</button>
+        <button class="btn btn-secondary action-btn" onclick="exportFile('jpg')"><i data-lucide="image" class="h-4 w-4"></i> Simpan JPG</button>
       </div>
-      <button class="btn btn-wa action-btn" id="btnSendWA" style="width:100%;" onclick="sendWA()"><i data-lucide="send" class="h-5 w-5"></i> Distribusi via WhatsApp</button>
+      <button class="btn btn-wa action-btn" style="width:100%;" onclick="sendWA()"><i data-lucide="send" class="h-5 w-5"></i> Distribusi via WhatsApp</button>
     </div>
 
   </section>
@@ -462,7 +479,7 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
 const DEF_AVATAR = "https://ui-avatars.com/api/?name=Pemain&background=e2e8f0&color=475569&size=200";
 
-// TEMA WARNA MENGGUNAKAN CSS VARIABLES (ANTI-BUG)
+// TEMA WARNA MENGGUNAKAN CSS VARIABLES
 const THEMES = {
     default: { p1: '#7c3aed', p2: '#3730a3', bg: '#ffffff', sec: '#f8fafc', txt: '#1b2a63', brd: '#e2e8f0', mut: '#64748b', acc: '#7c3aed' },
     emerald: { p1: '#10b981', p2: '#047857', bg: '#ffffff', sec: '#f8fafc', txt: '#064e3b', brd: '#e2e8f0', mut: '#64748b', acc: '#10b981' },
@@ -476,36 +493,46 @@ let selPlayer = null;
 let ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
 let myRadarChart = null;
 
-// Database Lokal Aman (Anti-Error Vercel)
+// Database Lokal Aman
 const DB = {
     get: (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch(e){ return null; } },
     set: (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} },
     del: (key) => { try { localStorage.removeItem(key); } catch(e){} }
 };
 
+// Pengaman Eksekusi Style
+function safeStyle(el, prop, val) { if(el && el.style) el.style[prop] = val; }
+
 // ==========================================
 // INIT & CORE FUNCTIONS (FAILSAFE LOADER)
 // ==========================================
-document.addEventListener("DOMContentLoaded", () => {
+// Event `load` pada window lebih aman dari DOMContentLoaded karena memastikan script eksternal selesai ditarik
+window.addEventListener("load", () => {
     
-    // Timer Penyelamat - Jika ada error gaib, paksa loading hilang dalam 4 detik
+    // Perlindungan Mutlak: Jika 5 detik sistem gagal memuat, hilangkan paksa
     const failsafe = setTimeout(() => { 
         hideLoader(); 
         showToast("Sistem dilanjutkan dalam Mode Pemulihan.", "error"); 
-    }, 4000);
+    }, 5000);
 
     try {
-        // Cek jika library belum dimuat
-        if (window.jspdf) window.jsPDF = window.jspdf.jsPDF;
+        // Deklarasi jsPDF yang aman
+        if (window.jspdf && window.jspdf.jsPDF) {
+            window.jsPDF = window.jspdf.jsPDF;
+        }
+        
         lucide.createIcons();
         
-        document.getElementById('inTanggal').valueAsDate = new Date();
-        document.getElementById('inMusim').value = new Date().getFullYear();
+        const inTanggal = document.getElementById('inTanggal');
+        if(inTanggal) inTanggal.valueAsDate = new Date();
+        
+        const inMusim = document.getElementById('inMusim');
+        if(inMusim) inMusim.value = new Date().getFullYear();
 
         const s = DB.get('pro_settings') || { club1: 'MNA GEN-Z', club2: 'FUTSAL ACADEMY', theme: 'default' };
-        document.getElementById('inClub1').value = s.club1;
-        document.getElementById('inClub2').value = s.club2;
-        document.getElementById('inTheme').value = s.theme || 'default';
+        if(document.getElementById('inClub1')) document.getElementById('inClub1').value = s.club1;
+        if(document.getElementById('inClub2')) document.getElementById('inClub2').value = s.club2;
+        if(document.getElementById('inTheme')) document.getElementById('inTheme').value = s.theme || 'default';
         
         buildStarsUI();
         changeTheme();
@@ -513,21 +540,9 @@ document.addEventListener("DOMContentLoaded", () => {
         players = DB.get('pro_players') || [];
         renderPlayers(players);
         
-        // Hapus Failsafe karena tidak ada error
         clearTimeout(failsafe);
-        
-        // Animasi Teks Loading
-        const loadTxt = document.getElementById('loadingText');
-        if(loadTxt) {
-            loadTxt.innerText = "Memuat Modul UI...";
-            setTimeout(() => { loadTxt.innerText = "Menyambungkan Database..."; }, 200);
-            setTimeout(() => { loadTxt.innerText = "Menggambar Radar..."; }, 400);
-        }
-
-        setTimeout(() => { 
-            hideLoader(); 
-            triggerPreviewUpdate(); 
-        }, 600);
+        hideLoader();
+        triggerPreviewUpdate();
 
     } catch(err) {
         clearTimeout(failsafe);
@@ -544,13 +559,15 @@ function hideLoader() {
         ls.style.visibility = 'hidden';
         setTimeout(() => { 
             ls.style.display = 'none'; 
-            document.getElementById('mainApp').style.display = 'flex'; 
-        }, 400);
+            const main = document.getElementById('mainApp');
+            if(main) main.style.display = 'flex'; 
+        }, 500);
     }
 }
 
 function showToast(msg, type='success') {
     const c = document.getElementById('toast-container');
+    if(!c) return;
     const t = document.createElement('div');
     t.className = `toast show ${type}`;
     t.innerHTML = type === 'success' ? `<i data-lucide="check-circle" class="h-5 w-5"></i> ${msg}` : `<i data-lucide="alert-circle" class="h-5 w-5"></i> ${msg}`;
@@ -562,16 +579,19 @@ function showToast(msg, type='success') {
 function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    btn.classList.add('active');
+    const target = document.getElementById(tabId);
+    if(target) target.classList.add('active');
+    if(btn) btn.classList.add('active');
 }
 
 // ==========================================
-// TEMA WARNA (CSS VARIABLES) & GRADING
+// TEMA WARNA & GRADING
 // ==========================================
 function changeTheme() {
     try {
-        const key = document.getElementById('inTheme').value || 'default';
+        const themeEl = document.getElementById('inTheme');
+        if(!themeEl) return;
+        const key = themeEl.value || 'default';
         const t = THEMES[key] || THEMES.default;
         const r = document.documentElement;
         
@@ -590,12 +610,8 @@ function changeTheme() {
             myRadarChart.data.datasets[0].pointHoverBorderColor = t.p1;
             
             const textColor = key === 'dark' ? '#ffffff' : '#1b2a63';
-            if (Chart.defaults && Chart.defaults.color) {
-                Chart.defaults.color = textColor;
-            }
-            if (myRadarChart.options.scales.r.pointLabels) {
-                 myRadarChart.options.scales.r.pointLabels.color = textColor;
-            }
+            if (Chart.defaults && Chart.defaults.color) Chart.defaults.color = textColor;
+            if (myRadarChart.options.scales.r.pointLabels) myRadarChart.options.scales.r.pointLabels.color = textColor;
             myRadarChart.update();
         }
     } catch(err) { console.error("Theme Error:", err); }
@@ -627,9 +643,8 @@ function calcGrade() {
 async function syncPlayers() {
     const btn = document.getElementById('btnSyncSheet');
     const apiStatus = document.getElementById('apiStatus');
-    btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menarik Data...';
-    btn.disabled = true;
-    apiStatus.innerHTML = '<i data-lucide="refresh-cw" class="h-4 w-4 animate-spin"></i> Syncing...';
+    if(btn) { btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menarik Data...'; btn.disabled = true; }
+    if(apiStatus) apiStatus.innerHTML = '<i data-lucide="refresh-cw" class="h-4 w-4 animate-spin"></i> Syncing...';
     lucide.createIcons();
 
     try {
@@ -662,27 +677,34 @@ async function syncPlayers() {
         if(stSync) stSync.innerText = `${now.getHours()}:${(now.getMinutes()<10?'0':'')+now.getMinutes()}`;
 
         showToast(`Sukses! ${players.length} pemain ditarik.`);
-        apiStatus.innerHTML = '<i data-lucide="check" class="h-4 w-4"></i> Online';
-        apiStatus.style.color = '#10b981'; apiStatus.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        if(apiStatus) {
+            apiStatus.innerHTML = '<i data-lucide="check" class="h-4 w-4"></i> Online';
+            apiStatus.style.color = '#10b981'; apiStatus.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        }
     } catch(err) {
         showToast("Koneksi terputus. Cek URL Google Script.", "error");
-        apiStatus.innerHTML = '<i data-lucide="x" class="h-4 w-4"></i> Offline';
-        apiStatus.style.color = '#f43f5e'; apiStatus.style.borderColor = 'rgba(244, 63, 94, 0.3)';
+        if(apiStatus) {
+            apiStatus.innerHTML = '<i data-lucide="x" class="h-4 w-4"></i> Offline';
+            apiStatus.style.color = '#f43f5e'; apiStatus.style.borderColor = 'rgba(244, 63, 94, 0.3)';
+        }
     } finally {
-        btn.innerHTML = '<i data-lucide="refresh-cw" class="h-4 w-4"></i> Tarik Data Spreadsheet';
-        btn.disabled = false;
+        if(btn) {
+            btn.innerHTML = '<i data-lucide="refresh-cw" class="h-4 w-4"></i> Tarik Data Spreadsheet';
+            btn.disabled = false;
+        }
         lucide.createIcons();
     }
 }
 
 function renderPlayers(arr) {
     const c = document.getElementById('playerListContainer');
+    if(!c) return;
     c.innerHTML = arr.length ? '' : '<p class="text-sm text-slate-500 text-center py-4">Belum ada data pemain. Tekan Sinkronisasi.</p>';
     arr.forEach(p => {
         const div = document.createElement('div');
         div.className = 'player-card';
         div.innerHTML = `
-            <img src="${p.photo}" crossorigin="anonymous" onerror="this.src='${DEF_AVATAR}'">
+            <img src="${p.photo}" onerror="this.src='${DEF_AVATAR}'">
             <div class="info">
                 <div class="name" title="${p.name}">${p.name}</div>
                 <div class="ku">${p.ku}</div>
@@ -696,15 +718,21 @@ function renderPlayers(arr) {
 }
 
 function filterPlayers() {
-    const q = document.getElementById('searchPlayer').value.toLowerCase();
+    const searchEl = document.getElementById('searchPlayer');
+    if(!searchEl) return;
+    const q = searchEl.value.toLowerCase();
     renderPlayers(players.filter(p => p.name.toLowerCase().includes(q)));
 }
 
 function selectPlayer(id) {
     selPlayer = players.find(p => p.id === id);
     if(selPlayer) {
-        document.getElementById('selectedPlayerInfo').innerHTML = `<img src="${selPlayer.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #b7ff28;" crossorigin="anonymous"> <span class="truncate">${selPlayer.name}</span>`;
-        document.querySelectorAll('.menu-btn')[1].click();
+        const infoEl = document.getElementById('selectedPlayerInfo');
+        if(infoEl) {
+            infoEl.innerHTML = `<img src="${selPlayer.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #b7ff28;" onerror="this.src='${DEF_AVATAR}'"> <span class="truncate">${selPlayer.name}</span>`;
+        }
+        const menus = document.querySelectorAll('.menu-btn');
+        if(menus.length > 1) menus[1].click();
         checkSavedReport();
     }
 }
@@ -712,14 +740,19 @@ function selectPlayer(id) {
 function checkSavedReport() {
     if(!selPlayer) return;
     
-    const tw = document.getElementById('inTriwulan').value;
-    const ms = document.getElementById('inMusim').value;
+    const twEl = document.getElementById('inTriwulan');
+    const msEl = document.getElementById('inMusim');
+    if(!twEl || !msEl) return;
+
+    const tw = twEl.value;
+    const ms = msEl.value;
     const savedData = DB.get(`rapor_${selPlayer.id}_${tw}_${ms}`);
     const statusBadge = document.getElementById('reportStatus');
     
     if(savedData) {
         ratings = savedData.ratings || {};
-        document.getElementById('inCatatan').value = savedData.cat || "";
+        const catEl = document.getElementById('inCatatan');
+        if(catEl) catEl.value = savedData.cat || "";
         if(statusBadge) statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
         showToast("Memuat draf rapor tersimpan.");
     } else {
@@ -731,7 +764,8 @@ function checkSavedReport() {
 
 function resetFormRapor(isSilent = false) {
     ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
-    document.getElementById('inCatatan').value = "";
+    const catEl = document.getElementById('inCatatan');
+    if(catEl) catEl.value = "";
     updateStarsUI(); triggerPreviewUpdate();
     if(!isSilent) showToast("Form dikosongkan.");
 }
@@ -793,32 +827,44 @@ function updateStarsUI() {
 
 function triggerPreviewUpdate() {
     const cb1 = document.getElementById('pv-club1');
-    if(cb1) cb1.innerText = document.getElementById('inClub1').value || 'MNA GEN-Z';
+    const in1 = document.getElementById('inClub1');
+    if(cb1 && in1) cb1.innerText = in1.value || 'MNA GEN-Z';
     
     const cb2 = document.getElementById('pv-club2');
-    if(cb2) cb2.innerText = document.getElementById('inClub2').value || 'FUTSAL ACADEMY';
+    const in2 = document.getElementById('inClub2');
+    if(cb2 && in2) cb2.innerText = in2.value || 'FUTSAL ACADEMY';
     
     const pvP = document.getElementById('pv-period');
-    if(pvP) pvP.innerText = `TRIWULAN ${document.getElementById('inTriwulan').value} MUSIM ${document.getElementById('inMusim').value}`;
+    const inTw = document.getElementById('inTriwulan');
+    const inMs = document.getElementById('inMusim');
+    if(pvP && inTw && inMs) pvP.innerText = `TRIWULAN ${inTw.value} MUSIM ${inMs.value}`;
     
     if(selPlayer) {
-        document.getElementById('pv-playername').innerText = selPlayer.name;
-        document.getElementById('pv-class').innerText = `KATEGORI ${selPlayer.ku.replace(/\D/g,'')}`;
-        document.getElementById('pv-photo').src = selPlayer.photo;
+        const pvName = document.getElementById('pv-playername');
+        if(pvName) pvName.innerText = selPlayer.name;
+        const pvClass = document.getElementById('pv-class');
+        if(pvClass) pvClass.innerText = `KATEGORI ${selPlayer.ku.replace(/\D/g,'')}`;
+        const pvPhoto = document.getElementById('pv-photo');
+        if(pvPhoto) pvPhoto.src = selPlayer.photo;
     }
     
     const pCat = document.getElementById('pv-catatan');
-    if(pCat) pCat.innerText = document.getElementById('inCatatan').value || "Belum ada evaluasi.";
+    const inCat = document.getElementById('inCatatan');
+    if(pCat && inCat) pCat.innerText = inCat.value || "Belum ada evaluasi.";
     
-    const d = new Date(document.getElementById('inTanggal').value);
-    const bln = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    if(!isNaN(d.getTime())) {
-        const pTgl = document.getElementById('pv-tanggal');
-        if(pTgl) pTgl.innerText = `SBY, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
+    const inTgl = document.getElementById('inTanggal');
+    if(inTgl) {
+        const d = new Date(inTgl.value);
+        const bln = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        if(!isNaN(d.getTime())) {
+            const pTgl = document.getElementById('pv-tanggal');
+            if(pTgl) pTgl.innerText = `SBY, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
+        }
     }
     
     const pPel = document.getElementById('pv-pelatih');
-    if(pPel) pPel.innerText = document.getElementById('inPelatih').value || "Coach";
+    const inPel = document.getElementById('inPelatih');
+    if(pPel && inPel) pPel.innerText = inPel.value || "Coach";
 
     updateRadarChart();
     calcGrade();
@@ -905,28 +951,31 @@ function saveReport() {
     showToast("Data Rapor berhasil disimpan secara aman.");
 }
 
-// Single line string literal strictly applied to prevent parsing issues
 function clearAllData() {
-    if(confirm("PERINGATAN KERAS!\n\nApakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
+    // Pesan menggunakan satu baris utuh agar tidak terkena Syntax Error Javascript
+    if(confirm("PERINGATAN KERAS! Apakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
         localStorage.clear();
         location.reload();
     }
 }
 
 // ==========================================
-// EKSPOR PROFESIONAL
+// EKSPOR PROFESIONAL (MESIN PDF/IMG)
 // ==========================================
 async function takeSnapshot() {
     if(typeof html2canvas === 'undefined') throw new Error("Modul html2canvas belum dimuat.");
     
     const card = document.getElementById('reportCard');
+    if(!card) throw new Error("Elemen rapor tidak ditemukan.");
+
     const oW = card.style.width, oT = card.style.transform;
     card.style.width = '760px'; card.style.transform = 'none';
     window.scrollTo(0,0);
 
+    // Konfigurasi html2canvas anti-CORS block
     const canvas = await html2canvas(card, {
-        scale: 2, backgroundColor: null, useCORS: true, allowTaint: true,
-        width: 760, windowWidth: 760, scrollY: 0
+        scale: 2, backgroundColor: null, useCORS: true, allowTaint: false,
+        width: 760, windowWidth: 760, scrollY: 0, logging: false
     });
 
     card.style.width = oW; card.style.transform = oT;
@@ -937,26 +986,26 @@ window.exportFile = async function(fmt) {
     if(!selPlayer) return showToast("Pilih pemain terlebih dahulu!", "error");
     
     const btns = document.querySelectorAll('.action-btn');
-    btns.forEach(b => b.disabled = true);
+    btns.forEach(b => { safeStyle(b, 'opacity', '0.5'); b.disabled = true; });
     
-    const btnId = 'btnExport' + fmt.toUpperCase();
-    const btn = document.getElementById(btnId);
-    const oldHtml = btn ? btn.innerHTML : "";
-    if(btn) {
-        btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Proses...';
-        lucide.createIcons();
+    const ov = document.getElementById('exportOverlay');
+    if(ov) {
+        ov.style.display = 'flex';
+        document.getElementById('exportOverlayText').innerText = `Mengekspor Dokumen ${fmt.toUpperCase()}...`;
     }
-    showToast(`Memproses dokumen ${fmt.toUpperCase()}... Mohon tunggu.`);
 
     try {
         const cvs = await takeSnapshot();
-        const fname = `Rapor_${selPlayer.name}_T${document.getElementById('inTriwulan').value}_${document.getElementById('inMusim').value}`;
+        const tw = document.getElementById('inTriwulan').value;
+        const ms = document.getElementById('inMusim').value;
+        const fname = `Rapor_${selPlayer.name.replace(/\s+/g,'_')}_T${tw}_${ms}`;
 
         if(fmt === 'pdf') {
-            if(typeof jsPDF === 'undefined') throw new Error("Modul jsPDF belum dimuat.");
-            const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            if(typeof window.jsPDF === 'undefined') throw new Error("Modul jsPDF belum dimuat.");
+            const pdf = new window.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
             const w = 190, h = (cvs.height * w) / cvs.width;
-            pdf.addImage(cvs.toDataURL('image/jpeg', 1.0), 'JPEG', 10, 15, w, h);
+            // Draw image. A4 width is 210, margin 10 left/right = 190 width.
+            pdf.addImage(cvs.toDataURL('image/png', 1.0), 'PNG', 10, 15, w, h);
             pdf.save(fname + '.pdf');
         } else {
             const link = document.createElement('a');
@@ -964,14 +1013,13 @@ window.exportFile = async function(fmt) {
             link.href = cvs.toDataURL(`image/${fmt==='jpg'?'jpeg':'png'}`, 1.0);
             link.click();
         }
-        showToast("Ekspor dokumen berhasil!");
+        showToast(`Ekspor ${fmt.toUpperCase()} berhasil!`);
     } catch(err) {
-        showToast("Gagal memproses gambar. Pastikan gambar tidak diproteksi server.", "error");
         console.error(err);
+        showToast("Gagal memproses ekspor. Server gambar menolak izin CORS.", "error");
     } finally {
-        btns.forEach(b => b.disabled = false);
-        if(btn) btn.innerHTML = oldHtml;
-        lucide.createIcons();
+        btns.forEach(b => { safeStyle(b, 'opacity', '1'); b.disabled = false; });
+        if(ov) ov.style.display = 'none';
     }
 };
 
@@ -979,12 +1027,13 @@ window.sendWA = async function() {
     if(!selPlayer) return showToast("Pilih pemain terlebih dahulu!", "error");
     if(!selPlayer.phone) return showToast("No WA orang tua pemain ini tidak ditemukan.", "error");
 
-    showToast("Mengunduh salinan PDF & membuka WhatsApp...");
-    await exportFile('pdf');
+    showToast("Memproses WhatsApp...");
+    await window.exportFile('pdf');
 
     setTimeout(() => {
         const tw = document.getElementById('inTriwulan').value;
         const ms = document.getElementById('inMusim').value;
+        // Text WhatsApp menggunakan line break \n agar aman di Javascript
         const txt = "Halo Bapak/Ibu Wali dari *" + selPlayer.name + "*,\n\nBerikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan " + tw + " Musim " + ms + ".\n\n_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_\n\nTerima kasih atas dukungannya,\n*Manajemen MNA GEN-Z ACADEMY*";
         window.open(`https://wa.me/${selPlayer.phone}?text=${encodeURIComponent(txt)}`, '_blank');
     }, 1500);
