@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<title>Rapor Pemain Akademi - Claude Pro Edition</title>
+<title>Rapor Pemain Akademi - Professional Edition</title>
 
 <!-- Libraries Front-End Kualitas Premium -->
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -99,7 +99,7 @@
   @media (min-width: 1024px) {
     .dashboard { flex-direction: row; align-items: flex-start; }
     .sidebar-menu { width: 240px; position: sticky; top: 90px; }
-    .editor-panel { width: 440px; flex-shrink: 0; }
+    .editor-panel { width: 440px; flex-shrink: 0; view-transition-name: editor-panel; }
     .preview-panel { flex: 1; min-width: 0; position: sticky; top: 90px; }
   }
 
@@ -113,9 +113,9 @@
   .menu-btn.active { background: rgba(183, 255, 40, 0.1); border-color: rgba(183, 255, 40, 0.2); color: var(--green); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
   /* EDITOR TABS */
-  .tab-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .tab-content { display: none; }
   .tab-content.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  /* Remove old animation as View Transitions will handle it */
 
   .card-section {
     background: var(--panel-bg); border-radius: 1.5rem; padding: 24px;
@@ -126,7 +126,8 @@
   
   /* STATS CARDS */
   .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-  .stat-card { background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; }
+  .stat-card { background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .stat-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); }
   .stat-card h4 { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px; }
   .stat-card p { font-size: 18px; font-weight: 900; color: #fff; margin: 0; }
   .stat-card p.neon { color: var(--green); }
@@ -150,16 +151,16 @@
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 13px;
-    border: 1px solid transparent; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    border: 1px solid transparent; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: inherit;
   }
-  .btn:hover { transform: translateY(-2px); }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(1); }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+  .btn:active { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(1); box-shadow: none; }
   
-  .btn-primary { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(183,255,40,0.2); }
-  .btn-primary:hover { background: #9de018; }
-  .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
-  .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+  .btn-primary { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(183,255,40,0.15); }
+  .btn-primary:hover { background: #9de018; box-shadow: 0 6px 20px rgba(183,255,40,0.25); }
+  .btn-secondary { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.1); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
   .btn-danger { background: rgba(225, 29, 72, 0.15); color: #f43f5e; border-color: rgba(225, 29, 72, 0.3); }
   .btn-danger:hover { background: #e11d48; color: #fff; }
 
@@ -168,8 +169,8 @@
   .player-list::-webkit-scrollbar { width: 4px; }
   .player-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
   .player-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-  .player-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 14px; transition: background 0.2s; }
-  .player-card:hover { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.2); }
+  .player-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 14px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .player-card:hover { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.2); transform: translateX(4px); }
   .player-card img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); background: #fff;}
   .player-card .info { flex: 1; min-width: 0; }
   .player-card .name { font-weight: 700; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -181,8 +182,8 @@
   .skill-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .skill-label { font-size: 13px; font-weight: 600; color: #e2e8f0; }
   .star-picker { display: flex; gap: 4px; font-size: 24px; cursor: pointer; user-select: none;}
-  .star-picker span { color: #334155; transition: all 0.2s; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-  .star-picker span:hover { color: #fcd34d; transform: scale(1.1); }
+  .star-picker span { color: #334155; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  .star-picker span:hover { color: #fcd34d; transform: scale(1.2); }
   .star-picker span.active { color: var(--gold); }
 
   /* REPORT CARD PREVIEW (RESOLUSI TERKUNCI UNTUK PDF HD) */
@@ -215,13 +216,14 @@
 
   .rc-body { padding: 24px 32px; display: grid; grid-template-columns: 1fr 240px; gap: 32px; background: var(--rc-sec); }
   .rc-skills-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
-  .rc-cat { background: var(--rc-bg); border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--rc-border); }
+  .rc-cat { background: var(--rc-bg); border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--rc-border); transition: transform 0.3s ease; }
+  .rc-cat:hover { transform: scale(1.02); }
   .rc-cat h3 { color: var(--rc-text); font-weight: 900; font-size: 14px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-sec); padding-bottom: 8px; }
   .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .rc-skill .label { color: var(--rc-accent); font-weight: 800; font-size: 11px; text-transform: uppercase; }
   .rc-stars { font-size: 14px; letter-spacing: 2px; }
   .rc-stars .on { color: var(--gold); }
-  .rc-stars .off { color: var(--graystar); }
+  .rc-stars .off { color: var(--rc-border); }
 
   .rc-chart-area { background: var(--rc-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--rc-border); display:flex; flex-direction:column; align-items:center; justify-content:center;}
   .rc-chart-title { font-size: 12px; font-weight: 900; color: var(--rc-text); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;}
@@ -242,7 +244,54 @@
   .export-panel { background: var(--panel-bg); border-radius: 1.5rem; padding: 24px; border: 1px solid var(--line); margin-top: 24px; }
   .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
   .btn-wa { background: rgba(37, 211, 102, 0.15); color: #25D366; border-color: rgba(37, 211, 102, 0.3); font-size: 14px; padding: 14px; }
-  .btn-wa:hover { background: #25D366; color: #fff; }
+  .btn-wa:hover { background: #25D366; color: #fff; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3); }
+
+  /* Modern Web Guidance: Top-layer animations for Dialog */
+  dialog {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+    transition-property: opacity, transform, display, overlay;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition-behavior: allow-discrete;
+    margin: auto;
+  }
+  dialog[open] {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    @starting-style {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+  }
+  dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    transition:
+      display 0.3s allow-discrete,
+      overlay 0.3s allow-discrete,
+      background-color 0.3s ease-out,
+      backdrop-filter 0.3s ease-out;
+  }
+  dialog[open]::backdrop {
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    @starting-style {
+      background-color: rgba(0, 0, 0, 0);
+      backdrop-filter: blur(0px);
+    }
+  }
+
+  /* Modern Web Guidance: View transitions */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.25s;
+  }
+  ::view-transition-group(editor-panel) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
 </style>
 </head>
 <body>
@@ -250,7 +299,7 @@
 <!-- LOADER -->
 <div id="loadingScreen">
   <div class="loader-ring"></div>
-  <div id="loadingText">Menyiapkan Sistem Pro...</div>
+  <div id="loadingText">Menyiapkan Sistem Profesional...</div>
 </div>
 
 <!-- OVERLAY PROSES -->
@@ -265,7 +314,7 @@
 <div class="topbar">
   <div class="topbar-brand">
     <h1>🏟️ Rapor Akademi</h1>
-    <span>EDISI CLAUDE PRO</span>
+    <span>PROFESSIONAL EDITION</span>
   </div>
   <div class="api-status" id="apiStatus">
     <i data-lucide="wifi" class="h-4 w-4"></i> Standby
@@ -374,7 +423,7 @@
         
         <hr class="border-white/10 my-8">
         <h3 class="text-sm font-bold text-rose-500 mb-3"><i data-lucide="alert-triangle" class="inline h-4 w-4"></i> Zona Berbahaya</h3>
-        <button class="btn btn-danger" style="width:100%;" onclick="clearAllData()"><i data-lucide="trash-2" class="h-4 w-4"></i> Format Sistem Keseluruhan</button>
+        <button class="btn btn-danger" style="width:100%;" onclick="openFormatDialog()"><i data-lucide="trash-2" class="h-4 w-4"></i> Format Sistem Keseluruhan</button>
       </div>
     </div>
 
@@ -471,11 +520,22 @@
   </section>
 </div>
 
+<!-- NATIVE HTML DIALOG FOR SYSTEM FORMAT (TOP-LAYER API) -->
+<dialog id="formatDialog" class="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl backdrop-blur-xl text-white max-w-sm w-full mx-auto">
+  <div class="flex flex-col gap-4">
+    <h3 class="text-lg font-bold text-rose-500 mb-2 flex items-center gap-2"><i data-lucide="alert-triangle"></i> Peringatan Keras!</h3>
+    <p class="text-sm text-slate-300 leading-relaxed">Apakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya dan tidak dapat dikembalikan.</p>
+    <div class="flex gap-3 justify-end mt-2">
+      <button class="btn btn-secondary flex-1" onclick="document.getElementById('formatDialog').close()">Batal</button>
+      <button class="btn btn-danger flex-1" onclick="confirmFormat()">Format Data</button>
+    </div>
+  </div>
+</dialog>
+
 <script>
 // ==========================================
 // KONFIGURASI SISTEM
 // ==========================================
-// PENTING: TEMPELKAN URL GOOGLE SCRIPT ANDA DI SINI
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
 const DEF_AVATAR = "https://ui-avatars.com/api/?name=Pemain&background=e2e8f0&color=475569&size=200";
 
@@ -506,17 +566,13 @@ function safeStyle(el, prop, val) { if(el && el.style) el.style[prop] = val; }
 // ==========================================
 // INIT & CORE FUNCTIONS (FAILSAFE LOADER)
 // ==========================================
-// Event `load` pada window lebih aman dari DOMContentLoaded karena memastikan script eksternal selesai ditarik
 window.addEventListener("load", () => {
-    
-    // Perlindungan Mutlak: Jika 5 detik sistem gagal memuat, hilangkan paksa
     const failsafe = setTimeout(() => { 
         hideLoader(); 
         showToast("Sistem dilanjutkan dalam Mode Pemulihan.", "error"); 
     }, 5000);
 
     try {
-        // Deklarasi jsPDF yang aman
         if (window.jspdf && window.jspdf.jsPDF) {
             window.jsPDF = window.jspdf.jsPDF;
         }
@@ -577,6 +633,15 @@ function showToast(msg, type='success') {
 }
 
 function switchTab(tabId, btn) {
+    // Utilize Document View Transitions for smooth page morphing
+    if (!document.startViewTransition) {
+        updateTab(tabId, btn);
+        return;
+    }
+    document.startViewTransition(() => updateTab(tabId, btn));
+}
+
+function updateTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
     const target = document.getElementById(tabId);
@@ -732,7 +797,7 @@ function selectPlayer(id) {
             infoEl.innerHTML = `<img src="${selPlayer.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #b7ff28;" onerror="this.src='${DEF_AVATAR}'"> <span class="truncate">${selPlayer.name}</span>`;
         }
         const menus = document.querySelectorAll('.menu-btn');
-        if(menus.length > 1) menus[1].click();
+        if(menus.length > 1) switchTab('tab-rapor', menus[1]);
         checkSavedReport();
     }
 }
@@ -951,12 +1016,17 @@ function saveReport() {
     showToast("Data Rapor berhasil disimpan secara aman.");
 }
 
-function clearAllData() {
-    // Pesan menggunakan satu baris utuh agar tidak terkena Syntax Error Javascript
-    if(confirm("PERINGATAN KERAS! Apakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
-        localStorage.clear();
-        location.reload();
+function openFormatDialog() {
+    const dialog = document.getElementById('formatDialog');
+    if (dialog) {
+        dialog.showModal();
+        lucide.createIcons();
     }
+}
+
+function confirmFormat() {
+    localStorage.clear();
+    location.reload();
 }
 
 // ==========================================
@@ -972,7 +1042,6 @@ async function takeSnapshot() {
     card.style.width = '760px'; card.style.transform = 'none';
     window.scrollTo(0,0);
 
-    // Konfigurasi html2canvas anti-CORS block
     const canvas = await html2canvas(card, {
         scale: 2, backgroundColor: null, useCORS: true, allowTaint: false,
         width: 760, windowWidth: 760, scrollY: 0, logging: false
@@ -1004,7 +1073,6 @@ window.exportFile = async function(fmt) {
             if(typeof window.jsPDF === 'undefined') throw new Error("Modul jsPDF belum dimuat.");
             const pdf = new window.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
             const w = 190, h = (cvs.height * w) / cvs.width;
-            // Draw image. A4 width is 210, margin 10 left/right = 190 width.
             pdf.addImage(cvs.toDataURL('image/png', 1.0), 'PNG', 10, 15, w, h);
             pdf.save(fname + '.pdf');
         } else {
@@ -1033,7 +1101,6 @@ window.sendWA = async function() {
     setTimeout(() => {
         const tw = document.getElementById('inTriwulan').value;
         const ms = document.getElementById('inMusim').value;
-        // Text WhatsApp menggunakan line break \n agar aman di Javascript
         const txt = "Halo Bapak/Ibu Wali dari *" + selPlayer.name + "*,\n\nBerikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan " + tw + " Musim " + ms + ".\n\n_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_\n\nTerima kasih atas dukungannya,\n*Manajemen MNA GEN-Z ACADEMY*";
         window.open(`https://wa.me/${selPlayer.phone}?text=${encodeURIComponent(txt)}`, '_blank');
     }, 1500);
