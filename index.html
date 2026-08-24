@@ -2,1179 +2,2036 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-<title>Rapor Pemain Akademi - Sports Professional Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rapor Akademi — MNA GEN-Z</title>
+<meta name="description" content="Sistem manajemen rapor evaluasi pemain akademi futsal.">
 
-<!-- Libraries Front-End Kualitas Premium -->
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<!-- Export & data libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.552.0/dist/umd/lucide.min.js"></script>
+
+<!-- Type system: Barlow Condensed (scoreboard/display), Plus Jakarta Sans (UI/body), JetBrains Mono (stats/data) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 
 <style>
-  :root {
-    --navy: #1b2a63;
-    --purple1: #7c3aed;
-    --blue2: #3730a3;
-    --green: #b7ff28;
-    --gold: #fbbf24;
-    --ink: #070b13;
-    --panel-bg: rgba(15, 23, 42, 0.65);
-    --line: rgba(255, 255, 255, 0.12);
-    
-    /* CSS Variabel untuk Tema Dinamis Rapor */
-    --rc-bg: #ffffff;
-    --rc-sec: #f4f4f5;
-    --rc-text: #18181b;
-    --rc-border: #e4e4e7;
-    --rc-text-muted: #71717a;
-    --rc-accent: #7c3aed;
-  }
-  
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, rgba(4, 8, 16, 0.98) 0%, rgba(11, 20, 37, 0.95) 100%);
-    color: #f6f8ff; min-height: 100vh; overflow-x: hidden;
-  }
+/* =========================================================
+   DESIGN TOKENS
+   Palette dibangun dari dunia futsal: lampu stadion malam hari
+   (navy), lampu sorot wasit/trofi (amber), garis lapangan (teal),
+   dan sistem kartu wasit untuk status (merah/kuning/hijau).
+   ========================================================= */
+:root{
+  /* Surfaces */
+  --ink:        #0b1424;   /* Kick-off Navy — bg utama */
+  --ink-2:      #121f37;   /* Locker Room — panel */
+  --ink-3:      #0a0f1c;   /* recessed / input */
+  --ink-4:      #1a2947;   /* hover surface */
+  --line:       rgba(255,255,255,0.09);
+  --line-soft:  rgba(255,255,255,0.05);
+  --paper:      #fbfbfa;   /* kertas rapor (printable) */
+  --paper-2:    #f3f4f7;
 
-  /* LOADER ELEGAN */
-  #loadingScreen {
-    position: fixed; inset: 0; z-index: 9999; background: var(--ink);
-    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
-    color: var(--green); font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-  }
-  .loader-ring {
-    width: 60px; height: 60px; border: 4px solid rgba(183, 255, 40, 0.1);
-    border-top-color: var(--green); border-radius: 50%;
-    animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* Brand accents */
+  --amber:      #f2a541;   /* Whistle Amber — aksi utama */
+  --amber-ink:  #241503;
+  --teal:       #2fd1c2;   /* Touchline Teal — data sekunder */
+  --navy-deep:  #132146;   /* teks/branding di atas kertas putih */
 
-  /* OVERLAY PROSES EKSPOR */
-  #exportOverlay {
-    position: fixed; inset: 0; z-index: 10000; background: rgba(7, 11, 19, 0.85); backdrop-filter: blur(8px);
-    display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px;
-    color: white; font-weight: 700; letter-spacing: 1px;
-  }
+  /* Semantic (istilah wasit) */
+  --success:    #3fbf6f;   /* Full-Time Green */
+  --danger:     #ef4444;   /* Red Card */
+  --warning:    #eab308;   /* Yellow Card */
+  --gold:       #fbbf24;   /* bintang rating */
+  --graystar:   #dfe1e8;
 
-  /* TOAST NOTIFICATION */
-  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10001; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
-  .toast {
-    background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line); color: white; padding: 14px 20px; border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
-    display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600;
-    transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .toast.show { transform: translateX(0); }
-  .toast.success i { color: var(--green); }
-  .toast.error i { color: #f43f5e; }
+  /* Text */
+  --text:       #f5f7fb;
+  --text-dim:   #aab4c6;
+  --text-mute:  #7c879c;
 
-  /* TOPBAR */
-  .topbar {
-    background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--line);
-    padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;
-  }
-  .topbar-brand { display: flex; flex-direction: column; }
-  .topbar-brand h1 { font-family: 'Inter', sans-serif; font-size: 22px; margin: 0; color: #fff; font-weight: 900; letter-spacing: -0.5px; line-height: 24px; text-transform: uppercase; }
-  .topbar-brand span { font-size: 10px; color: var(--green); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px;}
-  .api-status {
-    display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
-    background: rgba(183, 255, 40, 0.1); color: var(--green); padding: 6px 14px; border-radius: 20px;
-    border: 1px solid rgba(183, 255, 40, 0.2); letter-spacing: 0.5px; text-transform: uppercase;
-  }
+  /* Type */
+  --f-display: 'Barlow Condensed', sans-serif;
+  --f-body:    'Plus Jakarta Sans', sans-serif;
+  --f-mono:    'JetBrains Mono', monospace;
 
-  /* LAYOUT DASHBOARD */
-  .dashboard { display: flex; flex-direction: column; gap: 24px; padding: 24px; max-width: 1600px; margin: 0 auto; }
-  @media (max-width: 1023px) {
-    .dashboard { padding: 16px; gap: 16px; }
-    .sidebar-menu { display: flex; overflow-x: auto; gap: 8px; width: 100%; padding-bottom: 8px; margin-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none; }
-    .sidebar-menu::-webkit-scrollbar { display: none; }
-    .menu-btn { white-space: nowrap; flex-shrink: 0; width: auto; margin-bottom: 0; padding: 10px 16px; font-size: 13px; }
-    .preview-wrapper { overflow-x: auto; margin-left: -16px; padding-left: 16px; padding-right: 16px; }
-  }
-  @media (min-width: 1024px) {
-    .dashboard { flex-direction: row; align-items: flex-start; }
-    .sidebar-menu { width: 240px; position: sticky; top: 90px; }
-    .editor-panel { width: 440px; flex-shrink: 0; view-transition-name: editor-panel; }
-    .preview-panel { flex: 1; min-width: 0; position: sticky; top: 90px; }
-  }
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-lift: 0 20px 44px rgba(2,6,20,0.45);
+  --shadow-soft: 0 10px 26px rgba(2,6,20,0.28);
+}
 
-  /* SIDEBAR MENU */
-  .menu-btn {
-    width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 18px;
-    background: transparent; color: #94a3b8; border: 1px solid transparent; border-radius: 14px;
-    font-size: 14px; font-weight: 700; text-align: left; cursor: pointer; transition: all 0.2s; margin-bottom: 8px;
-  }
-  .menu-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
-  .menu-btn.active { background: rgba(183, 255, 40, 0.1); border-color: rgba(183, 255, 40, 0.2); color: var(--green); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  font-family:var(--f-body);
+  background:
+    radial-gradient(1100px 620px at 85% -10%, rgba(47,209,194,0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(242,165,65,0.08), transparent 55%),
+    var(--ink);
+  color:var(--text);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--amber); color:var(--amber-ink);}
+:focus-visible{outline:2px solid var(--amber); outline-offset:2px; border-radius:4px;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+a{color:var(--teal);}
+h1,h2,h3,h4{font-family:var(--f-display); margin:0; letter-spacing:.2px;}
+p{margin:0;}
+button{font-family:inherit;}
 
-  /* EDITOR TABS */
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+/* Eyebrow / label utility grounded in matchday program typography */
+.eyebrow{
+  font-family:var(--f-display); font-weight:700; font-size:12.5px;
+  letter-spacing:2px; text-transform:uppercase; color:var(--amber);
+  display:flex; align-items:center; gap:8px;
+}
+.eyebrow::before{content:''; width:16px; height:2px; background:var(--amber); border-radius:2px; flex-shrink:0;}
+.mono{font-family:var(--f-mono);}
 
-  .card-section {
-    background: var(--panel-bg); border-radius: 1.5rem; padding: 24px;
-    border: 1px solid var(--line); box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); margin-bottom: 24px;
-  }
-  .section-title { font-size: 16px; color: #fff; font-weight: 800; margin: 0 0 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
-  
-  /* STATS CARDS */
-  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-  .stat-card { background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .stat-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); }
-  .stat-card h4 { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px; }
-  .stat-card p { font-size: 18px; font-weight: 900; color: #fff; margin: 0; }
-  .stat-card p.neon { color: var(--green); }
+/* Scrollbar (webkit) */
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15); border-radius:8px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.25);}
 
-  /* FORM UI */
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .field input, .field select, .field textarea {
-    width: 100%; padding: 12px 16px; border-radius: 12px; background: rgba(2,6,23,0.5); color: #fff;
-    border: 2px solid rgba(255,255,255,0.08); font-size: 14px; transition: all 0.3s; font-family: inherit; font-weight: 500;
-  }
-  .field input:focus, .field select:focus, .field textarea:focus {
-    border-color: var(--green); background: rgba(2,6,23,0.8);
-    box-shadow: 0 0 0 4px rgba(183,255,40,0.1), inset 0 2px 4px rgba(0,0,0,0.2); outline: none; transform: translateY(-1px);
-  }
-  .field input:disabled { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
-  .field textarea { resize: vertical; min-height: 80px; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* =========================================================
+   LOADING SCREEN
+   ========================================================= */
+#loadingScreen{
+  position:fixed; inset:0; z-index:9999; background:var(--ink);
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:18px;
+}
+.ls-crest{
+  width:64px; height:64px; border-radius:50%;
+  border:3px solid var(--line); border-top-color:var(--amber);
+  animation:spin 0.9s cubic-bezier(.4,0,.2,1) infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ls-label{font-family:var(--f-display); font-weight:700; font-size:14px; letter-spacing:3px; text-transform:uppercase; color:var(--text-dim);}
+.ls-label b{color:var(--amber);}
 
-  /* BUTTONS */
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 13px;
-    border: 1px solid transparent; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: inherit;
-  }
-  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-  .btn:active { transform: scale(0.96); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(1); box-shadow: none; }
-  
-  .btn-primary { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(183,255,40,0.15); }
-  .btn-primary:hover { background: #9de018; box-shadow: 0 6px 20px rgba(183,255,40,0.25); }
-  .btn-secondary { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.1); }
-  .btn-secondary:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
-  .btn-danger { background: rgba(225, 29, 72, 0.15); color: #f43f5e; border-color: rgba(225, 29, 72, 0.3); }
-  .btn-danger:hover { background: #e11d48; color: #fff; }
+/* =========================================================
+   APP SHELL — topbar (scoreboard) + rail nav (team sheet)
+   ========================================================= */
+#app{display:flex; min-height:100vh;}
 
-  /* PLAYER LIST */
-  .player-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
-  .player-list::-webkit-scrollbar { width: 4px; }
-  .player-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
-  .player-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-  .player-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 14px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .player-card:hover { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.2); transform: translateX(4px); }
-  .player-card img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); background: #fff;}
-  .player-card .info { flex: 1; min-width: 0; }
-  .player-card .name { font-weight: 700; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .player-card .ku { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 4px; }
+.rail{
+  width:232px; flex-shrink:0; background:var(--ink-2); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; position:sticky; top:0; height:100vh; z-index:40;
+}
+.rail-brand{
+  display:flex; align-items:center; gap:10px; padding:20px 18px 16px; border-bottom:1px solid var(--line);
+}
+.rail-brand img{width:38px; height:38px; border-radius:50%; object-fit:contain; background:#fff; flex-shrink:0;}
+.rail-brand .name{font-family:var(--f-display); font-weight:800; font-size:16px; line-height:1.15; color:#fff; text-transform:uppercase; letter-spacing:.4px;}
+.rail-brand .name span{display:block;}
+.rail-brand .name span.sub{font-size:11px; font-weight:600; color:var(--teal); letter-spacing:1px; margin-top:1px; text-transform:uppercase;}
 
-  /* RATINGS PICKER */
-  .rating-cat { margin-bottom: 24px; }
-  .rating-title { font-size: 12px; font-weight: 900; color: var(--green); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dashed var(--line); text-transform: uppercase;}
-  .skill-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .skill-label { font-size: 13px; font-weight: 600; color: #e2e8f0; }
-  .star-picker { display: flex; gap: 4px; font-size: 24px; cursor: pointer; user-select: none;}
-  .star-picker span { color: #334155; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-  .star-picker span:hover { color: #fcd34d; transform: scale(1.2); }
-  .star-picker span.active { color: var(--gold); }
+.rail-nav{flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:4px; overflow-y:auto;}
+.rail-item{
+  display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:var(--radius-sm);
+  color:var(--text-dim); font-weight:600; font-size:13.5px; cursor:pointer; border:1px solid transparent;
+  position:relative; transition:background .15s, color .15s;
+}
+.rail-item svg{width:18px; height:18px; flex-shrink:0;}
+.rail-item:hover{background:var(--ink-4); color:#fff;}
+.rail-item.active{background:rgba(242,165,65,0.12); color:var(--amber); border-color:rgba(242,165,65,0.25);}
+.rail-item.active::before{content:''; position:absolute; left:-12px; top:50%; transform:translateY(-50%); width:4px; height:22px; background:var(--amber); border-radius:0 4px 4px 0;}
+.rail-item .count{margin-left:auto; font-family:var(--f-mono); font-size:10.5px; background:rgba(255,255,255,0.08); padding:1px 7px; border-radius:20px; color:var(--text-dim);}
 
-  /* REPORT CARD PREVIEW - FULLY OPTIMIZED FOR HTML2CANVAS */
-  .preview-wrapper { width: 100%; overflow-x: auto; padding-bottom: 20px; display: flex; justify-content: center; }
-  .preview-wrapper::-webkit-scrollbar { display: none; }
-  
-  .report-card {
-    width: 760px; min-width: 760px; 
-    border-radius: 20px; 
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); 
-    background: transparent; color: var(--rc-text); transition: all 0.5s ease;
-    font-family: 'Inter', sans-serif;
-  }
-  
-  /* CRITICAL: No overflow:hidden to prevent clip-path bugs in html2canvas */
-  .rc-inner-wrap {
-    width: 100%; border-radius: 20px; background: var(--rc-bg); position: relative;
-    border: 2px solid var(--rc-border);
-  }
+.rail-foot{padding:14px 18px 18px; border-top:1px solid var(--line);}
+.rail-sync-time{font-size:10.5px; color:var(--text-mute); line-height:1.5;}
+.rail-sync-time b{color:var(--teal); display:block; font-family:var(--f-mono);}
 
-  /* Watermark Club Logo */
-  .rc-watermark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    height: 400px;
-    object-fit: contain;
-    opacity: 0.04;
-    pointer-events: none;
-    z-index: 0;
-  }
-  
-  /* Explicit border radius per corner to simulate overflow hidden */
-  .rc-header { display: flex; align-items: center; gap: 20px; padding: 24px 32px 20px; background: var(--rc-bg); border-bottom: 2px solid var(--rc-sec); position: relative; z-index: 1; border-top-left-radius: 18px; border-top-right-radius: 18px;}
-  .rc-logo { width: 84px; height: 84px; border-radius: 14px; object-fit: contain; background: #fff; border: 1px solid var(--rc-border); padding: 6px; z-index: 2;}
-  
-  /* Diubah menjadi flex column untuk alignment sempurna dengan logo */
-  .rc-clubname { display: flex; flex-direction: column; justify-content: center; height: 84px; z-index: 2; flex: 1;}
-  #pv-club1 { font-weight: 900; color: var(--rc-text); text-transform: uppercase; line-height: 1; font-size: 36px; letter-spacing: -1px; margin-bottom: 6px;}
-  #pv-club2 { font-size: 16px; font-weight: 800; color: var(--rc-accent); line-height: 1; letter-spacing: 1.5px; text-transform: uppercase;}
-  
-  /* Nilai Akhir Box */
-  .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--rc-sec); width: 100px; height: 84px; border-radius: 16px; border: 1px solid var(--rc-border);}
-  .rc-grade-label { font-size: 11px; font-weight: 800; color: var(--rc-text-muted); text-transform: uppercase; margin-bottom: 2px; line-height: 1;}
-  .rc-grade-value { font-family: 'Inter', sans-serif; font-size: 50px; font-weight: 900; color: var(--rc-text-muted); line-height: 1; letter-spacing: -1px; position: relative; top: -2px;}
+.main-col{flex:1; min-width:0; display:flex; flex-direction:column;}
 
-  /* Removed skew transform from background to prevent bounding box issues in canvas */
-  .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 40px; z-index: 1;}
-  
-  /* CRITICAL: Explicit PX line-heights and safe fonts */
-  .rc-banner h2 { font-family: 'Inter', sans-serif; color: var(--green); font-size: 48px; margin: 0 0 8px 0; font-weight: 900; line-height: 48px; text-transform: uppercase; letter-spacing: -1px;}
-  .rc-banner .sub { font-weight: 700; font-size: 16px; opacity: 0.9; line-height: 20px; margin-top: 0; text-transform: uppercase; letter-spacing: 1px;}
-  
-  /* Metode height + line-height untuk menjamin text berada pas di tengah pada html2canvas */
-  .rc-period { margin-top: 20px; font-weight: 800; font-size: 12px; background: rgba(0,0,0,0.25); display: inline-block; padding: 0 16px; height: 32px; line-height: 32px; border-radius: 8px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); letter-spacing: 0.5px; vertical-align: middle;}
-  
-  .rc-playername { margin-top: 24px; color: #fff; font-weight: 900; font-size: 28px; line-height: 32px; text-transform: uppercase; width: 65%; position: relative; z-index: 2;}
+.topbar{
+  background:rgba(11,20,36,0.85); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line); padding:16px 28px; display:flex; align-items:center; justify-content:space-between;
+  gap:16px; position:sticky; top:0; z-index:30;
+}
+.topbar-title{font-family:var(--f-display); font-size:22px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:#fff;}
+.topbar-title .dot{color:var(--amber);}
+.topbar-sub{font-size:12px; color:var(--text-mute); margin-top:1px;}
+.topbar-actions{display:flex; align-items:center; gap:10px;}
 
-  .rc-photo-wrap { position: absolute; right: 40px; bottom: 0; width: 180px; height: 180px; z-index: 2; display: flex; align-items: flex-end;}
-  .rc-photo { width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));}
+.mobile-tabbar{
+  display:none; position:sticky; top:0; z-index:40; background:var(--ink-2); border-bottom:1px solid var(--line);
+  overflow-x:auto; padding:8px 10px; gap:6px;
+}
+.mobile-tabbar .m-item{
+  flex-shrink:0; display:flex; align-items:center; gap:6px; padding:8px 13px; border-radius:20px;
+  font-size:12.5px; font-weight:700; color:var(--text-dim); background:var(--ink-3); border:1px solid var(--line);
+  white-space:nowrap;
+}
+.mobile-tabbar .m-item svg{width:14px; height:14px;}
+.mobile-tabbar .m-item.active{background:var(--amber); color:var(--amber-ink); border-color:var(--amber);}
 
-  /* Fixed KATEGORI Cut Off with solid padding */
-  .rc-class { padding: 24px 32px 16px; font-family: 'Inter', sans-serif; font-weight: 900; color: var(--rc-text); font-size: 26px; background: var(--rc-bg); line-height: 28px; position: relative; z-index: 1; text-transform: uppercase; letter-spacing: -0.5px;}
+.view{padding:26px 28px 60px; max-width:1360px; width:100%; margin:0 auto; display:none;}
+.view.active{display:block; animation:viewIn .25s ease;}
+@keyframes viewIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
 
-  .rc-body { padding: 12px 32px 32px; display: flex; gap: 24px; background: var(--rc-bg); position: relative; z-index: 1;}
-  
-  .rc-skills-panel { flex: 1; display: flex; flex-direction: column; gap: 16px; }
-  .rc-skills-row { display: flex; gap: 16px; }
-  
-  .rc-cat { flex: 1; background: var(--rc-sec); border-radius: 12px; padding: 16px; border: 1px solid var(--rc-border); }
-  .rc-cat h3 { font-family: 'Inter', sans-serif; color: var(--rc-text); font-weight: 900; font-size: 18px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-border); padding-bottom: 8px; line-height: 20px; text-transform: uppercase; letter-spacing: -0.5px;}
-  
-  /* Bintang sejajar dengan teks dengan teknik line-height seragam */
-  .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .rc-skill .label { color: var(--rc-text-muted); font-weight: 800; font-size: 11px; text-transform: uppercase; line-height: 18px; }
-  .rc-stars { font-size: 16px; display: flex; align-items: center; gap: 3px; line-height: 18px; }
-  .rc-stars .on { color: var(--gold); }
-  .rc-stars .off { color: #d4d4d8; }
+.view-head{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
+.view-head h2{font-size:30px; color:#fff; text-transform:uppercase; letter-spacing:.4px;}
+.view-head .hint{font-size:13px; color:var(--text-mute); margin-top:4px; max-width:520px; line-height:1.5;}
 
-  .rc-chart-area { width: 220px; flex-shrink: 0; background: var(--rc-sec); border-radius: 12px; padding: 16px; border: 1px solid var(--rc-border); display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .rc-chart-title { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 900; color: var(--rc-text); text-transform: uppercase; margin-bottom: 12px; line-height: 20px; letter-spacing: -0.5px;}
-  #radarContainer { width: 180px; height: 180px; position:relative; }
+@media (max-width:980px){
+  .rail{display:none;}
+  .mobile-tabbar{display:flex;}
+  .topbar{padding:14px 16px;}
+  .view{padding:18px 16px 48px;}
+  .view-head h2{font-size:24px;}
+}
 
-  .rc-footer { background: var(--rc-bg); padding: 24px 32px; display: flex; gap: 24px; border-top: 2px solid var(--rc-sec); position: relative; z-index: 1; border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;}
-  .rc-notes { flex: 1; }
-  /* Icon sejajar di notes h4 */
-  .rc-notes h4 { display: flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif; color: var(--rc-text); font-size: 18px; font-weight: 900; margin: 0 0 12px; line-height: 20px; letter-spacing: -0.5px;}
-  .rc-notes h4 svg { width: 20px; height: 20px; color: var(--rc-text); }
-  
-  .rc-notes p { margin: 0; font-size: 13px; line-height: 22px; color: var(--rc-text-muted); background: var(--rc-sec); padding: 16px; border-radius: 12px; border: 1px solid var(--rc-border); min-height: 80px; font-weight: 500;}
-  
-  .rc-sign-area { width: 220px; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
-  .rc-sign-date { font-size: 11px; color: var(--rc-text-muted); font-weight: 600; margin-bottom: 30px; line-height: 14px; }
-  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--rc-text); border-bottom: 2px solid var(--rc-border); padding-bottom: 6px; width: 100%; margin-bottom:6px; line-height: 18px;}
-  .rc-sign-label { font-size: 10px; color: var(--rc-text-muted); font-weight: 700; line-height: 14px; text-transform: uppercase;}
+/* =========================================================
+   PANELS / CARDS
+   ========================================================= */
+.panel{
+  background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-soft); padding:20px 22px;
+}
+.panel + .panel{margin-top:18px;}
+.panel-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--line);}
+.panel-head h3{font-size:17px; color:#fff; display:flex; align-items:center; gap:9px; font-weight:700; letter-spacing:.2px; text-transform:none; font-family:var(--f-body);}
+.panel-head h3 svg{width:18px; height:18px; color:var(--amber); flex-shrink:0;}
+.panel-hint{font-size:12.5px; color:var(--text-mute); line-height:1.55; margin:0 0 14px;}
 
-  /* EXPORT ACTIONS */
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+.grid-2 > *{min-width:0;} /* cegah grid track melebar mengikuti konten intrinsik (mis. rc-card 720px) */
+.grid-auto{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:14px;}
+@media (max-width:760px){ .grid-2{grid-template-columns:1fr;} }
 
-  .export-panel { background: var(--panel-bg); border-radius: 1.5rem; padding: 24px; border: 1px solid var(--line); margin-top: 24px; }
-  .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .btn-wa { background: rgba(37, 211, 102, 0.15); color: #25D366; border-color: rgba(37, 211, 102, 0.3); font-size: 14px; padding: 14px; }
-  .btn-wa:hover { background: #25D366; color: #fff; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3); }
+/* =========================================================
+   FORM ELEMENTS
+   ========================================================= */
+.field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.field label{font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em;}
+.field .opt{font-weight:500; text-transform:none; color:var(--text-mute); letter-spacing:0;}
+.field input, .field select, .field textarea{
+  padding:11px 14px; border:1.5px solid var(--line); border-radius:var(--radius-sm);
+  font-size:14px; font-family:inherit; background:var(--ink-3); color:#fff;
+  transition:border-color .15s, box-shadow .15s; width:100%;
+}
+.field input::placeholder, .field textarea::placeholder{color:var(--text-mute);}
+.field input:focus, .field select:focus, .field textarea:focus{
+  border-color:var(--amber); box-shadow:0 0 0 3px rgba(242,165,65,0.14); outline:none;
+}
+.field textarea{resize:vertical; min-height:74px;}
+.field-2{display:grid; grid-template-columns:1fr 1fr; gap:0 12px;}
+.field-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:0 12px;}
+@media (max-width:520px){ .field-2,.field-3{grid-template-columns:1fr;} }
+.field-file{position:relative;}
+.field-file input[type=file]{
+  padding:9px 12px; font-size:12.5px; cursor:pointer;
+}
+.field-file input[type=file]::file-selector-button{
+  background:var(--ink-4); color:#fff; border:1px solid var(--line); border-radius:6px;
+  padding:6px 10px; font-size:11.5px; font-weight:700; margin-right:10px; cursor:pointer;
+}
 
-  /* Modern Web Guidance: Top-layer animations for Dialog */
-  dialog {
-    opacity: 0;
-    transform: scale(0.95) translateY(-10px);
-    transition-property: opacity, transform, display, overlay;
-    transition-duration: 0.3s;
-    transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition-behavior: allow-discrete;
-    margin: auto;
-  }
-  dialog[open] {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    @starting-style {
-      opacity: 0;
-      transform: scale(0.95) translateY(-10px);
-    }
-  }
-  dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0);
-    backdrop-filter: blur(0px);
-    transition:
-      display 0.3s allow-discrete,
-      overlay 0.3s allow-discrete,
-      background-color 0.3s ease-out,
-      backdrop-filter 0.3s ease-out;
-  }
-  dialog[open]::backdrop {
-    background-color: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(4px);
-    @starting-style {
-      background-color: rgba(0, 0, 0, 0);
-      backdrop-filter: blur(0px);
-    }
-  }
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+.btn{
+  background:var(--ink-4); color:#fff; border:1px solid var(--line);
+  padding:10px 16px; border-radius:var(--radius-sm); font-weight:700; font-size:13px; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:transform .12s, background .15s, border-color .15s;
+  white-space:nowrap;
+}
+.btn svg{width:15px; height:15px; flex-shrink:0;}
+.btn:hover{background:#233458; transform:translateY(-1px);}
+.btn:active{transform:translateY(0) scale(.98);}
+.btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+.btn-block{width:100%;}
+.btn-sm{padding:7px 12px; font-size:12px;}
+.btn-icon{padding:9px; width:36px; height:36px;}
 
-  /* Modern Web Guidance: View transitions */
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0.25s;
-  }
-  ::view-transition-group(editor-panel) {
-    animation-duration: 0.3s;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
+.btn-primary{background:var(--amber); color:var(--amber-ink); border-color:var(--amber); box-shadow:0 6px 16px rgba(242,165,65,0.25);}
+.btn-primary:hover{background:#ffb655; border-color:#ffb655;}
+.btn-teal{background:rgba(47,209,194,0.14); color:var(--teal); border-color:rgba(47,209,194,0.3);}
+.btn-teal:hover{background:var(--teal); color:#04302b;}
+.btn-ghost{background:transparent; border-color:var(--line);}
+.btn-ghost:hover{background:var(--ink-4);}
+.btn-danger{background:rgba(239,68,68,0.12); color:#fca5a5; border-color:rgba(239,68,68,0.3);}
+.btn-danger:hover{background:var(--danger); color:#fff;}
+.btn-wa{background:rgba(37,211,102,0.14); color:#5be595; border-color:rgba(37,211,102,0.3);}
+.btn-wa:hover{background:#25D366; color:#04270f;}
+.btn-row{display:flex; gap:9px; flex-wrap:wrap;}
 
+/* =========================================================
+   BADGES / CHIPS / TAGS
+   ========================================================= */
+.badge{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:800; letter-spacing:.4px; padding:3px 9px; border-radius:20px; text-transform:uppercase;}
+.badge-amber{background:rgba(242,165,65,0.15); color:var(--amber);}
+.badge-teal{background:rgba(47,209,194,0.15); color:var(--teal);}
+.badge-green{background:rgba(63,191,111,0.15); color:#6fe396;}
+.badge-red{background:rgba(239,68,68,0.15); color:#fca5a5;}
+.badge-gray{background:rgba(255,255,255,0.08); color:var(--text-dim);}
+
+.chip{
+  display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:20px;
+  background:var(--ink-3); border:1.5px solid var(--line); color:var(--text-dim); font-size:12.5px; font-weight:700;
+  cursor:pointer; transition:all .15s; user-select:none;
+}
+.chip:hover{border-color:rgba(242,165,65,0.4);}
+.chip.active{background:var(--amber); color:var(--amber-ink); border-color:var(--amber);}
+.chip-row{display:flex; gap:8px; flex-wrap:wrap;}
+
+/* =========================================================
+   TOAST NOTIFICATIONS
+   ========================================================= */
+#toastStack{position:fixed; right:18px; bottom:18px; z-index:9998; display:flex; flex-direction:column; gap:10px; max-width:340px;}
+.toast{
+  background:var(--ink-2); border:1px solid var(--line); border-left:4px solid var(--amber);
+  border-radius:var(--radius-sm); padding:12px 14px; box-shadow:var(--shadow-lift);
+  display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--text);
+  animation:toastIn .22s ease; line-height:1.45;
+}
+.toast svg{width:17px; height:17px; flex-shrink:0; margin-top:1px;}
+.toast.success{border-left-color:var(--success);}
+.toast.success svg{color:var(--success);}
+.toast.error{border-left-color:var(--danger);}
+.toast.error svg{color:#fca5a5;}
+.toast.info svg{color:var(--teal);}
+.toast b{display:block; margin-bottom:1px;}
+@keyframes toastIn{from{opacity:0; transform:translateX(24px);} to{opacity:1; transform:none;}}
+.toast.out{animation:toastOut .18s ease forwards;}
+@keyframes toastOut{to{opacity:0; transform:translateX(24px);}}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(5,9,18,0.72); backdrop-filter:blur(3px); z-index:9990;
+  display:flex; align-items:center; justify-content:center; padding:18px; animation:fadeIn .15s ease;
+}
+@keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
+.modal{
+  background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow-lift);
+  width:100%; max-width:520px; max-height:88vh; overflow-y:auto; animation:modalIn .2s cubic-bezier(.2,.8,.3,1);
+}
+.modal.wide{max-width:640px;}
+@keyframes modalIn{from{opacity:0; transform:translateY(14px) scale(.98);} to{opacity:1; transform:none;}}
+.modal-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--ink-2); z-index:2;}
+.modal-head h3{font-size:17px; color:#fff; font-weight:700; font-family:var(--f-body);}
+.modal-close{background:transparent; border:none; color:var(--text-mute); cursor:pointer; padding:6px; border-radius:8px; display:flex;}
+.modal-close:hover{background:var(--ink-4); color:#fff;}
+.modal-body{padding:20px;}
+.modal-foot{padding:16px 20px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px; position:sticky; bottom:0; background:var(--ink-2);}
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+.stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;}
+@media (max-width:980px){ .stat-row{grid-template-columns:repeat(2,1fr);} }
+.stat-card{
+  background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius-lg); padding:18px 20px;
+  position:relative; overflow:hidden;
+}
+.stat-card::after{content:''; position:absolute; right:-30px; top:-30px; width:110px; height:110px; border-radius:50%; background:radial-gradient(circle, rgba(242,165,65,0.12), transparent 70%);}
+.stat-card .lbl{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-mute); display:flex; align-items:center; gap:6px;}
+.stat-card .lbl svg{width:14px; height:14px; color:var(--amber);}
+.stat-card .val{font-family:var(--f-display); font-size:38px; font-weight:800; color:#fff; line-height:1.05; margin-top:8px;}
+.stat-card .val small{font-size:16px; color:var(--text-mute); font-weight:600;}
+.stat-card .delta{font-size:11.5px; margin-top:6px; color:var(--text-mute);}
+
+.dash-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:18px; align-items:start;}
+@media (max-width:980px){ .dash-grid{grid-template-columns:1fr;} }
+
+.chart-box{position:relative; height:260px;}
+.category-bars{display:flex; flex-direction:column; gap:14px;}
+.cbar-row .top{display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; color:var(--text-dim); margin-bottom:6px;}
+.cbar-row .top .v{font-family:var(--f-mono); color:var(--amber);}
+.cbar-track{height:8px; background:var(--ink-3); border-radius:20px; overflow:hidden;}
+.cbar-fill{height:100%; border-radius:20px; background:linear-gradient(90deg, var(--teal), var(--amber));}
+
+.attn-list{display:flex; flex-direction:column; gap:8px;}
+.attn-row{
+  display:flex; align-items:center; gap:11px; padding:10px 12px; background:var(--ink-3); border:1px solid var(--line);
+  border-radius:var(--radius-sm); cursor:pointer; transition:border-color .15s;
+}
+.attn-row:hover{border-color:rgba(242,165,65,0.35);}
+.attn-row img{width:34px; height:34px; border-radius:50%; object-fit:cover; flex-shrink:0; background:var(--ink-4);}
+.attn-row .nm{flex:1; min-width:0; font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.attn-row .ku{font-size:11px; color:var(--text-mute);}
+
+/* =========================================================
+   EMPTY / SKELETON STATES
+   ========================================================= */
+.empty-state{display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:38px 20px; color:var(--text-mute);}
+.empty-state svg{width:36px; height:36px; color:var(--text-mute); opacity:.6;}
+.empty-state .t{font-size:14px; font-weight:700; color:var(--text-dim);}
+.empty-state .d{font-size:12.5px; max-width:320px; line-height:1.5;}
+
+.skel{background:linear-gradient(90deg, var(--ink-3) 25%, var(--ink-4) 37%, var(--ink-3) 63%); background-size:400% 100%; animation:skelWave 1.4s ease infinite; border-radius:var(--radius-sm);}
+@keyframes skelWave{0%{background-position:100% 0;} 100%{background-position:0 0;}}
+
+/* =========================================================
+   ROSTER (search / filter / sort / player grid)
+   ========================================================= */
+.roster-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+.search-box{
+  flex:1 1 220px; display:flex; align-items:center; gap:9px; background:var(--ink-3); border:1.5px solid var(--line);
+  border-radius:var(--radius-sm); padding:0 12px; transition:border-color .15s;
+}
+.search-box:focus-within{border-color:var(--amber);}
+.search-box svg{width:16px; height:16px; color:var(--text-mute); flex-shrink:0;}
+.search-box input{flex:1; background:transparent; border:none; outline:none; color:#fff; padding:10px 0; font-size:13.5px; font-family:inherit;}
+.sort-select{background:var(--ink-3); border:1.5px solid var(--line); color:#fff; border-radius:var(--radius-sm); padding:10px 12px; font-size:13px; font-weight:600; font-family:inherit;}
+
+.roster-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; margin-top:14px;}
+.roster-card{
+  background:var(--ink-3); border:1px solid var(--line); border-radius:var(--radius-md); padding:14px;
+  display:flex; flex-direction:column; gap:10px; transition:border-color .15s, transform .15s;
+}
+.roster-card:hover{border-color:rgba(242,165,65,0.3);}
+.roster-top{display:flex; align-items:center; gap:11px;}
+.roster-top img{width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--ink-4); flex-shrink:0; border:2px solid var(--line);}
+.roster-top .info{flex:1; min-width:0;}
+.roster-top .nm{font-weight:700; font-size:14px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.roster-top .meta{font-size:11px; color:var(--text-mute); margin-top:2px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+.roster-actions{display:flex; gap:7px;}
+.roster-actions .btn{flex:1;}
+
+.selected-box{
+  display:flex; align-items:center; gap:12px; background:rgba(242,165,65,0.1); border:1px solid rgba(242,165,65,0.25);
+  border-radius:var(--radius-sm); padding:12px 14px; font-size:13px; font-weight:700; color:var(--amber); margin-bottom:16px;
+}
+.selected-box img{width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid var(--amber); flex-shrink:0;}
+.selected-box .muted{color:var(--text-mute); font-weight:500;}
+.selected-box .change-link{margin-left:auto; font-size:11.5px; color:var(--teal); cursor:pointer; font-weight:700; flex-shrink:0;}
+
+/* =========================================================
+   RATING EDITOR
+   ========================================================= */
+.rating-cat-title{
+  font-family:var(--f-display); font-size:13px; font-weight:700; color:var(--teal); letter-spacing:1.5px;
+  margin:20px 0 8px; text-transform:uppercase; display:flex; align-items:center; gap:8px;
+}
+.rating-cat-title:first-child{margin-top:2px;}
+.rating-cat-title::after{content:''; flex:1; height:1px; background:var(--line);}
+.edit-skill-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--line-soft);}
+.esr-label{font-size:13px; font-weight:600; color:var(--text);}
+.esr-label .d{display:block; font-size:10.5px; color:var(--text-mute); font-weight:500; margin-top:1px;}
+.star-picker{display:inline-flex; gap:3px; font-size:21px; cursor:pointer; flex-shrink:0;}
+.star-picker span{color:#2c374f; transition:color .15s, transform .1s;}
+.star-picker span:hover{color:#e8b64a; transform:scale(1.1);}
+.star-picker span.active{color:var(--gold);}
+
+.saved-reports-list{margin-top:12px; display:flex; flex-direction:column; gap:7px;}
+.saved-report-row{display:flex; align-items:center; justify-content:space-between; background:var(--ink-3); padding:10px 13px; border-radius:var(--radius-sm); font-size:12.5px; border:1px solid var(--line); font-weight:600;}
+.status-note{padding:10px 12px; border-radius:var(--radius-sm); background:var(--ink-3); border:1px dashed var(--line); font-size:12px; color:var(--text-mute); display:flex; align-items:center; gap:7px; margin-bottom:14px;}
+.status-note svg{width:14px; height:14px; flex-shrink:0;}
+.status-note.ok{color:#6fe396; border-color:rgba(63,191,111,0.3);}
+.status-note.new{color:var(--amber); border-color:rgba(242,165,65,0.3);}
+
+/* =========================================================
+   REPORT CARD — "Player Stat Sheet" (dokumen tercetak)
+   Pusat perhatian: grafik radar bergaya garis lapangan, meng-
+   gantikan daftar bintang polos sebagai ringkasan utama.
+   ========================================================= */
+.preview-col{display:flex; flex-direction:column; align-items:center; gap:16px;}
+.preview-wrapper{width:100%; overflow-x:auto; padding:4px 4px 14px; display:flex; justify-content:center;}
+
+.rc-card{
+  width:720px; max-width:100%; background:var(--paper); color:#1b2333; border-radius:20px; overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,0.45); transform-origin:top left;
+}
+/* Di layar sempit, kartu menyusut mengikuti lebar layar (flex shrink alami) agar nyaman
+   dibaca tanpa geser horizontal. Ukuran ekspor (PDF/PNG/JPG) TIDAK bergantung pada ini —
+   ditentukan sendiri oleh getCapturedCanvas() yang me-render kartu pada lebar tetap 720px
+   di luar layar, sehingga kualitas dokumen tetap konsisten di perangkat apa pun. */
+
+.rc-head{
+  display:flex; align-items:center; gap:14px; padding:20px 26px; background:var(--navy-deep); color:#fff;
+}
+.rc-head img{width:46px; height:46px; border-radius:50%; object-fit:contain; background:#fff; flex-shrink:0; padding:3px;}
+.rc-head .brand{flex:1; min-width:0;}
+.rc-head .brand .n1{font-family:var(--f-display); font-weight:800; font-size:19px; text-transform:uppercase; letter-spacing:.5px; line-height:1.1;}
+.rc-head .brand .n2{font-size:10.5px; font-weight:700; color:var(--teal); letter-spacing:1.5px; text-transform:uppercase; margin-top:1px;}
+.rc-head .idcode{font-family:var(--f-mono); font-size:10.5px; color:rgba(255,255,255,0.55); text-align:right; letter-spacing:.5px; line-height:1.6;}
+.rc-head .idcode b{color:var(--amber); display:block; font-size:11px;}
+@media (max-width:420px){
+  .rc-head{padding:15px 16px; gap:9px;}
+  .rc-head img{width:38px; height:38px;}
+  .rc-head .brand .n1{font-size:15px;}
+  .rc-head .idcode{font-size:9px;}
+  .rc-head .idcode b{font-size:9.5px;}
+}
+
+.rc-hero{
+  position:relative; background:
+    repeating-linear-gradient(135deg, rgba(19,33,70,0.05) 0 2px, transparent 2px 34px),
+    linear-gradient(160deg, #f0f2f6, var(--paper));
+  padding:24px 26px 22px; display:flex; gap:18px; align-items:center; border-bottom:1px solid #e7e9ee;
+}
+.rc-hero-photo{width:104px; height:104px; border-radius:50%; object-fit:cover; background:#e2e5ea; flex-shrink:0; border:4px solid #fff; box-shadow:0 6px 18px rgba(19,33,70,0.18);}
+.rc-hero-info{flex:1; min-width:0;}
+.rc-hero-eyebrow{font-family:var(--f-display); font-weight:700; font-size:11.5px; letter-spacing:2px; color:#8b93a8; text-transform:uppercase;}
+.rc-hero-name{font-family:var(--f-display); font-weight:800; font-size:28px; color:var(--navy-deep); text-transform:uppercase; line-height:1.08; margin-top:2px;}
+.rc-hero-tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:9px;}
+.rc-tag{font-size:10.5px; font-weight:800; letter-spacing:.4px; padding:4px 10px; border-radius:20px; background:#eef0f5; color:#4a5164; text-transform:uppercase;}
+.rc-tag.period{background:rgba(242,165,65,0.16); color:#a35d0a;}
+
+.rc-score-badge{
+  flex-shrink:0; width:74px; height:74px; border-radius:50%; background:var(--navy-deep); color:#fff;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 8px 18px rgba(19,33,70,0.3);
+}
+.rc-score-badge .n{font-family:var(--f-mono); font-weight:700; font-size:21px; line-height:1;}
+.rc-score-badge .l{font-size:7.5px; font-weight:800; letter-spacing:1px; color:var(--teal); margin-top:3px; text-transform:uppercase;}
+
+.rc-radar-section{padding:20px 26px 4px; text-align:center;}
+.rc-radar-section .cap{font-family:var(--f-display); font-weight:700; font-size:12.5px; letter-spacing:2px; color:#8b93a8; text-transform:uppercase; margin-bottom:6px;}
+.rc-radar-wrap{position:relative; width:100%; max-width:360px; margin:0 auto; aspect-ratio:1/1;}
+
+.rc-cats{padding:6px 26px 8px; display:grid; grid-template-columns:1fr 1fr; gap:2px 22px;}
+.rc-cat{padding:12px 0; border-top:1px solid #eef0f4;}
+.rc-cat-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+.rc-cat-head .t{font-family:var(--f-display); font-weight:800; font-size:13px; letter-spacing:.6px; color:var(--navy-deep); text-transform:uppercase; display:flex; align-items:center; gap:7px;}
+.rc-cat-icon{width:22px; height:22px; border-radius:7px; background:var(--navy-deep); color:var(--teal); display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;}
+.rc-cat-head .avg{font-family:var(--f-mono); font-size:11.5px; font-weight:700; color:#a35d0a;}
+.rc-skill-mini{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:4px 0; font-size:11.5px;}
+.rc-skill-mini .lb{color:#5c6478; font-weight:600;}
+.rc-skill-mini .st{font-size:12px; letter-spacing:1px; flex-shrink:0;}
+.rc-skill-mini .st .on{color:var(--gold);}
+.rc-skill-mini .st .off{color:var(--graystar);}
+
+.rc-foot{background:var(--navy-deep); color:#fff; padding:22px 26px; display:flex; gap:22px; flex-wrap:wrap; margin-top:6px;}
+.rc-foot .notes{flex:1.6; min-width:200px;}
+.rc-foot .notes h4{color:var(--teal); font-size:11.5px; letter-spacing:1.5px; margin:0 0 8px; font-weight:800; text-transform:uppercase;}
+.rc-foot .notes p{margin:0 0 12px; font-size:12.5px; line-height:1.6; color:rgba(255,255,255,0.88); word-break:break-word;}
+.rc-meta{flex:1; min-width:150px; font-size:12px;}
+.rc-meta div{margin-bottom:7px; display:flex; align-items:baseline; gap:7px;}
+.rc-meta b{color:var(--teal); font-size:10px; letter-spacing:.6px; text-transform:uppercase; width:64px; flex-shrink:0;}
+.rc-sign{background:#fff; border-radius:14px; padding:14px 16px; text-align:center; min-width:150px; color:var(--navy-deep); box-shadow:0 6px 16px rgba(0,0,0,0.18); align-self:flex-start;}
+.rc-sign .date{font-family:var(--f-mono); font-size:10px; font-weight:700; border:1px solid #e2e5ea; border-radius:8px; padding:6px 8px; margin-bottom:10px; color:#5c6478;}
+.rc-sign .name{font-family:"Brush Script MT","Segoe Script",cursive; font-size:21px; margin:8px 0 3px; color:#0f172a;}
+.rc-sign .label{font-size:9.5px; font-weight:800; letter-spacing:1.2px; color:#8b93a8; text-transform:uppercase;}
+
+.rc-contact{background:var(--paper-2); padding:12px 26px; display:flex; gap:22px; font-size:12px; color:var(--navy-deep); font-weight:700; align-items:center; flex-wrap:wrap;}
+.rc-contact svg{width:13px; height:13px; vertical-align:-2px; margin-right:3px;}
+
+/* =========================================================
+   EXPORT ROW
+   ========================================================= */
+.export-section{width:100%; max-width:720px; display:flex; flex-direction:column; gap:10px;}
+.export-row{display:flex; gap:9px; width:100%;}
+.export-row .btn{flex:1;}
+
+/* =========================================================
+   PROGRESS (perbandingan antar triwulan)
+   ========================================================= */
+.period-pick-list{display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;}
+.period-pick-row{
+  display:flex; align-items:center; gap:11px; padding:10px 12px; background:var(--ink-3); border:1.5px solid var(--line);
+  border-radius:var(--radius-sm); cursor:pointer; transition:border-color .15s;
+}
+.period-pick-row:hover{border-color:rgba(242,165,65,0.35);}
+.period-pick-row input[type=checkbox]{width:17px; height:17px; accent-color:var(--amber); flex-shrink:0; cursor:pointer;}
+.period-pick-row .lb{flex:1; font-size:13px; font-weight:700;}
+.period-pick-row .swatch{width:12px; height:12px; border-radius:50%; flex-shrink:0;}
+.period-pick-row .avg{font-family:var(--f-mono); font-size:12px; color:var(--text-mute);}
+
+.progress-report-card{background:var(--paper); border-radius:var(--radius-lg); padding:22px; color:#1b2333;}
+.progress-legend{display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:8px;}
+.progress-legend .it{display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#4a5164;}
+.progress-legend .sw{width:11px; height:11px; border-radius:3px; flex-shrink:0;}
+
+.trend-card{background:var(--paper); border-radius:var(--radius-lg); padding:20px 22px; color:#1b2333; margin-top:16px;}
+.trend-card h4{font-family:var(--f-display); font-size:15px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--navy-deep); margin-bottom:12px;}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+.logo-preview-row{display:flex; align-items:center; gap:14px; margin-bottom:16px;}
+.logo-preview-row img{width:54px; height:54px; border-radius:50%; object-fit:contain; background:#fff; border:2px solid var(--line); flex-shrink:0;}
+
+.danger-zone{border:1.5px dashed rgba(239,68,68,0.35); background:rgba(239,68,68,0.06); border-radius:var(--radius-md); padding:16px;}
+.danger-zone .t{font-weight:700; color:#fca5a5; font-size:13.5px; display:flex; align-items:center; gap:7px; margin-bottom:5px;}
+.danger-zone .d{font-size:12px; color:var(--text-mute); line-height:1.5; margin-bottom:12px;}
+
+.backup-row{display:flex; gap:10px; flex-wrap:wrap;}
+.backup-row .btn{flex:1; min-width:160px;}
+
+/* =========================================================
+   MISC / RESPONSIVE
+   ========================================================= */
+.hidden{display:none !important;}
+@media (max-width:600px){
+  .rc-cats{grid-template-columns:1fr;}
+  .stat-row{grid-template-columns:1fr 1fr;}
+  .roster-grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
 
-<!-- LOADER -->
 <div id="loadingScreen">
-  <div class="loader-ring"></div>
-  <div id="loadingText">Menyiapkan Sistem Profesional...</div>
+  <div class="ls-crest"></div>
+  <div class="ls-label">Menyiapkan <b>Rapor Akademi</b>…</div>
 </div>
 
-<!-- OVERLAY PROSES -->
-<div id="exportOverlay">
-    <div class="loader-ring" style="width:40px; height:40px; border-width:3px;"></div>
-    <div id="exportOverlayText">Mengekspor Dokumen...</div>
-</div>
+<div id="toastStack" aria-live="polite"></div>
+<div id="modalRoot"></div>
 
-<!-- TOAST CONTAINER -->
-<div id="toast-container"></div>
+<div id="app" style="display:none;">
 
-<div class="topbar">
-  <div class="topbar-brand">
-    <h1>🏟️ Rapor Akademi</h1>
-    <span>SPORTS PROFESSIONAL EDITION</span>
-  </div>
-  <div class="api-status" id="apiStatus">
-    <i data-lucide="wifi" class="h-4 w-4"></i> Standby
-  </div>
-</div>
-
-<div class="dashboard" style="display:none;" id="mainApp">
-  
-  <!-- SIDEBAR NAVIGATION -->
-  <aside class="sidebar-menu">
-    <button class="menu-btn active" onclick="switchTab('tab-db', this)"><i data-lucide="users" class="h-5 w-5"></i> Database Pemain</button>
-    <button class="menu-btn" onclick="switchTab('tab-rapor', this)"><i data-lucide="clipboard-edit" class="h-5 w-5"></i> Edit Rapor</button>
-    <button class="menu-btn" onclick="switchTab('tab-settings', this)"><i data-lucide="sliders" class="h-5 w-5"></i> Pengaturan Global</button>
+  <aside class="rail">
+    <div class="rail-brand">
+      <img id="railLogo" src="" alt="logo klub">
+      <div class="name"><span id="railClubName1">MNA GEN-Z</span><span id="railClubName2" class="sub">FUTSAL ACADEMY</span></div>
+    </div>
+    <nav class="rail-nav" id="railNav">
+      <div class="rail-item" data-tab="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</div>
+      <div class="rail-item" data-tab="pemain"><i data-lucide="users"></i> Pemain <span class="count" id="countPemain">0</span></div>
+      <div class="rail-item" data-tab="rapor"><i data-lucide="clipboard-edit"></i> Buat Rapor</div>
+      <div class="rail-item" data-tab="progress"><i data-lucide="trending-up"></i> Progress</div>
+      <div class="rail-item" data-tab="pengaturan"><i data-lucide="settings"></i> Pengaturan</div>
+    </nav>
+    <div class="rail-foot">
+      <div class="rail-sync-time">Sinkron terakhir <b id="railSyncTime">Belum pernah</b></div>
+    </div>
   </aside>
 
-  <!-- EDITOR AREA -->
-  <section class="editor-panel">
-    
-    <!-- TAB 1: DATABASE -->
-    <div id="tab-db" class="tab-content active">
-      <!-- DASHBOARD STATS -->
-      <div class="stats-grid">
-          <div class="stat-card"><h4>Total Pemain</h4><p class="neon" id="stat-total">0</p></div>
-          <div class="stat-card"><h4>Status DB</h4><p id="stat-sync" class="text-xs mt-2 text-slate-300">Offline</p></div>
-          <div class="stat-card"><h4>Rapor Aktif</h4><p class="text-purple-400" id="stat-rapor">0</p></div>
-      </div>
+  <div class="main-col">
+    <div class="mobile-tabbar" id="mobileTabbar">
+      <div class="m-item" data-tab="dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</div>
+      <div class="m-item" data-tab="pemain"><i data-lucide="users"></i>Pemain</div>
+      <div class="m-item" data-tab="rapor"><i data-lucide="clipboard-edit"></i>Buat Rapor</div>
+      <div class="m-item" data-tab="progress"><i data-lucide="trending-up"></i>Progress</div>
+      <div class="m-item" data-tab="pengaturan"><i data-lucide="settings"></i>Pengaturan</div>
+    </div>
 
-      <div class="card-section">
-        <h2 class="section-title"><i data-lucide="database" class="h-5 w-5 text-green-400"></i> Sinkronisasi Data</h2>
-        <button class="btn btn-primary" style="width:100%; margin-bottom:24px;" id="btnSyncSheet" onclick="syncPlayers()">
-          <i data-lucide="refresh-cw" class="h-4 w-4"></i> Tarik Data Spreadsheet
-        </button>
-        
-        <h3 class="font-bold text-sm text-white mb-3 flex items-center gap-2"><i data-lucide="list" class="h-4 w-4"></i> Daftar Pemain</h3>
-        <div class="field relative">
-            <i data-lucide="search" class="absolute left-4 top-3.5 h-4 w-4 text-slate-400"></i>
-            <input type="text" id="searchPlayer" placeholder="Cari nama pemain..." style="padding-left:42px;" onkeyup="filterPlayers()">
-        </div>
-        <div id="playerListContainer" class="player-list"></div>
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Dashboard <span class="dot">•</span></div>
+        <div class="topbar-sub" id="topbarSub">Ringkasan performa akademi</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-teal btn-sm" id="btnSyncSheetTop"><i data-lucide="refresh-cw"></i> <span>Sinkronisasi</span></button>
       </div>
     </div>
 
-    <!-- TAB 2: RAPOR -->
-    <div id="tab-rapor" class="tab-content">
-      <div class="card-section">
-        
-        <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
-            <h2 class="section-title border-0 mb-0 pb-0"><i data-lucide="pen-tool" class="h-5 w-5 text-purple-400"></i> Pengisian Rapor</h2>
-            <div id="reportStatus">
-                <span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest">
-                    <i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG
-                </span>
-            </div>
-        </div>
-        
-        <div class="field">
-            <label>Pemain Terpilih</label>
-            <div id="selectedPlayerInfo" class="flex items-center gap-3 bg-slate-800/50 p-3 border border-slate-600 rounded-xl text-sm font-bold text-white mb-2">
-                <i data-lucide="user-x" class="h-5 w-5 text-slate-400"></i> Belum ada (Pilih di tab Database)
-            </div>
-        </div>
+    <!-- ============ DASHBOARD ============ -->
+    <section class="view" id="view-dashboard">
+      <div class="view-head">
+        <div><h2>Dashboard</h2><p class="hint">Ringkasan performa &amp; aktivitas akademi secara umum.</p></div>
+      </div>
 
-        <div class="grid-2">
-          <div class="field"><label>Triwulan</label>
-            <select id="inTriwulan" onchange="checkSavedReport()">
-              <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-            </select>
-          </div>
-          <div class="field"><label>Tahun / Musim</label><input type="number" id="inMusim" onchange="checkSavedReport()"></div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="lbl"><i data-lucide="users"></i>Total Pemain</div>
+          <div class="val" id="statTotalPlayers">0</div>
         </div>
-
-        <div id="ratingInputs"></div>
-
-        <div class="field mt-5"><label>Catatan Pelatih</label><textarea id="inCatatan" placeholder="Ketik evaluasi di sini..." oninput="triggerPreviewUpdate()"></textarea></div>
-        <div class="grid-2">
-          <div class="field"><label>Nama Pelatih</label><input type="text" id="inPelatih" placeholder="cth. Coach Fulan" oninput="triggerPreviewUpdate()"></div>
-          <div class="field"><label>Tanggal Rapor</label><input type="date" id="inTanggal" oninput="triggerPreviewUpdate()"></div>
+        <div class="stat-card">
+          <div class="lbl"><i data-lucide="file-text"></i>Rapor Tersimpan</div>
+          <div class="val" id="statTotalReports">0</div>
         </div>
-        
-        <div class="flex gap-3 mt-4">
-            <button class="btn btn-secondary flex-1" onclick="resetFormRapor()"><i data-lucide="rotate-ccw" class="h-4 w-4"></i> Reset</button>
-            <button class="btn btn-primary flex-[2]" onclick="saveReport()"><i data-lucide="save" class="h-5 w-5"></i> Simpan Data Rapor</button>
+        <div class="stat-card">
+          <div class="lbl"><i data-lucide="star"></i>Rata-rata Skor</div>
+          <div class="val" id="statAvgOverall">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="lbl"><i data-lucide="alert-circle"></i>Belum Dievaluasi</div>
+          <div class="val" id="statNoReport">0</div>
         </div>
       </div>
-    </div>
 
-    <!-- TAB 3: PENGATURAN -->
-    <div id="tab-settings" class="tab-content">
-      <div class="card-section">
-        <h2 class="section-title mb-5"><i data-lucide="palette" class="h-5 w-5 text-blue-400"></i> Pengaturan Global</h2>
-        
-        <div class="field"><label>Tema Warna Rapor</label>
-            <select id="inTheme" onchange="changeTheme()">
-                <option value="default">Ungu Akademi (Default)</option>
-                <option value="emerald">Hijau Emerald (Emerald)</option>
-                <option value="rose">Merah Merona (Rose)</option>
-                <option value="ocean">Biru Samudra (Ocean)</option>
-                <option value="dark">Mode Gelap (Dark Neon)</option>
-            </select>
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-head"><h3><i data-lucide="bar-chart-3"></i>Rata-rata Kemampuan Skuad</h3></div>
+          <p class="panel-hint">Dihitung dari rapor terbaru setiap pemain, per kategori penilaian.</p>
+          <div class="category-bars" id="dashCategoryBars"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3><i data-lucide="alert-triangle"></i>Perlu Perhatian</h3></div>
+          <p class="panel-hint">Pemain yang belum memiliki rapor evaluasi sama sekali.</p>
+          <div class="attn-list" id="dashAttnList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PEMAIN (ROSTER) ============ -->
+    <section class="view" id="view-pemain">
+      <div class="view-head">
+        <div><h2>Database Pemain</h2><p class="hint">Tarik data dari Google Spreadsheet, atau kelola pemain secara manual.</p></div>
+        <div class="btn-row">
+          <button class="btn btn-teal" id="btnSyncSheet"><i data-lucide="refresh-cw"></i> Sinkronisasi</button>
+          <button class="btn btn-primary" id="btnAddPlayer"><i data-lucide="user-plus"></i> Tambah Pemain</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="roster-toolbar">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="searchPlayer" placeholder="Cari nama pemain…">
+          </div>
+          <select class="sort-select" id="filterKu"><option value="">Semua KU</option></select>
+          <select class="sort-select" id="filterPosisi"><option value="">Semua Posisi</option></select>
+          <select class="sort-select" id="sortPlayer">
+            <option value="name-asc">Nama A–Z</option>
+            <option value="name-desc">Nama Z–A</option>
+            <option value="ku-asc">Kategori Umur</option>
+            <option value="reports-desc">Rapor Terbanyak</option>
+          </select>
+        </div>
+        <div id="playerListContainer" class="roster-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ BUAT RAPOR ============ -->
+    <section class="view" id="view-rapor">
+      <div class="view-head">
+        <div><h2>Buat Rapor</h2><p class="hint">Isi penilaian, pratinjau langsung, lalu ekspor atau kirim ke orang tua.</p></div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <section class="panel">
+            <div class="panel-head"><h3><i data-lucide="clipboard-edit"></i>Data Rapor</h3></div>
+            <div id="selectedPlayerBox" class="selected-box">
+              <i data-lucide="mouse-pointer-click"></i> Belum ada pemain dipilih.
+              <span class="change-link" data-nav="pemain">Pilih pemain →</span>
+            </div>
+
+            <div class="field-2">
+              <div class="field"><label>Triwulan</label>
+                <select id="inTriwulan">
+                  <option value="1">Triwulan 1</option><option value="2">Triwulan 2</option>
+                  <option value="3">Triwulan 3</option><option value="4">Triwulan 4</option>
+                </select>
+              </div>
+              <div class="field"><label>Musim / Tahun</label><input type="number" id="inMusim"></div>
+            </div>
+
+            <div id="reportStatusNote" class="status-note"></div>
+            <div id="ratingInputs"></div>
+
+            <div class="field" style="margin-top:16px;"><label>Catatan Pelatih</label><textarea id="inCatatan" rows="3" placeholder="Evaluasi, perkembangan, dan pesan untuk pemain…"></textarea></div>
+            <div class="field-2">
+              <div class="field"><label>Prestasi <span class="opt">(opsional)</span></label><input type="text" id="inPrestasi" placeholder="cth. Top Score"></div>
+              <div class="field"><label>Nama Pelatih</label><input type="text" id="inPelatih" placeholder="cth. Coach Fachru"></div>
+            </div>
+            <div class="field"><label>Tanggal</label><input type="date" id="inTanggal"></div>
+
+            <button class="btn btn-primary btn-block" id="btnSaveReport" style="padding:13px; font-size:14px;"><i data-lucide="save"></i> Simpan Laporan</button>
+            <div id="savedReportsList" class="saved-reports-list"></div>
+          </section>
         </div>
 
-        <div class="field"><label>Nama Baris 1</label><input type="text" id="inClub1" oninput="triggerPreviewUpdate()"></div>
-        <div class="field"><label>Nama Baris 2</label><input type="text" id="inClub2" oninput="triggerPreviewUpdate()"></div>
-        <div class="field"><label>No WA / Telp Klub</label><input type="text" id="inPhone" oninput="triggerPreviewUpdate()"></div>
-        <button class="btn btn-secondary" style="width:100%; margin-top:8px;" onclick="saveSettings()"><i data-lucide="save" class="h-4 w-4"></i> Simpan Pengaturan</button>
-        
-        <hr class="border-white/10 my-8">
-        <h3 class="text-sm font-bold text-rose-500 mb-3"><i data-lucide="alert-triangle" class="inline h-4 w-4"></i> Zona Berbahaya</h3>
-        <button class="btn btn-danger" style="width:100%;" onclick="openFormatDialog()"><i data-lucide="trash-2" class="h-4 w-4"></i> Format Sistem Keseluruhan</button>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- PREVIEW & EXPORT AREA -->
-  <section class="preview-panel">
-    <div class="preview-wrapper">
-      <div class="report-card" id="reportCard">
-        <div class="rc-inner-wrap">
-          <!-- Watermark Logo -->
-          <img id="pv-watermark" class="rc-watermark" crossorigin="anonymous" src="https://wsrv.nl/?url=https://i.ibb.co.com/FLyht7HF/LOGO-MNA-GEN-Z.png&w=400&h=400&fit=contain">
-          
-          <div class="rc-header">
-            <!-- Logo with CORS proxy -->
-            <img id="pv-logo" class="rc-logo" crossorigin="anonymous" src="https://wsrv.nl/?url=https://i.ibb.co.com/FLyht7HF/LOGO-MNA-GEN-Z.png&w=128&h=128&fit=contain">
-            <div class="rc-clubname">
-              <div id="pv-club1">MNA GEN-Z</div>
-              <span id="pv-club2">FUTSAL ACADEMY</span>
-            </div>
-            <!-- AUTO GRADING BADGE -->
-            <div class="rc-grade-badge">
-                <span class="rc-grade-label">NILAI AKHIR</span>
-                <span id="pv-grade-value" class="rc-grade-value">N/A</span>
-            </div>
-          </div>
-          
-          <div class="rc-banner">
-            <h2 class="title">PLAYER REPORT</h2>
-            <div class="sub">PERFORMANCE EVALUATION</div>
-            <div class="rc-period" id="pv-period">TRIWULAN 1 MUSIM 2026</div>
-            <div class="rc-playername" id="pv-playername">—</div>
-            
-            <!-- Modern Sports Cutout Avatar -->
-            <div class="rc-photo-wrap">
-                <img class="rc-photo" crossorigin="anonymous" id="pv-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
-            </div>
-          </div>
-          
-          <div class="rc-class" id="pv-class">KATEGORI —</div>
-          
-          <div class="rc-body">
-            <div class="rc-skills-panel">
-              <div class="rc-skills-row">
-                <div class="rc-cat">
-                  <h3>FISIK</h3>
-                  <div class="rc-skill"><span class="label">Atletics</span><div class="rc-stars" id="st-atletics"></div></div>
-                  <div class="rc-skill"><span class="label">Agility</span><div class="rc-stars" id="st-agility"></div></div>
-                  <div class="rc-skill"><span class="label">Stamina</span><div class="rc-stars" id="st-stamina"></div></div>
+        <div class="preview-col">
+          <div class="preview-wrapper">
+            <div class="rc-card" id="reportCard">
+              <div class="rc-head">
+                <img id="pv-logo" alt="logo klub" crossorigin="anonymous">
+                <div class="brand">
+                  <div class="n1" id="pv-clubname1">MNA GEN-Z</div>
+                  <div class="n2" id="pv-clubname2">FUTSAL ACADEMY</div>
                 </div>
-                <div class="rc-cat">
-                  <h3>TEKNIK</h3>
-                  <div class="rc-skill"><span class="label">Passing</span><div class="rc-stars" id="st-passing"></div></div>
-                  <div class="rc-skill"><span class="label">Dribbling</span><div class="rc-stars" id="st-dribbling"></div></div>
-                  <div class="rc-skill"><span class="label">Shooting</span><div class="rc-stars" id="st-shooting"></div></div>
+                <div class="idcode"><b>RAPOR EVALUASI</b><span id="pv-period">TRIWULAN 1 · 2026</span></div>
+              </div>
+
+              <div class="rc-hero">
+                <img class="rc-hero-photo" id="pv-photo" alt="foto pemain" crossorigin="anonymous">
+                <div class="rc-hero-info">
+                  <div class="rc-hero-eyebrow">Rapor Evaluasi Pemain</div>
+                  <div class="rc-hero-name" id="pv-playername">— Pilih Pemain —</div>
+                  <div class="rc-hero-tags">
+                    <span class="rc-tag" id="pv-class">KU —</span>
+                    <span class="rc-tag" id="pv-posisi">Posisi —</span>
+                    <span class="rc-tag" id="pv-dominan">Kaki —</span>
+                  </div>
+                </div>
+                <div class="rc-score-badge"><div class="n" id="pv-score">—</div><div class="l">Skor</div></div>
+              </div>
+
+              <div class="rc-radar-section">
+                <div class="cap">Peta Kemampuan</div>
+                <div class="rc-radar-wrap"><canvas id="radarChart"></canvas></div>
+              </div>
+
+              <div class="rc-cats" id="pv-cats"></div>
+
+              <div class="rc-foot">
+                <div class="notes">
+                  <h4>Catatan Pelatih</h4>
+                  <p id="pv-catatan">—</p>
+                  <div class="rc-meta">
+                    <div><b>Prestasi</b> <span id="pv-prestasi">—</span></div>
+                  </div>
+                </div>
+                <div class="rc-sign">
+                  <div class="date" id="pv-tanggal">—</div>
+                  <div class="name" id="pv-pelatih">Coach</div>
+                  <div class="label">Tanda Tangan</div>
                 </div>
               </div>
-              <div class="rc-skills-row">
-                <div class="rc-cat">
-                  <h3>TAKTIK</h3>
-                  <div class="rc-skill"><span class="label">Role of Play</span><div class="rc-stars" id="st-roleplay"></div></div>
-                </div>
-                <div class="rc-cat">
-                  <h3>MENTAL</h3>
-                  <div class="rc-skill"><span class="label">Motivation</span><div class="rc-stars" id="st-motivation"></div></div>
-                  <div class="rc-skill"><span class="label">Teamwork</span><div class="rc-stars" id="st-teamwork"></div></div>
-                  <div class="rc-skill"><span class="label">Discipline</span><div class="rc-stars" id="st-discipline"></div></div>
-                </div>
+              <div class="rc-contact">
+                <span><i data-lucide="instagram"></i><span id="pv-ig">mna_genz_academy</span></span>
+                <span><i data-lucide="phone"></i><span id="pv-phone">0812-xxxx-xxxx</span></span>
               </div>
-            </div>
-            
-            <div class="rc-chart-area">
-              <div class="rc-chart-title">Analisis Atribut</div>
-              <div id="radarContainer"><canvas id="radarChart"></canvas></div>
             </div>
           </div>
 
-          <div class="rc-footer">
-            <div class="rc-notes">
-              <!-- Icon sudah diubah untuk menggunakan flex layout yang benar -->
-              <h4><i data-lucide="message-square"></i> Catatan Pelatih</h4>
-              <p id="pv-catatan">—</p>
+          <div class="export-section">
+            <p class="panel-hint" style="text-align:center; margin:0;">EKSPOR DOKUMEN</p>
+            <div class="export-row">
+              <button class="btn btn-ghost btn-export" id="btnExportPDF"><i data-lucide="file-text"></i> PDF</button>
+              <button class="btn btn-ghost btn-export" id="btnExportPNG"><i data-lucide="image"></i> PNG</button>
+              <button class="btn btn-ghost btn-export" id="btnExportJPG"><i data-lucide="image"></i> JPG</button>
             </div>
-            <div class="rc-sign-area">
-              <div class="rc-sign-date" id="pv-tanggal">Trenggalek, 24 Agustus 2026</div>
-              <div class="rc-sign-name" id="pv-pelatih">Coach</div>
-              <div class="rc-sign-label">PELATIH KEPALA</div>
-            </div>
+            <button class="btn btn-wa btn-block" id="btnSendWA" style="padding:14px;"><i data-lucide="send"></i> Kirim ke WhatsApp Orang Tua</button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- EXPORT PANEL -->
-    <div class="export-panel w-full max-w-[760px] mx-auto">
-      <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2"><i data-lucide="download" class="h-4 w-4 text-green-400"></i> Ekspor Dokumen</h3>
-      <div class="export-grid">
-        <button class="btn btn-secondary action-btn" onclick="exportFile('pdf')"><i data-lucide="file-text" class="h-4 w-4"></i> Cetak PDF</button>
-        <button class="btn btn-secondary action-btn" onclick="exportFile('png')"><i data-lucide="image" class="h-4 w-4"></i> Simpan PNG</button>
-        <button class="btn btn-secondary action-btn" onclick="exportFile('jpg')"><i data-lucide="image" class="h-4 w-4"></i> Simpan JPG</button>
+    <!-- ============ PROGRESS ============ -->
+    <section class="view" id="view-progress">
+      <div class="view-head">
+        <div><h2>Progress Pemain</h2><p class="hint">Bandingkan perkembangan kemampuan pemain antar triwulan.</p></div>
       </div>
-      <button class="btn btn-wa action-btn" style="width:100%;" onclick="sendWA()"><i data-lucide="send" class="h-5 w-5"></i> Distribusi via WhatsApp</button>
-    </div>
 
-  </section>
+      <div class="grid-2">
+        <div>
+          <section class="panel">
+            <div class="panel-head"><h3><i data-lucide="user-search"></i>Pilih Pemain</h3></div>
+            <div class="field"><select id="progressPlayerSelect"><option value="">— Pilih pemain —</option></select></div>
+            <div class="panel-head" style="margin-top:6px;"><h3 style="font-size:14px;"><i data-lucide="list-checks"></i>Pilih Periode (maks. 3)</h3></div>
+            <div class="period-pick-list" id="periodPickList">
+              <div class="empty-state"><i data-lucide="calendar-x"></i><div class="t">Pilih pemain dahulu</div></div>
+            </div>
+          </section>
+        </div>
+
+        <div>
+          <div class="progress-report-card">
+            <div class="rc-radar-section" style="padding:4px 0 0;">
+              <div class="cap" style="color:#8b93a8;">Perbandingan Peta Kemampuan</div>
+              <div class="rc-radar-wrap"><canvas id="progressRadarChart"></canvas></div>
+              <div class="progress-legend" id="progressLegend"></div>
+            </div>
+          </div>
+          <div class="trend-card">
+            <h4>Tren Skor Rata-rata</h4>
+            <div class="chart-box" style="height:200px;"><canvas id="trendChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PENGATURAN ============ -->
+    <section class="view" id="view-pengaturan">
+      <div class="view-head">
+        <div><h2>Pengaturan</h2><p class="hint">Identitas klub, sumber data, dan cadangan data.</p></div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <section class="panel">
+            <div class="panel-head"><h3><i data-lucide="shield"></i>Identitas Klub</h3></div>
+            <div class="logo-preview-row">
+              <img id="logoPreview" alt="logo">
+              <div class="field-file field" style="flex:1; margin:0;"><label>Logo Klub</label><input type="file" id="inLogo" accept="image/*"></div>
+            </div>
+            <div class="field-2">
+              <div class="field"><label>Nama Klub (baris 1)</label><input type="text" id="inClubName1"></div>
+              <div class="field"><label>Nama Klub (baris 2)</label><input type="text" id="inClubName2"></div>
+              <div class="field"><label>Instagram</label><input type="text" id="inClubIg"></div>
+              <div class="field"><label>No. Telepon</label><input type="text" id="inClubPhone"></div>
+            </div>
+            <button class="btn btn-primary btn-block" id="btnSaveClub"><i data-lucide="save"></i> Simpan Identitas</button>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head"><h3><i data-lucide="link"></i>Sumber Data Spreadsheet</h3></div>
+            <p class="panel-hint">URL Web App Google Apps Script yang menyediakan data pemain.</p>
+            <div class="field"><label>Spreadsheet Web App URL</label><input type="text" id="inSheetUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
+            <button class="btn btn-block" id="btnSaveSheetUrl"><i data-lucide="save"></i> Simpan URL</button>
+          </section>
+        </div>
+
+        <div>
+          <section class="panel">
+            <div class="panel-head"><h3><i data-lucide="database"></i>Cadangan Data</h3></div>
+            <p class="panel-hint">Ekspor seluruh data (klub, pemain, rapor) sebagai satu berkas JSON, atau pulihkan dari cadangan sebelumnya.</p>
+            <div class="backup-row">
+              <button class="btn btn-teal" id="btnExportBackup"><i data-lucide="download"></i> Ekspor Backup</button>
+              <button class="btn" id="btnImportBackup"><i data-lucide="upload"></i> Impor Backup</button>
+              <input type="file" id="inImportFile" accept="application/json" class="hidden">
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head"><h3><i data-lucide="alert-triangle"></i>Zona Berbahaya</h3></div>
+            <div class="danger-zone">
+              <div class="t"><i data-lucide="trash-2" style="width:15px;height:15px;"></i> Hapus Semua Data Rapor</div>
+              <div class="d">Menghapus seluruh rapor yang pernah dibuat untuk semua pemain. Daftar pemain tetap aman.</div>
+              <button class="btn btn-danger btn-block" id="btnResetAll">Hapus Semua Rapor</button>
+            </div>
+          </section>
+        </div>
+      </div>
+</section>
+
+  </div>
 </div>
 
-<!-- NATIVE HTML DIALOG FOR SYSTEM FORMAT (TOP-LAYER API) -->
-<dialog id="formatDialog" class="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl backdrop-blur-xl text-white max-w-sm w-full mx-auto">
-  <div class="flex flex-col gap-4">
-    <h3 class="text-lg font-bold text-rose-500 mb-2 flex items-center gap-2"><i data-lucide="alert-triangle"></i> Peringatan Keras!</h3>
-    <p class="text-sm text-slate-300 leading-relaxed">Apakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya dan tidak dapat dikembalikan.</p>
-    <div class="flex gap-3 justify-end mt-2">
-      <button class="btn btn-secondary flex-1" onclick="document.getElementById('formatDialog').close()">Batal</button>
-      <button class="btn btn-danger flex-1" onclick="confirmFormat()">Format Data</button>
-    </div>
-  </div>
-</dialog>
-
 <script>
-// ==========================================
-// KONFIGURASI SISTEM
-// ==========================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
-const DEF_AVATAR = "https://ui-avatars.com/api/?name=Pemain&background=e2e8f0&color=475569&size=200";
+(function(){
+'use strict';
 
-// TEMA WARNA MENGGUNAKAN CSS VARIABLES
-const THEMES = {
-    default: { p1: '#7c3aed', p2: '#3730a3', bg: '#ffffff', sec: '#f4f4f5', txt: '#18181b', brd: '#e4e4e7', mut: '#71717a', acc: '#7c3aed' },
-    emerald: { p1: '#10b981', p2: '#047857', bg: '#ffffff', sec: '#f4f4f5', txt: '#064e3b', brd: '#e4e4e7', mut: '#71717a', acc: '#10b981' },
-    rose:    { p1: '#e11d48', p2: '#be123c', bg: '#ffffff', sec: '#fff1f2', txt: '#881337', brd: '#fecdd3', mut: '#9f1239', acc: '#e11d48' },
-    ocean:   { p1: '#0ea5e9', p2: '#1d4ed8', bg: '#ffffff', sec: '#f0f9ff', txt: '#1e3a8a', brd: '#e0f2fe', mut: '#3b82f6', acc: '#0ea5e9' },
-    dark:    { p1: '#1e293b', p2: '#0f172a', bg: '#0f172a', sec: '#1e293b', txt: '#ffffff', brd: '#334155', mut: '#94a3b8', acc: '#b7ff28' }
+/* =========================================================
+   0. STORAGE POLYFILL (localStorage bila window.storage tak ada)
+   ========================================================= */
+if(!window.storage){
+  const PFX = 'raporakademi::';
+  window.storage = {
+    async get(key){ const raw = localStorage.getItem(PFX+key); if(raw===null) throw new Error('not_found'); return {key, value:raw, shared:false}; },
+    async set(key, value){ localStorage.setItem(PFX+key, value); return {key, value, shared:false}; },
+    async delete(key){ const existed = localStorage.getItem(PFX+key)!==null; localStorage.removeItem(PFX+key); return {key, deleted:existed, shared:false}; },
+    async list(prefix){ const keys=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.indexOf(PFX)===0){ const bare=k.slice(PFX.length); if(!prefix || bare.indexOf(prefix)===0) keys.push(bare); } } return {keys, prefix, shared:false}; }
+  };
+}
+window.jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
+
+/* =========================================================
+   1. KONSTANTA
+   ========================================================= */
+const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
+const DEFAULT_LOGO = 'https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png';
+const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#1a2947"/><circle cx="50" cy="38" r="18" fill="#4a5b82"/><path d="M18 90c4-24 20-36 32-36s28 12 32 36" fill="#4a5b82"/></svg>');
+
+const SKILL_DEFS = {
+  fisik:  [ {key:'atletics',  label:'Atletics',    desc:'Gerak dasar atletik'}, {key:'agility',    label:'Agility',   desc:'Kelincahan & keseimbangan'}, {key:'stamina',    label:'Stamina',    desc:'Daya tahan fisik'} ],
+  teknik: [ {key:'passing',   label:'Passing',     desc:'Kemampuan mengumpan'}, {key:'dribbling',  label:'Dribbling', desc:'Kemampuan menggiring bola'}, {key:'shooting',   label:'Shooting',   desc:'Kemampuan menembak ke gawang'} ],
+  taktik: [ {key:'roleplay',  label:'Role of Play',desc:'Pemahaman peraturan resmi futsal'} ],
+  mental: [ {key:'motivation',label:'Motivation',  desc:'Semangat berlatih & bertanding'}, {key:'teamwork',   label:'Teamwork',  desc:'Interaksi & kerja sama tim'}, {key:'discipline', label:'Discipline', desc:'Kerajinan & ketepatan waktu'} ]
 };
+const CATEGORY_ORDER = ['fisik','teknik','taktik','mental'];
+const CATEGORY_META = {
+  fisik:{label:'Fisik', icon:'activity'},
+  teknik:{label:'Teknik', icon:'target'},
+  taktik:{label:'Taktik', icon:'brain'},
+  mental:{label:'Mental', icon:'flame'}
+};
+const ALL_SKILLS = CATEGORY_ORDER.flatMap(c => SKILL_DEFS[c].map(s => Object.assign({cat:c}, s)));
+const ALL_SKILL_KEYS = ALL_SKILLS.map(s => s.key);
+const ALL_SKILL_LABELS = ALL_SKILLS.map(s => s.label);
+const BULAN_SHORT = ['JAN','FEB','MAR','APR','MEI','JUN','JUL','AGU','SEP','OKT','NOV','DES'];
+const PERIOD_COLORS = ['#f2a541','#2fd1c2','#7c8cf8'];
 
+/* =========================================================
+   2. STATE
+   ========================================================= */
+let clubSettings = { name1:'MNA GEN-Z', name2:'FUTSAL ACADEMY', instagram:'mna_genz_academy', phone:'0812-xxxx-xxxx', logo:'', sheetUrl:'', lastSync:'' };
 let players = [];
-let selPlayer = null;
-let ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
-let myRadarChart = null;
+let selectedPlayer = null;
+let ratings = {};
+ALL_SKILL_KEYS.forEach(k => ratings[k] = 0);
+let editingPlayerId = null;
+let pendingPhotoThumb = null, pendingPhotoFull = null, pendingLogoData = null;
+let radarChartInstance = null, progressRadarChartInstance = null, trendChartInstance = null;
+let currentTab = 'dashboard';
+let playerReportCounts = {};
 
-// Database Lokal Aman
+/* =========================================================
+   3. DB LAYER
+   ========================================================= */
 const DB = {
-    get: (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch(e){ return null; } },
-    set: (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} },
-    del: (key) => { try { localStorage.removeItem(key); } catch(e){} }
+  async getClub(){ try{ const r = await window.storage.get('club-settings'); return JSON.parse(r.value); } catch(e){ return null; } },
+  async setClub(data){ await window.storage.set('club-settings', JSON.stringify(data)); },
+  async listPlayers(){ try{ const r = await window.storage.get('players-index'); return JSON.parse(r.value); } catch(e){ return []; } },
+  async savePlayersIndex(arr){ await window.storage.set('players-index', JSON.stringify(arr)); },
+  async getPlayer(id){ try{ const r = await window.storage.get('player:'+id); return JSON.parse(r.value); } catch(e){ return null; } },
+  async setPlayer(id,data){ await window.storage.set('player:'+id, JSON.stringify(data)); },
+  async deletePlayer(id){ try{ await window.storage.delete('player:'+id); } catch(e){} },
+  async listReports(playerId){ try{ const r = await window.storage.get('reports-index:'+playerId); return JSON.parse(r.value); } catch(e){ return []; } },
+  async saveReportsIndex(playerId, arr){ await window.storage.set('reports-index:'+playerId, JSON.stringify(arr)); },
+  async getReport(playerId, key){ try{ const r = await window.storage.get('report:'+playerId+':'+key); return JSON.parse(r.value); } catch(e){ return null; } },
+  async setReport(playerId, key, data){ await window.storage.set('report:'+playerId+':'+key, JSON.stringify(data)); },
+  async deleteReport(playerId, key){ try{ await window.storage.delete('report:'+playerId+':'+key); } catch(e){} }
 };
 
-// Pengaman Eksekusi Style
-function safeStyle(el, prop, val) { if(el && el.style) el.style[prop] = val; }
+/* =========================================================
+   4. UTILITAS
+   ========================================================= */
+function genId(prefix){ return prefix+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 
-// ==========================================
-// INIT & CORE FUNCTIONS
-// ==========================================
-window.addEventListener("load", () => {
-    const failsafe = setTimeout(() => { 
-        hideLoader(); 
-        showToast("Sistem dilanjutkan dalam Mode Pemulihan.", "error"); 
-    }, 5000);
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
-    try {
-        if (window.jspdf && window.jspdf.jsPDF) {
-            window.jsPDF = window.jspdf.jsPDF;
-        }
-        
-        lucide.createIcons();
-        
-        const inTanggal = document.getElementById('inTanggal');
-        if(inTanggal) inTanggal.valueAsDate = new Date();
-        
-        const inMusim = document.getElementById('inMusim');
-        if(inMusim) inMusim.value = new Date().getFullYear();
+function resizeImage(file, maxDim, quality){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w=img.width, h=img.height;
+        if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; }
+        else if(h>=w && h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; }
+        const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = ()=>reject(new Error('Gagal memuat gambar'));
+      img.src = e.target.result;
+    };
+    reader.onerror = ()=>reject(new Error('Gagal membaca berkas'));
+    reader.readAsDataURL(file);
+  });
+}
 
-        const s = DB.get('pro_settings') || { club1: 'MNA GEN-Z', club2: 'FUTSAL ACADEMY', theme: 'default' };
-        if(document.getElementById('inClub1')) document.getElementById('inClub1').value = s.club1;
-        if(document.getElementById('inClub2')) document.getElementById('inClub2').value = s.club2;
-        if(document.getElementById('inTheme')) document.getElementById('inTheme').value = s.theme || 'default';
-        
-        buildStarsUI();
-        changeTheme();
-        
-        players = DB.get('pro_players') || [];
-        renderPlayers(players);
-        
-        clearTimeout(failsafe);
-        hideLoader();
-        triggerPreviewUpdate();
+function formatTanggalIndo(iso){
+  if(!iso) return '—';
+  const d = new Date(iso+'T00:00:00');
+  if(isNaN(d.getTime())) return '—';
+  return d.getDate()+' '+BULAN_SHORT[d.getMonth()]+' '+d.getFullYear();
+}
 
-    } catch(err) {
-        clearTimeout(failsafe);
-        hideLoader();
-        console.error(err);
-        showToast("Terjadi kesalahan inisialisasi UI.", "error");
+function emptyStateHTML(icon, title, desc){
+  return '<div class="empty-state"><i data-lucide="'+icon+'"></i><div class="t">'+escapeHtml(title)+'</div><div class="d">'+escapeHtml(desc)+'</div></div>';
+}
+
+function setBtnLoading(btn, loading, loadingText){
+  if(!btn) return;
+  if(loading){
+    if(!btn.dataset.origHtml) btn.dataset.origHtml = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2" style="width:15px;height:15px;animation:spin .8s linear infinite;"></i> '+(loadingText||'Memproses…');
+    btn.disabled = true;
+  } else {
+    if(btn.dataset.origHtml) btn.innerHTML = btn.dataset.origHtml;
+    btn.disabled = false;
+  }
+  if(window.lucide) lucide.createIcons();
+}
+
+/* Toast */
+function toast(type, title, message){
+  const stack = document.getElementById('toastStack');
+  const el = document.createElement('div');
+  el.className = 'toast '+type;
+  const iconName = type==='success' ? 'check-circle-2' : type==='error' ? 'x-circle' : 'info';
+  el.innerHTML = '<i data-lucide="'+iconName+'"></i><div><b>'+escapeHtml(title)+'</b>'+(message?('<div>'+escapeHtml(message)+'</div>'):'')+'</div>';
+  stack.appendChild(el);
+  if(window.lucide) lucide.createIcons();
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(), 220); }, 4200);
+}
+
+/* Modal */
+let _confirmResolve = null;
+function escCloseHandler(e){ if(e.key==='Escape') closeModal(); }
+function openModal({title, bodyHTML, wide=false, footButtons=[]}){
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay'; overlay.id = 'activeModalOverlay';
+  overlay.innerHTML =
+    '<div class="modal '+(wide?'wide':'')+'" role="dialog" aria-modal="true">'+
+      '<div class="modal-head"><h3>'+escapeHtml(title)+'</h3><button class="modal-close" id="modalCloseBtn" aria-label="Tutup"><i data-lucide="x"></i></button></div>'+
+      '<div class="modal-body">'+bodyHTML+'</div>'+
+      (footButtons.length ? '<div class="modal-foot" id="modalFoot"></div>' : '') +
+    '</div>';
+  document.getElementById('modalRoot').appendChild(overlay);
+  overlay.addEventListener('mousedown', (e)=>{ if(e.target===overlay) closeModal(); });
+  document.getElementById('modalCloseBtn').onclick = closeModal;
+  if(footButtons.length){
+    const foot = document.getElementById('modalFoot');
+    footButtons.forEach(fb=>{
+      const b = document.createElement('button');
+      b.className = 'btn '+(fb.cls||''); b.innerHTML = fb.label;
+      b.onclick = ()=>{ if(fb.onClick) fb.onClick(); if(fb.close!==false) closeModal(); };
+      foot.appendChild(b);
+    });
+  }
+  if(window.lucide) lucide.createIcons();
+  document.addEventListener('keydown', escCloseHandler);
+  const firstInput = overlay.querySelector('input, textarea, select');
+  if(firstInput) firstInput.focus();
+  return overlay;
+}
+function closeModal(){
+  const ov = document.getElementById('activeModalOverlay');
+  if(ov) ov.remove();
+  document.removeEventListener('keydown', escCloseHandler);
+  if(_confirmResolve){ const r=_confirmResolve; _confirmResolve=null; r(false); }
+}
+function confirmDialog({title='Konfirmasi', message, confirmLabel='Ya, Lanjutkan', cancelLabel='Batal', danger=false}){
+  return new Promise(resolve=>{
+    openModal({
+      title,
+      bodyHTML: '<p style="font-size:13.5px; line-height:1.65; color:var(--text-dim); margin:0;">'+message+'</p>',
+      footButtons: [
+        {label:cancelLabel, cls:'btn-ghost', onClick:()=>{ _confirmResolve=null; resolve(false); }},
+        {label:confirmLabel, cls: danger?'btn-danger':'btn-primary', onClick:()=>{ _confirmResolve=null; resolve(true); }}
+      ]
+    });
+    /* Penting: _confirmResolve baru di-set SETELAH openModal() selesai — openModal()
+       memanggil closeModal() di awal untuk menutup modal sebelumnya, dan closeModal()
+       akan langsung me-resolve(false) setiap _confirmResolve yang sedang aktif. Jika
+       baris ini dijalankan SEBELUM openModal(), promise ini akan langsung ter-resolve
+       false oleh pembersihan modal-nya sendiri, sebelum pengguna sempat mengklik apa pun. */
+    _confirmResolve = resolve;
+  });
+}
+
+/* =========================================================
+   5. PERHITUNGAN RATING
+   ========================================================= */
+function categoryAverage(ratingsObj, catKey){
+  const arr = SKILL_DEFS[catKey];
+  const sum = arr.reduce((s,sk)=> s+(ratingsObj[sk.key]||0), 0);
+  return sum/arr.length;
+}
+function overallAverage(ratingsObj){
+  let sum=0; ALL_SKILL_KEYS.forEach(k=> sum += (ratingsObj[k]||0));
+  return sum/ALL_SKILL_KEYS.length;
+}
+function isRatingComplete(ratingsObj){
+  return ALL_SKILL_KEYS.every(k => (ratingsObj[k]||0) > 0);
+}
+function resetRatingsObj(){
+  ratings = {}; ALL_SKILL_KEYS.forEach(k => ratings[k]=0);
+}
+
+/* =========================================================
+   6. NAVIGASI TAB
+   ========================================================= */
+const TAB_META = {
+  dashboard:{title:'Dashboard', sub:'Ringkasan performa akademi'},
+  pemain:{title:'Database Pemain', sub:'Kelola roster & sinkronisasi data'},
+  rapor:{title:'Buat Rapor', sub:'Isi penilaian & ekspor dokumen'},
+  progress:{title:'Progress Pemain', sub:'Bandingkan perkembangan antar triwulan'},
+  pengaturan:{title:'Pengaturan', sub:'Identitas klub & cadangan data'}
+};
+function goToTab(tab){
+  if(!TAB_META[tab]) return;
+  currentTab = tab;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const target = document.getElementById('view-'+tab);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.rail-item, .m-item').forEach(el=> el.classList.toggle('active', el.dataset.tab===tab));
+  document.getElementById('topbarTitle').innerHTML = TAB_META[tab].title+' <span class="dot">•</span>';
+  document.getElementById('topbarSub').textContent = TAB_META[tab].sub;
+  if(tab==='dashboard') renderDashboard();
+  if(tab==='progress') renderProgressTab();
+  if(tab==='rapor'){ requestAnimationFrame(()=>{ if(radarChartInstance) radarChartInstance.resize(); }); }
+  const mc = document.querySelector('.main-col'); if(mc) mc.scrollTo({top:0});
+  window.scrollTo(0,0);
+}
+
+/* =========================================================
+   7. DASHBOARD
+   ========================================================= */
+async function computeAllLatestReports(){
+  const result = [];
+  for(const p of players){
+    const idx = await DB.listReports(p.id);
+    if(idx.length===0){ result.push({player:p, report:null}); continue; }
+    const sorted = [...idx].sort((a,b)=> (Number(b.musim)-Number(a.musim)) || (Number(b.triwulan)-Number(a.triwulan)) );
+    const rep = await DB.getReport(p.id, sorted[0].key);
+    result.push({player:p, report:rep});
+  }
+  return result;
+}
+
+async function renderDashboard(){
+  document.getElementById('statTotalPlayers').textContent = players.length;
+
+  let totalReports = 0;
+  for(const p of players){ totalReports += (await DB.listReports(p.id)).length; }
+  document.getElementById('statTotalReports').textContent = totalReports;
+
+  const latestList = await computeAllLatestReports();
+  const completeReports = latestList.filter(x=> x.report && isRatingComplete(x.report.ratings));
+  let avgOverallAcademy = null;
+  if(completeReports.length){
+    avgOverallAcademy = completeReports.reduce((s,x)=> s+overallAverage(x.report.ratings), 0) / completeReports.length;
+  }
+  document.getElementById('statAvgOverall').innerHTML = avgOverallAcademy!=null ? avgOverallAcademy.toFixed(1)+'<small>/5</small>' : '—';
+
+  const noReportPlayers = latestList.filter(x=>!x.report).map(x=>x.player);
+  document.getElementById('statNoReport').textContent = noReportPlayers.length;
+
+  const catSums = {fisik:0,teknik:0,taktik:0,mental:0}; let catCount=0;
+  completeReports.forEach(x=>{ CATEGORY_ORDER.forEach(c=> catSums[c]+=categoryAverage(x.report.ratings,c)); catCount++; });
+  const barsWrap = document.getElementById('dashCategoryBars');
+  barsWrap.innerHTML = '';
+  if(catCount===0){
+    barsWrap.innerHTML = emptyStateHTML('bar-chart-3','Belum ada data','Simpan minimal satu rapor lengkap agar rata-rata kemampuan skuad dapat dihitung.');
+  } else {
+    CATEGORY_ORDER.forEach(c=>{
+      const avg = catSums[c]/catCount; const pct = Math.max(4,(avg/5)*100);
+      const row = document.createElement('div'); row.className='cbar-row';
+      row.innerHTML = '<div class="top"><span>'+CATEGORY_META[c].label+'</span><span class="v">'+avg.toFixed(1)+'/5</span></div><div class="cbar-track"><div class="cbar-fill" style="width:'+pct+'%"></div></div>';
+      barsWrap.appendChild(row);
+    });
+  }
+
+  const attnWrap = document.getElementById('dashAttnList');
+  attnWrap.innerHTML = '';
+  if(players.length===0){
+    attnWrap.innerHTML = emptyStateHTML('users','Roster masih kosong','Tambahkan pemain lewat menu Pemain untuk mulai membuat rapor.');
+  } else if(noReportPlayers.length===0){
+    attnWrap.innerHTML = emptyStateHTML('circle-check','Semua pemain sudah dievaluasi','Kerja bagus — setiap pemain memiliki minimal satu rapor.');
+  } else {
+    noReportPlayers.slice(0,8).forEach(p=>{
+      const row = document.createElement('div'); row.className='attn-row';
+      row.innerHTML = '<img src="'+(p.photoThumb||DEFAULT_AVATAR)+'"><span class="nm">'+escapeHtml(p.name)+'</span><span class="ku">'+escapeHtml(p.ku||'-')+'</span><i data-lucide="chevron-right" style="width:15px;height:15px;color:var(--text-mute);"></i>';
+      row.addEventListener('click', ()=>{ selectPlayerForReport(p.id).then(()=>goToTab('rapor')); });
+      attnWrap.appendChild(row);
+    });
+  }
+  if(window.lucide) lucide.createIcons();
+}
+
+/* =========================================================
+   8. ROSTER PEMAIN (search / filter / sort)
+   ========================================================= */
+async function refreshPlayerReportCounts(){
+  playerReportCounts = {};
+  for(const p of players){ playerReportCounts[p.id] = (await DB.listReports(p.id)).length; }
+}
+function populateFilterOptions(){
+  const kuSel = document.getElementById('filterKu'), posSel = document.getElementById('filterPosisi');
+  const kus = [...new Set(players.map(p=>p.ku).filter(Boolean))].sort();
+  const poss = [...new Set(players.map(p=>p.position).filter(Boolean))].sort();
+  const curKu = kuSel.value, curPos = posSel.value;
+  kuSel.innerHTML = '<option value="">Semua KU</option>' + kus.map(k=>'<option value="'+escapeHtml(k)+'">'+escapeHtml(k)+'</option>').join('');
+  posSel.innerHTML = '<option value="">Semua Posisi</option>' + poss.map(k=>'<option value="'+escapeHtml(k)+'">'+escapeHtml(k)+'</option>').join('');
+  kuSel.value = curKu; posSel.value = curPos;
+}
+function getFilteredSortedPlayers(){
+  const q = document.getElementById('searchPlayer').value.trim().toLowerCase();
+  const ku = document.getElementById('filterKu').value;
+  const pos = document.getElementById('filterPosisi').value;
+  const sort = document.getElementById('sortPlayer').value;
+  let list = players.filter(p=>{
+    if(q && p.name.toLowerCase().indexOf(q)===-1) return false;
+    if(ku && p.ku!==ku) return false;
+    if(pos && p.position!==pos) return false;
+    return true;
+  });
+  list = [...list];
+  if(sort==='name-asc') list.sort((a,b)=> a.name.localeCompare(b.name));
+  else if(sort==='name-desc') list.sort((a,b)=> b.name.localeCompare(a.name));
+  else if(sort==='ku-asc') list.sort((a,b)=> (a.ku||'').localeCompare(b.ku||''));
+  else if(sort==='reports-desc') list.sort((a,b)=> (playerReportCounts[b.id]||0)-(playerReportCounts[a.id]||0));
+  return list;
+}
+function drawPlayerList(){
+  const c = document.getElementById('playerListContainer');
+  c.innerHTML = '';
+  document.getElementById('countPemain').textContent = players.length;
+  if(players.length===0){
+    c.innerHTML = emptyStateHTML('users','Belum ada pemain','Tekan "Sinkronisasi" untuk menarik data dari Spreadsheet, atau tambah pemain secara manual.');
+    if(window.lucide) lucide.createIcons(); return;
+  }
+  const list = getFilteredSortedPlayers();
+  if(list.length===0){
+    c.innerHTML = emptyStateHTML('search-x','Tidak ditemukan','Coba ubah kata kunci pencarian atau filter yang dipakai.');
+    if(window.lucide) lucide.createIcons(); return;
+  }
+  list.forEach(p=>{
+    const card = document.createElement('div'); card.className='roster-card';
+    const rc = playerReportCounts[p.id]||0;
+    card.innerHTML =
+      '<div class="roster-top"><img src="'+(p.photoThumb||DEFAULT_AVATAR)+'">'+
+        '<div class="info"><div class="nm">'+escapeHtml(p.name)+'</div>'+
+        '<div class="meta"><span class="badge badge-teal">'+escapeHtml(p.ku||'-')+'</span><span>'+escapeHtml(p.position||'-')+'</span><span>· '+rc+' rapor</span></div></div></div>'+
+      '<div class="roster-actions">'+
+        '<button class="btn btn-primary btn-sm" data-act="pilih" data-id="'+p.id+'"><i data-lucide="clipboard-edit"></i> Buat Rapor</button>'+
+        '<button class="btn btn-ghost btn-sm btn-icon" data-act="edit" data-id="'+p.id+'" title="Edit"><i data-lucide="pencil"></i></button>'+
+        '<button class="btn btn-ghost btn-sm btn-icon" data-act="hapus" data-id="'+p.id+'" title="Hapus"><i data-lucide="trash-2"></i></button>'+
+      '</div>';
+    c.appendChild(card);
+  });
+  if(window.lucide) lucide.createIcons();
+}
+async function renderPlayerList(){
+  await refreshPlayerReportCounts();
+  populateFilterOptions();
+  drawPlayerList();
+}
+
+/* =========================================================
+   9. PILIH PEMAIN UNTUK RAPOR
+   ========================================================= */
+function updateSelectedPlayerBox(){
+  const box = document.getElementById('selectedPlayerBox');
+  if(selectedPlayer){
+    box.innerHTML = '<img src="'+(selectedPlayer.photoThumb||DEFAULT_AVATAR)+'"><span>'+escapeHtml(selectedPlayer.name)+' <span class="muted">— KU '+escapeHtml(selectedPlayer.ku||'-')+'</span></span><span class="change-link" data-nav="pemain">Ganti pemain →</span>';
+  } else {
+    box.innerHTML = '<i data-lucide="mouse-pointer-click"></i> Belum ada pemain dipilih.<span class="change-link" data-nav="pemain">Pilih pemain →</span>';
+  }
+  if(window.lucide) lucide.createIcons();
+}
+
+async function selectPlayerForReport(id){
+  const rec = players.find(p=>p.id===id) || await DB.getPlayer(id);
+  if(!rec) return;
+  selectedPlayer = rec;
+  updateSelectedPlayerBox();
+  await refreshSavedReportsList();
+  await maybeLoadExistingReport();
+}
+
+/* =========================================================
+   10. EDITOR RATING
+   ========================================================= */
+function buildAllEditorGroups(){
+  const root = document.getElementById('ratingInputs');
+  root.innerHTML = '';
+  CATEGORY_ORDER.forEach(catKey=>{
+    const h = document.createElement('div'); h.className='rating-cat-title'; h.textContent = CATEGORY_META[catKey].label;
+    root.appendChild(h);
+    SKILL_DEFS[catKey].forEach(s=>{
+      const row = document.createElement('div'); row.className='edit-skill-row';
+      const lbl = document.createElement('div'); lbl.className='esr-label';
+      lbl.innerHTML = s.label+'<span class="d">'+s.desc+'</span>';
+      const picker = document.createElement('div'); picker.className='star-picker'; picker.dataset.key = s.key;
+      for(let n=1;n<=5;n++){ const sp=document.createElement('span'); sp.dataset.n=String(n); sp.textContent='★'; picker.appendChild(sp); }
+      row.appendChild(lbl); row.appendChild(picker);
+      root.appendChild(row);
+    });
+  });
+  root.addEventListener('click', onStarPickerClick);
+}
+function updateStarPickerUI(picker, value){
+  picker.querySelectorAll('span').forEach(sp=> sp.classList.toggle('active', parseInt(sp.dataset.n,10)<=value));
+}
+function syncAllStars(){
+  document.querySelectorAll('#ratingInputs .star-picker').forEach(picker=>{
+    updateStarPickerUI(picker, ratings[picker.dataset.key]||0);
+  });
+}
+function onStarPickerClick(e){
+  const sp = e.target.closest('span[data-n]'); if(!sp) return;
+  const picker = sp.closest('.star-picker'); const key = picker.dataset.key; const n = parseInt(sp.dataset.n,10);
+  ratings[key] = n;
+  updateStarPickerUI(picker, n);
+  renderPreview();
+}
+
+/* =========================================================
+   11. RADAR CHART (elemen signature — bergaya garis lapangan)
+   ========================================================= */
+function radarOptions(extra){
+  return Object.assign({
+    responsive:true, maintainAspectRatio:true,
+    scales:{ r:{ min:0, max:5, ticks:{stepSize:1, display:false, backdropColor:'transparent'},
+      grid:{color:'rgba(19,33,70,0.12)'}, angleLines:{color:'rgba(19,33,70,0.16)'},
+      pointLabels:{font:{family:"'Plus Jakarta Sans'", size:10, weight:'700'}, color:'#4a5164'} } },
+    plugins:{ legend:{display:false}, tooltip:{enabled:true, callbacks:{label:(ctx)=> ctx.dataset.label+': '+ctx.formattedValue}} },
+    animation:{duration:350}
+  }, extra||{});
+}
+function drawMainRadar(){
+  const canvas = document.getElementById('radarChart'); if(!canvas) return;
+  const values = ALL_SKILL_KEYS.map(k=>ratings[k]||0);
+  const dataset = { label:'Kemampuan', data:values, backgroundColor:'rgba(242,165,65,0.28)', borderColor:'#d98c1f', pointBackgroundColor:'#d98c1f', pointRadius:3, borderWidth:2 };
+  if(radarChartInstance){
+    radarChartInstance.data.labels = ALL_SKILL_LABELS;
+    radarChartInstance.data.datasets = [dataset];
+    radarChartInstance.update();
+  } else {
+    radarChartInstance = new Chart(canvas.getContext('2d'), {type:'radar', data:{labels:ALL_SKILL_LABELS, datasets:[dataset]}, options:radarOptions()});
+  }
+}
+
+/* =========================================================
+   12. PRATINJAU KARTU RAPOR
+   ========================================================= */
+function renderCategoryBreakdown(ratingsObj){
+  const wrap = document.getElementById('pv-cats'); wrap.innerHTML = '';
+  CATEGORY_ORDER.forEach(catKey=>{
+    const avg = categoryAverage(ratingsObj, catKey);
+    const block = document.createElement('div'); block.className='rc-cat';
+    const skillsHtml = SKILL_DEFS[catKey].map(s=>{
+      const v = ratingsObj[s.key]||0; let stars='';
+      for(let i=1;i<=5;i++){ stars += '<span class="'+(i<=v?'on':'off')+'">★</span>'; }
+      return '<div class="rc-skill-mini"><span class="lb">'+s.label+'</span><span class="st">'+stars+'</span></div>';
+    }).join('');
+    block.innerHTML = '<div class="rc-cat-head"><span class="t"><span class="rc-cat-icon"><i data-lucide="'+CATEGORY_META[catKey].icon+'" style="width:11px;height:11px;"></i></span>'+CATEGORY_META[catKey].label+'</span><span class="avg">'+avg.toFixed(1)+'</span></div>'+skillsHtml;
+    wrap.appendChild(block);
+  });
+  if(window.lucide) lucide.createIcons();
+}
+
+function renderPreview(){
+  document.getElementById('pv-clubname1').textContent = clubSettings.name1 || 'MNA GEN-Z';
+  document.getElementById('pv-clubname2').textContent = clubSettings.name2 || 'FUTSAL ACADEMY';
+  document.getElementById('pv-logo').src = clubSettings.logo || DEFAULT_LOGO;
+  document.getElementById('pv-ig').textContent = clubSettings.instagram || 'mna_genz_academy';
+  document.getElementById('pv-phone').textContent = clubSettings.phone || '0812-xxxx-xxxx';
+
+  const tw = document.getElementById('inTriwulan').value;
+  const ms = document.getElementById('inMusim').value;
+  document.getElementById('pv-period').textContent = 'TRIWULAN '+tw+' · '+ms;
+
+  if(selectedPlayer){
+    document.getElementById('pv-playername').textContent = selectedPlayer.name;
+    document.getElementById('pv-class').textContent = 'KU '+(selectedPlayer.ku||'-');
+    document.getElementById('pv-posisi').textContent = selectedPlayer.position || 'Posisi -';
+    document.getElementById('pv-dominan').textContent = selectedPlayer.foot || 'Kaki -';
+    document.getElementById('pv-photo').src = selectedPlayer.photo || DEFAULT_AVATAR;
+  } else {
+    document.getElementById('pv-playername').textContent = '— Pilih Pemain —';
+    document.getElementById('pv-class').textContent = 'KU —';
+    document.getElementById('pv-posisi').textContent = 'Posisi —';
+    document.getElementById('pv-dominan').textContent = 'Kaki —';
+    document.getElementById('pv-photo').src = DEFAULT_AVATAR;
+  }
+
+  document.getElementById('pv-catatan').textContent = document.getElementById('inCatatan').value || '—';
+  document.getElementById('pv-prestasi').textContent = document.getElementById('inPrestasi').value || '-';
+  document.getElementById('pv-pelatih').textContent = document.getElementById('inPelatih').value || 'Coach';
+  document.getElementById('pv-tanggal').textContent = formatTanggalIndo(document.getElementById('inTanggal').value);
+
+  const overall = overallAverage(ratings);
+  document.getElementById('pv-score').textContent = overall>0 ? overall.toFixed(1) : '—';
+
+  renderCategoryBreakdown(ratings);
+  drawMainRadar();
+}
+
+/* =========================================================
+   13. SIMPAN / MUAT RAPOR
+   ========================================================= */
+function onPeriodChange(){
+  renderPreview();
+  if(selectedPlayer) maybeLoadExistingReport();
+}
+async function maybeLoadExistingReport(){
+  const note = document.getElementById('reportStatusNote');
+  if(!selectedPlayer){ note.className='status-note'; note.innerHTML=''; return; }
+  const tw = document.getElementById('inTriwulan').value;
+  const ms = document.getElementById('inMusim').value;
+  const key = 'T'+tw+'_'+ms;
+  const rep = await DB.getReport(selectedPlayer.id, key);
+  if(rep){
+    resetRatingsObj(); Object.assign(ratings, rep.ratings||{});
+    document.getElementById('inCatatan').value = rep.catatan || '';
+    document.getElementById('inPrestasi').value = rep.prestasi || '';
+    document.getElementById('inPelatih').value = rep.pelatih || '';
+    document.getElementById('inTanggal').value = rep.tanggal || '';
+    note.className = 'status-note ok';
+    note.innerHTML = '<i data-lucide="file-check-2"></i> Data rapor tersimpan berhasil dimuat.';
+  } else {
+    resetRatingsObj();
+    document.getElementById('inCatatan').value = '';
+    document.getElementById('inPrestasi').value = '';
+    if(!document.getElementById('inTanggal').value){ document.getElementById('inTanggal').value = new Date().toISOString().slice(0,10); }
+    note.className = 'status-note new';
+    note.innerHTML = '<i data-lucide="file-plus-2"></i> Rapor baru untuk periode ini — silakan isi rating.';
+  }
+  if(window.lucide) lucide.createIcons();
+  syncAllStars();
+  renderPreview();
+}
+async function saveReport(){
+  if(!selectedPlayer){ toast('error','Pilih pemain dahulu','Pilih pemain di menu Database Pemain sebelum menyimpan rapor.'); return; }
+  const btn = document.getElementById('btnSaveReport');
+  setBtnLoading(btn, true, 'Menyimpan…');
+  const tw = document.getElementById('inTriwulan').value;
+  const ms = document.getElementById('inMusim').value;
+  const key = 'T'+tw+'_'+ms;
+  const data = {
+    key, triwulan:tw, musim:ms, ratings:Object.assign({},ratings),
+    catatan: document.getElementById('inCatatan').value.trim(),
+    prestasi: document.getElementById('inPrestasi').value.trim(),
+    pelatih: document.getElementById('inPelatih').value.trim(),
+    tanggal: document.getElementById('inTanggal').value
+  };
+  await DB.setReport(selectedPlayer.id, key, data);
+  const idx = await DB.listReports(selectedPlayer.id);
+  if(!idx.find(r=>r.key===key)){
+    idx.push({key, label:'Triwulan '+tw+' · '+ms, triwulan:tw, musim:ms});
+    await DB.saveReportsIndex(selectedPlayer.id, idx);
+  }
+  playerReportCounts[selectedPlayer.id] = (await DB.listReports(selectedPlayer.id)).length;
+  await refreshSavedReportsList();
+  const note = document.getElementById('reportStatusNote');
+  note.className = 'status-note ok';
+  note.innerHTML = '<i data-lucide="check-circle-2"></i> Laporan berhasil disimpan.';
+  setBtnLoading(btn, false);
+  toast('success','Rapor tersimpan', selectedPlayer.name+' — Triwulan '+tw+' · '+ms);
+}
+async function refreshSavedReportsList(){
+  const c = document.getElementById('savedReportsList'); c.innerHTML = '';
+  if(!selectedPlayer) return;
+  const idx = await DB.listReports(selectedPlayer.id);
+  if(idx.length===0){
+    const p = document.createElement('p'); p.className='panel-hint'; p.style.margin='10px 0 0';
+    p.innerHTML = '<i data-lucide="info" style="width:13px;height:13px;vertical-align:-2px;"></i> Belum ada laporan tersimpan untuk pemain ini.';
+    c.appendChild(p); if(window.lucide) lucide.createIcons(); return;
+  }
+  const sorted = [...idx].sort((a,b)=> (Number(b.musim)-Number(a.musim)) || (Number(b.triwulan)-Number(a.triwulan)));
+  sorted.forEach(r=>{
+    const row = document.createElement('div'); row.className='saved-report-row';
+    const lbl = document.createElement('span'); lbl.textContent = r.label;
+    const btn = document.createElement('button'); btn.className='btn btn-ghost btn-sm'; btn.innerHTML='<i data-lucide="corner-down-left"></i> Muat';
+    btn.onclick = ()=>{
+      document.getElementById('inTriwulan').value = r.triwulan;
+      document.getElementById('inMusim').value = r.musim;
+      maybeLoadExistingReport();
+    };
+    row.appendChild(lbl); row.appendChild(btn);
+    c.appendChild(row);
+  });
+  if(window.lucide) lucide.createIcons();
+}
+
+/* =========================================================
+   14. EKSPOR DOKUMEN (PDF / PNG / JPG)
+   ========================================================= */
+async function getCapturedCanvas(){
+  const target = document.getElementById('reportCard');
+  const parent = target.parentNode, nextSibling = target.nextSibling;
+  const savedStyle = target.getAttribute('style') || '';
+  /* Render di luar layar pada lebar tetap 720px, lepas dari flex/responsive layout saat
+     ini — memastikan hasil ekspor konsisten di desktop maupun mobile. */
+  document.body.appendChild(target);
+  target.style.cssText = savedStyle+';position:fixed;left:-9999px;top:0;width:720px;max-width:720px;transform:none;';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  const canvas = await html2canvas(target, { scale:2, backgroundColor:'#ffffff', useCORS:true, allowTaint:true, windowWidth:720 });
+  target.setAttribute('style', savedStyle);
+  if(nextSibling) parent.insertBefore(target, nextSibling); else parent.appendChild(target);
+  return canvas;
+}
+async function exportReport(format, isSilent){
+  isSilent = !!isSilent;
+  if(!selectedPlayer){ if(!isSilent) toast('error','Pilih pemain dahulu','Pilih pemain sebelum mengekspor rapor.'); return false; }
+  const btns = document.querySelectorAll('.btn-export, .btn-wa');
+  btns.forEach(b=>{ b.disabled=true; b.style.opacity='0.5'; });
+  const btnId = 'btnExport'+format.toUpperCase();
+  if(!isSilent) setBtnLoading(document.getElementById(btnId), true, 'Proses…');
+  try{
+    const canvas = await getCapturedCanvas();
+    const pname = selectedPlayer.name.replace(/[^a-zA-Z0-9]+/g,'_');
+    const tw = document.getElementById('inTriwulan').value, ms = document.getElementById('inMusim').value;
+    const filename = 'Rapor_'+pname+'_T'+tw+'_'+ms;
+    if(format==='pdf'){
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const margin = 10, imgWidth = pdfWidth-margin*2, imgHeight = (canvas.height*imgWidth)/canvas.width;
+      pdf.addImage(imgData,'JPEG', margin, 15, imgWidth, imgHeight);
+      pdf.save(filename+'.pdf');
+    } else if(format==='png'){
+      const link=document.createElement('a'); link.download=filename+'.png'; link.href=canvas.toDataURL('image/png'); link.click();
+    } else if(format==='jpg'){
+      const link=document.createElement('a'); link.download=filename+'.jpg'; link.href=canvas.toDataURL('image/jpeg',0.95); link.click();
     }
+    if(!isSilent) toast('success','Ekspor berhasil', filename+'.'+format);
+    return true;
+  } catch(err){
+    if(!isSilent) toast('error','Gagal mengekspor', err.message);
+    return false;
+  } finally {
+    btns.forEach(b=>{ b.disabled=false; b.style.opacity='1'; });
+    if(!isSilent) setBtnLoading(document.getElementById(btnId), false);
+  }
+}
+
+/* =========================================================
+   15. KIRIM WHATSAPP (dengan pratinjau pesan)
+   ========================================================= */
+function sendToWhatsApp(){
+  if(!selectedPlayer){ toast('error','Pilih pemain dahulu'); return; }
+  if(!selectedPlayer.parentPhone){ toast('error','No. WhatsApp orang tua kosong','Lengkapi nomor WhatsApp orang tua pada data pemain, atau sinkronkan dari Spreadsheet.'); return; }
+  const tw = document.getElementById('inTriwulan').value, ms = document.getElementById('inMusim').value;
+  const parentName = selectedPlayer.parentName || 'Bapak/Ibu';
+  const clubName = (clubSettings.name1||'MNA GEN-Z')+' '+(clubSettings.name2||'ACADEMY');
+  const defaultMsg = 'Halo '+parentName+',\n\nBerikut kami sampaikan Rapor Evaluasi Akademi Futsal '+(clubSettings.name1||'MNA GEN-Z')+' untuk ananda *'+selectedPlayer.name+'* pada periode Triwulan '+tw+' Musim '+ms+'.\n\n_(Mohon pelatih melampirkan file PDF Rapor yang baru saja diunduh ke dalam chat ini)_\n\nTerima Kasih,\n*Manajemen '+clubName+'*';
+  openModal({
+    title:'Kirim ke WhatsApp',
+    wide:true,
+    bodyHTML:
+      '<p class="panel-hint" style="margin:0 0 12px;">Pesan berikut akan dibuka di WhatsApp untuk <b>'+escapeHtml(parentName)+'</b>. PDF rapor akan otomatis terunduh — lampirkan berkasnya secara manual ke chat.</p>'+
+      '<div class="field"><label>Pesan</label><textarea id="waMessageBox" rows="9">'+escapeHtml(defaultMsg)+'</textarea></div>',
+    footButtons:[
+      {label:'Batal', cls:'btn-ghost', onClick:()=>{}},
+      {label:'<i data-lucide="send"></i> Unduh PDF &amp; Buka WhatsApp', cls:'btn-wa', close:false, onClick: confirmSendWA}
+    ]
+  });
+}
+async function confirmSendWA(){
+  const msg = document.getElementById('waMessageBox').value;
+  let phoneRaw = selectedPlayer.parentPhone.toString().replace(/\D/g,'');
+  if(phoneRaw.startsWith('0')) phoneRaw = '62'+phoneRaw.substring(1);
+  closeModal();
+  const ok = await exportReport('pdf', true);
+  if(!ok) return;
+  window.open('https://wa.me/'+phoneRaw+'?text='+encodeURIComponent(msg), '_blank');
+  toast('success','PDF diunduh & WhatsApp dibuka','Lampirkan file PDF yang baru diunduh ke dalam chat.');
+}
+
+/* =========================================================
+   16. MODAL TAMBAH / EDIT / HAPUS PEMAIN
+   ========================================================= */
+function openPlayerModal(id){
+  editingPlayerId = id || null;
+  pendingPhotoThumb = null; pendingPhotoFull = null;
+  const existing = id ? players.find(p=>p.id===id) : null;
+  const bodyHTML =
+    '<div class="field-2">'+
+      '<div class="field"><label>Nama Pemain</label><input type="text" id="mInName" placeholder="cth. Zamzam" value="'+(existing?escapeHtml(existing.name):'')+'"></div>'+
+      '<div class="field"><label>Kelas / KU</label><input type="text" id="mInKu" placeholder="cth. KU-10" value="'+(existing?escapeHtml(existing.ku||''):'')+'"></div>'+
+    '</div>'+
+    '<div class="field-2">'+
+      '<div class="field"><label>Posisi</label><input type="text" id="mInPosisi" placeholder="cth. Flank" value="'+(existing?escapeHtml(existing.position||''):'')+'"></div>'+
+      '<div class="field"><label>Kaki Dominan</label><select id="mInFoot"><option value="Kaki Kanan">Kaki Kanan</option><option value="Kaki Kiri">Kaki Kiri</option><option value="Dua Kaki">Dua Kaki</option></select></div>'+
+    '</div>'+
+    '<div class="field-2">'+
+      '<div class="field"><label>Nama Orang Tua/Wali <span class="opt">(opsional)</span></label><input type="text" id="mInParentName" value="'+(existing?escapeHtml(existing.parentName||''):'')+'"></div>'+
+      '<div class="field"><label>No. WhatsApp Ortu <span class="opt">(opsional)</span></label><input type="text" id="mInParentPhone" placeholder="08xxxxxxxxxx" value="'+(existing?escapeHtml(existing.parentPhone||''):'')+'"></div>'+
+    '</div>'+
+    '<div class="field field-file"><label>Foto Pemain <span class="opt">(opsional)</span></label><input type="file" id="mInPhoto" accept="image/*">'+
+      '<img id="mPhotoPreview" style="width:52px;height:52px;border-radius:50%;object-fit:cover;margin-top:9px;border:2px solid var(--line);display:'+(existing&&existing.photoThumb?'block':'none')+'" src="'+(existing&&existing.photoThumb?existing.photoThumb:'')+'"></div>';
+  openModal({
+    title: existing?'Edit Pemain':'Tambah Pemain',
+    bodyHTML,
+    footButtons:[
+      {label:'Batal', cls:'btn-ghost', onClick:()=>{}},
+      {label: existing?'Simpan Perubahan':'Tambah Pemain', cls:'btn-primary', close:false, onClick: submitPlayerModal}
+    ]
+  });
+  document.getElementById('mInFoot').value = (existing && existing.foot) || 'Kaki Kanan';
+  document.getElementById('mInPhoto').addEventListener('change', onModalPhotoChange);
+}
+async function onModalPhotoChange(e){
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    pendingPhotoThumb = await resizeImage(f,150,0.82);
+    pendingPhotoFull = await resizeImage(f,500,0.85);
+    const prev = document.getElementById('mPhotoPreview');
+    if(prev){ prev.src = pendingPhotoThumb; prev.style.display='block'; }
+  }catch(err){ toast('error','Gagal memuat foto', err.message); }
+}
+async function submitPlayerModal(){
+  const name = document.getElementById('mInName').value.trim();
+  const ku = document.getElementById('mInKu').value.trim();
+  if(!name || !ku){ toast('error','Data belum lengkap','Nama dan Kelas/KU wajib diisi.'); return; }
+  const existing = editingPlayerId ? players.find(p=>p.id===editingPlayerId) : null;
+  const id = editingPlayerId || genId('p');
+  const thumb = pendingPhotoThumb || (existing && existing.photoThumb) || DEFAULT_AVATAR;
+  const full = pendingPhotoFull || (existing && existing.photo) || DEFAULT_AVATAR;
+  const record = {
+    id, name, ku,
+    position: document.getElementById('mInPosisi').value.trim(),
+    foot: document.getElementById('mInFoot').value,
+    parentName: document.getElementById('mInParentName').value.trim(),
+    parentPhone: document.getElementById('mInParentPhone').value.trim(),
+    photoThumb: thumb, photo: full
+  };
+  await DB.setPlayer(id, record);
+  const idx2 = players.findIndex(p=>p.id===id);
+  if(idx2>=0) players[idx2]=record; else players.push(record);
+  await DB.savePlayersIndex(players);
+  await renderPlayerList();
+  if(selectedPlayer && selectedPlayer.id===id){ selectedPlayer=record; updateSelectedPlayerBox(); renderPreview(); }
+  closeModal();
+  toast('success', existing?'Perubahan disimpan':'Pemain ditambahkan', name);
+}
+async function handleDeletePlayer(id){
+  const p = players.find(x=>x.id===id); if(!p) return;
+  const ok = await confirmDialog({
+    title:'Hapus Pemain?',
+    message: '<b>'+escapeHtml(p.name)+'</b> beserta seluruh rapor tersimpan untuknya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.',
+    confirmLabel:'Ya, Hapus', danger:true
+  });
+  if(!ok) return;
+  const repIdx = await DB.listReports(id);
+  for(const r of repIdx){ await DB.deleteReport(id, r.key); }
+  try{ await window.storage.delete('reports-index:'+id); }catch(e){}
+  await DB.deletePlayer(id);
+  players = players.filter(x=>x.id!==id);
+  await DB.savePlayersIndex(players);
+  delete playerReportCounts[id];
+  if(selectedPlayer && selectedPlayer.id===id){ selectedPlayer=null; updateSelectedPlayerBox(); await refreshSavedReportsList(); renderPreview(); }
+  await renderPlayerList();
+  toast('success','Pemain dihapus', p.name);
+}
+
+/* =========================================================
+   17. SINKRONISASI SPREADSHEET
+   ========================================================= */
+async function syncPlayersFromSheet(){
+  const url = clubSettings.sheetUrl || DEFAULT_SHEET_URL;
+  if(!url){ toast('error','URL Spreadsheet belum diatur','Atur URL Web App di menu Pengaturan.'); return; }
+  const btns = [document.getElementById('btnSyncSheet'), document.getElementById('btnSyncSheetTop')].filter(Boolean);
+  btns.forEach(b=>setBtnLoading(b,true,'Menyinkronkan…'));
+  try{
+    const res = await fetch(url);
+    const data = await res.json();
+    const existing = players;
+    const sheetPlayers = data.map(row=>{
+      const name = row["Nama Pemain"] ? row["Nama Pemain"].toString().trim() : '';
+      if(!name) return null;
+      const ex = existing.find(e=> e.name.toUpperCase()===name.toUpperCase());
+      const pid = ex ? ex.id : genId('p');
+      const photoUrl = row["Foto"] || (ex ? ex.photo : DEFAULT_AVATAR);
+      const positionStr = row["Posisi"] || (ex ? ex.position : '-');
+      const footStr = row["Kaki Dominan"] || row["Dominan"] || (ex ? ex.foot : 'Kaki Kanan');
+      const parentPhone = row["No. WhatsApp (Ortu)"] || row["No. WhatsApp"] || row["No WhatsApp"] || (ex ? ex.parentPhone : '');
+      const parentName = row["Nama Orang Tua / Wali"] || row["Nama Ortu"] || (ex ? ex.parentName : 'Bapak/Ibu');
+      return { id:pid, name, ku: row["Kategori Umur"] || (ex?ex.ku:'-'), position:positionStr, foot:footStr, photoThumb:photoUrl, photo:photoUrl, parentPhone, parentName };
+    }).filter(Boolean);
+
+    players = sheetPlayers;
+    await DB.savePlayersIndex(players);
+    for(const p of players){ await DB.setPlayer(p.id, p); }
+
+    clubSettings.lastSync = new Date().toISOString();
+    await DB.setClub(clubSettings);
+    updateSyncTimeLabel();
+
+    await renderPlayerList();
+    if(selectedPlayer){
+      const updated = players.find(p=>p.id===selectedPlayer.id);
+      if(updated){ selectedPlayer=updated; updateSelectedPlayerBox(); renderPreview(); }
+    }
+    if(currentTab==='dashboard') await renderDashboard();
+    toast('success','Sinkronisasi berhasil', players.length+' pemain ditarik dari Spreadsheet.');
+  } catch(err){
+    console.error('Gagal sinkronisasi:', err);
+    toast('error','Gagal menarik data','Pastikan URL Spreadsheet benar dan koneksi internet stabil.');
+  } finally {
+    btns.forEach(b=>setBtnLoading(b,false));
+  }
+}
+function updateSyncTimeLabel(){
+  const el = document.getElementById('railSyncTime');
+  if(!clubSettings.lastSync){ el.textContent='Belum pernah'; return; }
+  const d = new Date(clubSettings.lastSync);
+  el.textContent = d.toLocaleDateString('id-ID',{day:'numeric',month:'short'}) + ' · ' + d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* =========================================================
+   18. PROGRESS PEMAIN (radar perbandingan + tren)
+   ========================================================= */
+async function renderProgressTab(){
+  const sel = document.getElementById('progressPlayerSelect');
+  const curVal = sel.value;
+  sel.innerHTML = '<option value="">— Pilih pemain —</option>' + players.map(p=>'<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>').join('');
+  if(curVal && players.find(p=>p.id===curVal)) sel.value = curVal;
+  await onProgressPlayerChange();
+}
+async function onProgressPlayerChange(){
+  const pid = document.getElementById('progressPlayerSelect').value;
+  const listWrap = document.getElementById('periodPickList');
+  if(!pid){
+    listWrap.innerHTML = emptyStateHTML('calendar-x','Pilih pemain dahulu','Pilih pemain untuk melihat daftar periode rapor yang tersedia.');
+    drawProgressRadar([]); drawTrendChart([]);
+    return;
+  }
+  const idx = await DB.listReports(pid);
+  if(idx.length===0){
+    listWrap.innerHTML = emptyStateHTML('calendar-x','Belum ada rapor','Pemain ini belum memiliki rapor tersimpan.');
+    drawProgressRadar([]); drawTrendChart([]);
+    return;
+  }
+  const sorted = [...idx].sort((a,b)=> (Number(b.musim)-Number(a.musim)) || (Number(b.triwulan)-Number(a.triwulan)));
+  listWrap.innerHTML = '';
+  for(const r of sorted){
+    const rep = await DB.getReport(pid, r.key);
+    const avg = rep ? overallAverage(rep.ratings) : 0;
+    const row = document.createElement('label'); row.className='period-pick-row';
+    row.innerHTML = '<input type="checkbox" data-key="'+r.key+'"><span class="lb">'+r.label+'</span><span class="avg">'+(avg>0?avg.toFixed(1):'—')+'</span>';
+    listWrap.appendChild(row);
+  }
+  const checkboxes = listWrap.querySelectorAll('input[type=checkbox]');
+  checkboxes.forEach((cb,i)=>{ if(i<2) cb.checked = true; });
+  await refreshProgressCharts();
+}
+function onPeriodCheckChange(e){
+  const checked = document.querySelectorAll('#periodPickList input[type=checkbox]:checked');
+  if(checked.length>3){ e.target.checked=false; toast('info','Maksimal 3 periode','Pilih maksimal 3 periode untuk dibandingkan.'); return; }
+  refreshProgressCharts();
+}
+async function refreshProgressCharts(){
+  const pid = document.getElementById('progressPlayerSelect').value;
+  if(!pid){ drawProgressRadar([]); drawTrendChart([]); return; }
+  const checked = [...document.querySelectorAll('#periodPickList input[type=checkbox]:checked')].map(cb=>cb.dataset.key);
+  const idx = await DB.listReports(pid);
+  const sorted = [...idx].sort((a,b)=> (Number(a.musim)-Number(b.musim)) || (Number(a.triwulan)-Number(b.triwulan)));
+  const allReports = [];
+  for(const r of sorted){ const rep = await DB.getReport(pid, r.key); if(rep) allReports.push({meta:r, report:rep}); }
+  drawTrendChart(allReports);
+  drawProgressRadar(allReports.filter(x=> checked.includes(x.meta.key)));
+}
+function drawProgressRadar(items){
+  const canvas = document.getElementById('progressRadarChart');
+  const legend = document.getElementById('progressLegend');
+  const datasets = items.map((it,i)=>{
+    const color = PERIOD_COLORS[i%PERIOD_COLORS.length];
+    return { label: it.meta.label, data: ALL_SKILL_KEYS.map(k=> it.report.ratings[k]||0), backgroundColor: color+'33', borderColor: color, pointBackgroundColor: color, pointRadius:2.5, borderWidth:2 };
+  });
+  legend.innerHTML = items.map((it,i)=> '<span class="it"><span class="sw" style="background:'+PERIOD_COLORS[i%PERIOD_COLORS.length]+'"></span>'+escapeHtml(it.meta.label)+'</span>').join('');
+  if(items.length===0){
+    if(progressRadarChartInstance){ progressRadarChartInstance.data.datasets=[]; progressRadarChartInstance.update(); }
+    return;
+  }
+  if(progressRadarChartInstance){
+    progressRadarChartInstance.data.labels = ALL_SKILL_LABELS;
+    progressRadarChartInstance.data.datasets = datasets;
+    progressRadarChartInstance.update();
+  } else {
+    progressRadarChartInstance = new Chart(canvas.getContext('2d'), {type:'radar', data:{labels:ALL_SKILL_LABELS, datasets}, options: radarOptions()});
+  }
+}
+function drawTrendChart(allReports){
+  const canvas = document.getElementById('trendChart');
+  const labels = allReports.map(x=> 'T'+x.meta.triwulan+' · '+x.meta.musim);
+  const data = allReports.map(x=> Number(overallAverage(x.report.ratings).toFixed(2)));
+  const dataset = { label:'Rata-rata', data, borderColor:'#f2a541', backgroundColor:'rgba(242,165,65,0.15)', tension:0.35, fill:true, pointBackgroundColor:'#f2a541', pointRadius:4 };
+  const opts = {
+    responsive:true, maintainAspectRatio:false,
+    scales:{ y:{min:0,max:5, ticks:{stepSize:1, color:'#8b93a8'}, grid:{color:'#eef0f4'}}, x:{ ticks:{color:'#8b93a8'}, grid:{display:false} } },
+    plugins:{legend:{display:false}}, animation:{duration:350}
+  };
+  if(allReports.length===0){
+    if(trendChartInstance){ trendChartInstance.data.labels=[]; trendChartInstance.data.datasets=[Object.assign({},dataset,{data:[]})]; trendChartInstance.update(); }
+    return;
+  }
+  if(trendChartInstance){
+    trendChartInstance.data.labels = labels;
+    trendChartInstance.data.datasets = [dataset];
+    trendChartInstance.update();
+  } else {
+    trendChartInstance = new Chart(canvas.getContext('2d'), {type:'line', data:{labels, datasets:[dataset]}, options:opts});
+  }
+}
+
+/* =========================================================
+   19. PENGATURAN (identitas klub, sumber data, backup)
+   ========================================================= */
+function fillSettingsForm(){
+  document.getElementById('inClubName1').value = clubSettings.name1||'';
+  document.getElementById('inClubName2').value = clubSettings.name2||'';
+  document.getElementById('inClubIg').value = clubSettings.instagram||'';
+  document.getElementById('inClubPhone').value = clubSettings.phone||'';
+  document.getElementById('logoPreview').src = clubSettings.logo || DEFAULT_LOGO;
+  document.getElementById('inSheetUrl').value = clubSettings.sheetUrl || DEFAULT_SHEET_URL;
+  updateSyncTimeLabel();
+}
+function applyClubBranding(){
+  document.getElementById('railLogo').src = clubSettings.logo || DEFAULT_LOGO;
+  document.getElementById('railClubName1').textContent = clubSettings.name1 || 'MNA GEN-Z';
+  document.getElementById('railClubName2').textContent = clubSettings.name2 || 'FUTSAL ACADEMY';
+}
+async function onLogoFileChange(e){
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    pendingLogoData = await resizeImage(f, 240, 0.9);
+    document.getElementById('logoPreview').src = pendingLogoData;
+  }catch(err){ toast('error','Gagal memuat logo', err.message); }
+}
+async function saveClubSettings(){
+  const btn = document.getElementById('btnSaveClub');
+  setBtnLoading(btn, true, 'Menyimpan…');
+  clubSettings.name1 = document.getElementById('inClubName1').value.trim() || 'MNA GEN-Z';
+  clubSettings.name2 = document.getElementById('inClubName2').value.trim() || 'FUTSAL ACADEMY';
+  clubSettings.instagram = document.getElementById('inClubIg').value.trim();
+  clubSettings.phone = document.getElementById('inClubPhone').value.trim();
+  if(pendingLogoData) clubSettings.logo = pendingLogoData;
+  else if(!clubSettings.logo) clubSettings.logo = DEFAULT_LOGO;
+  await DB.setClub(clubSettings);
+  applyClubBranding();
+  renderPreview();
+  setBtnLoading(btn, false);
+  toast('success','Identitas klub disimpan');
+}
+async function saveSheetUrl(){
+  const btn = document.getElementById('btnSaveSheetUrl');
+  setBtnLoading(btn, true, 'Menyimpan…');
+  clubSettings.sheetUrl = document.getElementById('inSheetUrl').value.trim();
+  await DB.setClub(clubSettings);
+  setBtnLoading(btn, false);
+  toast('success','URL Spreadsheet disimpan');
+}
+async function exportBackup(){
+  const btn = document.getElementById('btnExportBackup');
+  setBtnLoading(btn, true, 'Menyiapkan…');
+  try{
+    const payload = { _app:'rapor-akademi-backup', _version:1, exportedAt:new Date().toISOString(), club:clubSettings, players:[], reports:{} };
+    for(const p of players){
+      payload.players.push(p);
+      const idx = await DB.listReports(p.id);
+      const reps = [];
+      for(const r of idx){ const rep = await DB.getReport(p.id, r.key); if(rep) reps.push(rep); }
+      payload.reports[p.id] = reps;
+    }
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = 'Backup_RaporAkademi_'+new Date().toISOString().slice(0,10)+'.json';
+    link.click();
+    URL.revokeObjectURL(url);
+    const totalReports = Object.values(payload.reports).reduce((s,a)=>s+a.length,0);
+    toast('success','Backup berhasil diunduh', payload.players.length+' pemain, '+totalReports+' rapor.');
+  } catch(err){
+    toast('error','Gagal membuat backup', err.message);
+  } finally { setBtnLoading(btn,false); }
+}
+function importBackupClick(){ document.getElementById('inImportFile').click(); }
+async function handleImportFile(e){
+  const f = e.target.files[0]; if(!f) return;
+  e.target.value = '';
+  try{
+    const text = await f.text();
+    const payload = JSON.parse(text);
+    if(!payload || !Array.isArray(payload.players)){ toast('error','Berkas tidak valid','Berkas ini bukan hasil ekspor backup Rapor Akademi.'); return; }
+    const totalReports = payload.reports ? Object.values(payload.reports).reduce((s,a)=>s+(a?a.length:0),0) : 0;
+    const ok = await confirmDialog({
+      title:'Pulihkan dari Backup?',
+      message: 'Ini akan <b>menimpa seluruh data saat ini</b> ('+players.length+' pemain) dengan isi backup ini ('+payload.players.length+' pemain, '+totalReports+' rapor). Tindakan ini tidak dapat dibatalkan.',
+      confirmLabel:'Ya, Timpa &amp; Pulihkan', danger:true
+    });
+    if(!ok) return;
+    if(payload.club){ clubSettings = Object.assign({name1:'MNA GEN-Z',name2:'FUTSAL ACADEMY'}, payload.club); await DB.setClub(clubSettings); }
+    players = payload.players;
+    await DB.savePlayersIndex(players);
+    for(const p of players){
+      await DB.setPlayer(p.id, p);
+      const reps = (payload.reports && payload.reports[p.id]) || [];
+      const idxArr = reps.map(r=>({key:r.key, label:'Triwulan '+r.triwulan+' · '+r.musim, triwulan:r.triwulan, musim:r.musim}));
+      await DB.saveReportsIndex(p.id, idxArr);
+      for(const r of reps){ await DB.setReport(p.id, r.key, r); }
+    }
+    applyClubBranding(); fillSettingsForm();
+    selectedPlayer = null; updateSelectedPlayerBox(); renderPreview();
+    await renderPlayerList();
+    if(currentTab==='dashboard') await renderDashboard();
+    toast('success','Data berhasil dipulihkan', players.length+' pemain, '+totalReports+' rapor.');
+  } catch(err){
+    toast('error','Gagal memulihkan backup', err.message);
+  }
+}
+async function resetAllReports(){
+  const ok = await confirmDialog({
+    title:'Hapus Semua Rapor?',
+    message:'Seluruh rapor yang pernah dibuat untuk <b>semua pemain</b> akan dihapus permanen. Daftar pemain tidak akan terpengaruh.',
+    confirmLabel:'Ya, Hapus Semua', danger:true
+  });
+  if(!ok) return;
+  const btn = document.getElementById('btnResetAll');
+  setBtnLoading(btn, true, 'Menghapus…');
+  for(const p of players){
+    const idx = await DB.listReports(p.id);
+    for(const r of idx){ await DB.deleteReport(p.id, r.key); }
+    try{ await window.storage.delete('reports-index:'+p.id); }catch(e){}
+  }
+  playerReportCounts = {}; players.forEach(p=>playerReportCounts[p.id]=0);
+  if(selectedPlayer){ await refreshSavedReportsList(); await maybeLoadExistingReport(); }
+  drawPlayerList();
+  if(currentTab==='dashboard') await renderDashboard();
+  setBtnLoading(btn, false);
+  toast('success','Semua rapor telah dihapus');
+}
+
+/* =========================================================
+   20. EVENT WIRING & INIT
+   ========================================================= */
+function wireEvents(){
+  document.addEventListener('click', (e)=>{
+    const tabEl = e.target.closest('.rail-item, .m-item');
+    if(tabEl){ goToTab(tabEl.dataset.tab); return; }
+    const navEl = e.target.closest('[data-nav]');
+    if(navEl){ goToTab(navEl.dataset.nav); return; }
+  });
+
+  document.getElementById('playerListContainer').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-act]'); if(!btn) return;
+    const id = btn.dataset.id, act = btn.dataset.act;
+    if(act==='pilih'){ selectPlayerForReport(id).then(()=>goToTab('rapor')); }
+    else if(act==='edit'){ openPlayerModal(id); }
+    else if(act==='hapus'){ handleDeletePlayer(id); }
+  });
+
+  document.getElementById('btnAddPlayer').addEventListener('click', ()=>openPlayerModal(null));
+  document.getElementById('btnSyncSheet').addEventListener('click', syncPlayersFromSheet);
+  document.getElementById('btnSyncSheetTop').addEventListener('click', syncPlayersFromSheet);
+
+  document.getElementById('searchPlayer').addEventListener('input', drawPlayerList);
+  document.getElementById('filterKu').addEventListener('change', drawPlayerList);
+  document.getElementById('filterPosisi').addEventListener('change', drawPlayerList);
+  document.getElementById('sortPlayer').addEventListener('change', drawPlayerList);
+
+  document.getElementById('inTriwulan').addEventListener('change', onPeriodChange);
+  document.getElementById('inMusim').addEventListener('change', onPeriodChange);
+  document.getElementById('inCatatan').addEventListener('input', renderPreview);
+  document.getElementById('inPrestasi').addEventListener('input', renderPreview);
+  document.getElementById('inPelatih').addEventListener('input', renderPreview);
+  document.getElementById('inTanggal').addEventListener('input', renderPreview);
+  document.getElementById('btnSaveReport').addEventListener('click', saveReport);
+
+  document.getElementById('btnExportPDF').addEventListener('click', ()=>exportReport('pdf'));
+  document.getElementById('btnExportPNG').addEventListener('click', ()=>exportReport('png'));
+  document.getElementById('btnExportJPG').addEventListener('click', ()=>exportReport('jpg'));
+  document.getElementById('btnSendWA').addEventListener('click', sendToWhatsApp);
+
+  document.getElementById('progressPlayerSelect').addEventListener('change', onProgressPlayerChange);
+  document.getElementById('periodPickList').addEventListener('change', onPeriodCheckChange);
+
+  document.getElementById('inLogo').addEventListener('change', onLogoFileChange);
+  document.getElementById('btnSaveClub').addEventListener('click', saveClubSettings);
+  document.getElementById('btnSaveSheetUrl').addEventListener('click', saveSheetUrl);
+  document.getElementById('btnExportBackup').addEventListener('click', exportBackup);
+  document.getElementById('btnImportBackup').addEventListener('click', importBackupClick);
+  document.getElementById('inImportFile').addEventListener('change', handleImportFile);
+  document.getElementById('btnResetAll').addEventListener('click', resetAllReports);
+}
+
+function setDefaultReportFields(){
+  const now = new Date();
+  const defaultTw = Math.min(4, Math.max(1, Math.ceil((now.getMonth()+1)/3)));
+  document.getElementById('inTriwulan').value = String(defaultTw);
+  document.getElementById('inMusim').value = now.getFullYear();
+  document.getElementById('inTanggal').value = now.toISOString().slice(0,10);
+}
+
+async function init(){
+  try{ const savedClub = await DB.getClub(); if(savedClub) clubSettings = Object.assign(clubSettings, savedClub); }catch(e){}
+  if(!clubSettings.logo) clubSettings.logo = DEFAULT_LOGO;
+  players = await DB.listPlayers();
+
+  applyClubBranding();
+  fillSettingsForm();
+  buildAllEditorGroups();
+  syncAllStars();
+  setDefaultReportFields();
+  updateSelectedPlayerBox();
+  renderPreview();
+  await renderPlayerList();
+  wireEvents();
+  goToTab('dashboard');
+
+  if(window.lucide) lucide.createIcons();
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(window.lucide) lucide.createIcons();
+  init().catch(err=>{
+    console.error(err);
+    const ls = document.getElementById('loadingScreen');
+    ls.innerHTML = '<div style="text-align:center; color:#fca5a5; font-size:13px; max-width:280px; line-height:1.6;">Gagal memuat aplikasi.<br>'+escapeHtml(err.message)+'</div>';
+  });
 });
 
-function hideLoader() {
-    const ls = document.getElementById('loadingScreen');
-    if(ls) {
-        ls.style.opacity = '0';
-        ls.style.visibility = 'hidden';
-        setTimeout(() => { 
-            ls.style.display = 'none'; 
-            const main = document.getElementById('mainApp');
-            if(main) main.style.display = 'flex'; 
-        }, 500);
-    }
-}
-
-function showToast(msg, type='success') {
-    const c = document.getElementById('toast-container');
-    if(!c) return;
-    const t = document.createElement('div');
-    t.className = `toast show ${type}`;
-    t.innerHTML = type === 'success' ? `<i data-lucide="check-circle" class="h-5 w-5"></i> ${msg}` : `<i data-lucide="alert-circle" class="h-5 w-5"></i> ${msg}`;
-    c.appendChild(t);
-    lucide.createIcons();
-    setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(), 400); }, 3500);
-}
-
-function switchTab(tabId, btn) {
-    if (!document.startViewTransition) {
-        updateTab(tabId, btn);
-        return;
-    }
-    document.startViewTransition(() => updateTab(tabId, btn));
-}
-
-function updateTab(tabId, btn) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
-    const target = document.getElementById(tabId);
-    if(target) target.classList.add('active');
-    if(btn) btn.classList.add('active');
-}
-
-// ==========================================
-// TEMA WARNA & GRADING
-// ==========================================
-function changeTheme() {
-    try {
-        const themeEl = document.getElementById('inTheme');
-        if(!themeEl) return;
-        const key = themeEl.value || 'default';
-        const t = THEMES[key] || THEMES.default;
-        const r = document.documentElement;
-        
-        r.style.setProperty('--purple1', t.p1);
-        r.style.setProperty('--blue2', t.p2);
-        r.style.setProperty('--rc-bg', t.bg);
-        r.style.setProperty('--rc-sec', t.sec);
-        r.style.setProperty('--rc-text', t.txt);
-        r.style.setProperty('--rc-border', t.brd);
-        r.style.setProperty('--rc-text-muted', t.mut);
-        r.style.setProperty('--rc-accent', t.acc);
-
-        if(myRadarChart) {
-            myRadarChart.data.datasets[0].borderColor = t.p1;
-            myRadarChart.data.datasets[0].pointBackgroundColor = t.p1;
-            myRadarChart.data.datasets[0].pointHoverBorderColor = t.p1;
-            
-            const textColor = key === 'dark' ? '#ffffff' : '#18181b';
-            if (Chart.defaults && Chart.defaults.color) Chart.defaults.color = textColor;
-            if (myRadarChart.options.scales.r.pointLabels) myRadarChart.options.scales.r.pointLabels.color = textColor;
-            myRadarChart.update();
-        }
-    } catch(err) { console.error("Theme Error:", err); }
-}
-
-function calcGrade() {
-    let sum = 0, count = 0;
-    for(let k in ratings) { sum += ratings[k]; count++; }
-    const avg = count ? sum/count : 0;
-    
-    // FIFA Style Rating Calculation (1-99 equivalent mapped from 5 stars)
-    let gradeValue = Math.round(avg * 19.8);
-    if(gradeValue === 0) gradeValue = "N/A";
-    
-    let color = "var(--rc-text-muted)";
-    if(avg === 0) { color = "var(--rc-text-muted)"; }
-    else if(avg >= 4.5) { color = "#10b981"; } 
-    else if(avg >= 4.0) { color = "#3b82f6"; } 
-    else if(avg >= 3.0) { color = "#f59e0b"; } 
-    else if(avg >= 2.0) { color = "#f97316"; } 
-    else { color = "#ef4444"; } 
-    
-    const gVal = document.getElementById('pv-grade-value');
-    if(gVal) {
-        gVal.innerText = gradeValue;
-        gVal.style.color = color;
-    }
-}
-
-// ==========================================
-// SINKRONISASI GOOGLE SHEETS
-// ==========================================
-async function syncPlayers() {
-    const btn = document.getElementById('btnSyncSheet');
-    const apiStatus = document.getElementById('apiStatus');
-    if(btn) { btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menarik Data...'; btn.disabled = true; }
-    if(apiStatus) apiStatus.innerHTML = '<i data-lucide="refresh-cw" class="h-4 w-4 animate-spin"></i> Syncing...';
-    lucide.createIcons();
-
-    try {
-        const res = await fetch(SCRIPT_URL);
-        const data = await res.json();
-        
-        players = data.map(r => {
-            const name = r["Nama Pemain"] ? r["Nama Pemain"].toString().trim() : "";
-            if(!name) return null;
-            let phone = r["No. WhatsApp (Ortu)"] || r["No. WhatsApp"] || "";
-            if(phone && phone.toString().startsWith('0')) phone = '62' + phone.toString().substring(1);
-            
-            return {
-                id: name.toLowerCase().replace(/[^a-z0-9]/g,'_'),
-                name: name.toUpperCase(),
-                ku: r["Kategori Umur"] || "-",
-                photo: r["Foto"] ? `https://wsrv.nl/?url=${encodeURIComponent(r["Foto"])}&w=256&h=256&fit=cover` : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=b7ff28&color=070b13&size=200`,
-                phone: phone
-            };
-        }).filter(p => p);
-
-        DB.set('pro_players', players);
-        renderPlayers(players);
-        
-        const stTotal = document.getElementById('stat-total');
-        if(stTotal) stTotal.innerText = players.length;
-        
-        const now = new Date();
-        const stSync = document.getElementById('stat-sync');
-        if(stSync) stSync.innerText = `${now.getHours()}:${(now.getMinutes()<10?'0':'')+now.getMinutes()}`;
-
-        showToast(`Sukses! ${players.length} pemain ditarik.`);
-        if(apiStatus) {
-            apiStatus.innerHTML = '<i data-lucide="check" class="h-4 w-4"></i> Online';
-            apiStatus.style.color = '#10b981'; apiStatus.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-        }
-    } catch(err) {
-        showToast("Koneksi terputus. Cek URL Google Script.", "error");
-        if(apiStatus) {
-            apiStatus.innerHTML = '<i data-lucide="x" class="h-4 w-4"></i> Offline';
-            apiStatus.style.color = '#f43f5e'; apiStatus.style.borderColor = 'rgba(244, 63, 94, 0.3)';
-        }
-    } finally {
-        if(btn) {
-            btn.innerHTML = '<i data-lucide="refresh-cw" class="h-4 w-4"></i> Tarik Data Spreadsheet';
-            btn.disabled = false;
-        }
-        lucide.createIcons();
-    }
-}
-
-function renderPlayers(arr) {
-    const c = document.getElementById('playerListContainer');
-    if(!c) return;
-    c.innerHTML = arr.length ? '' : '<p class="text-sm text-slate-500 text-center py-4">Belum ada data pemain. Tekan Sinkronisasi.</p>';
-    arr.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'player-card';
-        div.innerHTML = `
-            <img src="${p.photo}" onerror="this.src='${DEF_AVATAR}'" crossorigin="anonymous">
-            <div class="info">
-                <div class="name" title="${p.name}">${p.name}</div>
-                <div class="ku">${p.ku}</div>
-            </div>
-            <button class="btn btn-primary btn-small" onclick="selectPlayer('${p.id}')">Pilih</button>
-        `;
-        c.appendChild(div);
-    });
-    const stTotal = document.getElementById('stat-total');
-    if(players.length && stTotal) stTotal.innerText = players.length;
-}
-
-function filterPlayers() {
-    const searchEl = document.getElementById('searchPlayer');
-    if(!searchEl) return;
-    const q = searchEl.value.toLowerCase();
-    renderPlayers(players.filter(p => p.name.toLowerCase().includes(q)));
-}
-
-function selectPlayer(id) {
-    selPlayer = players.find(p => p.id === id);
-    if(selPlayer) {
-        const infoEl = document.getElementById('selectedPlayerInfo');
-        if(infoEl) {
-            infoEl.innerHTML = `<img src="${selPlayer.photo}" crossorigin="anonymous" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #b7ff28;" onerror="this.src='${DEF_AVATAR}'"> <span class="truncate">${selPlayer.name}</span>`;
-        }
-        const menus = document.querySelectorAll('.menu-btn');
-        if(menus.length > 1) switchTab('tab-rapor', menus[1]);
-        checkSavedReport();
-    }
-}
-
-function checkSavedReport() {
-    if(!selPlayer) return;
-    
-    const twEl = document.getElementById('inTriwulan');
-    const msEl = document.getElementById('inMusim');
-    if(!twEl || !msEl) return;
-
-    const tw = twEl.value;
-    const ms = msEl.value;
-    const savedData = DB.get(`rapor_${selPlayer.id}_${tw}_${ms}`);
-    const statusBadge = document.getElementById('reportStatus');
-    
-    if(savedData) {
-        ratings = savedData.ratings || {};
-        const catEl = document.getElementById('inCatatan');
-        if(catEl) catEl.value = savedData.cat || "";
-        if(statusBadge) statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
-        showToast("Memuat draf rapor tersimpan.");
-    } else {
-        resetFormRapor(true); 
-        if(statusBadge) statusBadge.innerHTML = '<span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest"><i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG</span>';
-    }
-    updateStarsUI(); triggerPreviewUpdate(); lucide.createIcons();
-}
-
-function resetFormRapor(isSilent = false) {
-    ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
-    const catEl = document.getElementById('inCatatan');
-    if(catEl) catEl.value = "";
-    updateStarsUI(); triggerPreviewUpdate();
-    if(!isSilent) showToast("Form dikosongkan.");
-}
-
-// ==========================================
-// RATING UI & PREVIEW
-// ==========================================
-const skillKeys = ['atletics','agility','stamina','passing','dribbling','shooting','roleplay','motivation','teamwork','discipline'];
-const cats = [
-    {n: 'Fisik', k: ['atletics','agility','stamina']},
-    {n: 'Teknik', k: ['passing','dribbling','shooting']},
-    {n: 'Taktik', k: ['roleplay']},
-    {n: 'Mental', k: ['motivation','teamwork','discipline']}
-];
-
-function buildStarsUI() {
-    const root = document.getElementById('ratingInputs');
-    if(!root) return;
-    cats.forEach(c => {
-        const title = document.createElement('div'); title.className = 'rating-cat';
-        title.innerHTML = `<div class="rating-title">${c.n}</div>`;
-        c.k.forEach(sk => {
-            const row = document.createElement('div'); row.className = 'skill-row';
-            row.innerHTML = `<div class="skill-label">${sk.toUpperCase()}</div>
-                             <div class="star-picker" data-key="${sk}">
-                               <span onclick="setRate('${sk}',1)">★</span><span onclick="setRate('${sk}',2)">★</span>
-                               <span onclick="setRate('${sk}',3)">★</span><span onclick="setRate('${sk}',4)">★</span><span onclick="setRate('${sk}',5)">★</span>
-                             </div>`;
-            title.appendChild(row);
-        });
-        root.appendChild(title);
-    });
-}
-
-window.setRate = function(key, val) {
-    ratings[key] = val;
-    updateStarsUI(); triggerPreviewUpdate();
-};
-
-function updateStarsUI() {
-    skillKeys.forEach(k => {
-        const val = ratings[k] || 0;
-        const picker = document.querySelector(`.star-picker[data-key="${k}"]`);
-        if(picker) {
-            picker.querySelectorAll('span').forEach((sp, i) => sp.classList.toggle('active', i < val));
-        }
-        const pv = document.getElementById(`st-${k}`);
-        if(pv) {
-            pv.innerHTML = '';
-            for(let i=0; i<5; i++) {
-                const s = document.createElement('span');
-                s.className = i < val ? 'on' : 'off';
-                s.innerText = '★';
-                pv.appendChild(s);
-            }
-        }
-    });
-}
-
-function triggerPreviewUpdate() {
-    const cb1 = document.getElementById('pv-club1');
-    const in1 = document.getElementById('inClub1');
-    if(cb1 && in1) cb1.innerText = in1.value || 'MNA GEN-Z';
-    
-    const cb2 = document.getElementById('pv-club2');
-    const in2 = document.getElementById('inClub2');
-    if(cb2 && in2) cb2.innerText = in2.value || 'FUTSAL ACADEMY';
-    
-    const pvP = document.getElementById('pv-period');
-    const inTw = document.getElementById('inTriwulan');
-    const inMs = document.getElementById('inMusim');
-    if(pvP && inTw && inMs) pvP.innerText = `TRIWULAN ${inTw.value} MUSIM ${inMs.value}`;
-    
-    if(selPlayer) {
-        const pvName = document.getElementById('pv-playername');
-        if(pvName) pvName.innerText = selPlayer.name;
-        const pvClass = document.getElementById('pv-class');
-        if(pvClass) pvClass.innerText = `KATEGORI ${selPlayer.ku.replace(/\D/g,'')}`;
-        const pvPhoto = document.getElementById('pv-photo');
-        if(pvPhoto) pvPhoto.src = selPlayer.photo;
-    }
-    
-    const pCat = document.getElementById('pv-catatan');
-    const inCat = document.getElementById('inCatatan');
-    if(pCat && inCat) pCat.innerText = inCat.value || "Belum ada evaluasi.";
-    
-    const inTgl = document.getElementById('inTanggal');
-    if(inTgl) {
-        const d = new Date(inTgl.value);
-        const bln = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-        if(!isNaN(d.getTime())) {
-            const pTgl = document.getElementById('pv-tanggal');
-            // FIX KOTA SBY KE TRENGGALEK
-            if(pTgl) pTgl.innerText = `Trenggalek, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
-        }
-    }
-    
-    const pPel = document.getElementById('pv-pelatih');
-    const inPel = document.getElementById('inPelatih');
-    if(pPel && inPel) pPel.innerText = inPel.value || "Coach";
-
-    updateRadarChart();
-    calcGrade();
-}
-
-function updateRadarChart() {
-    if(typeof Chart === 'undefined') return;
-    const ctx = document.getElementById('radarChart');
-    if(!ctx) return;
-    
-    const calcAvg = (keys) => {
-        let sum = 0; keys.forEach(k => sum += (ratings[k]||0));
-        return keys.length ? (sum / keys.length).toFixed(1) : 0;
-    };
-
-    const dFisik = calcAvg(['atletics','agility','stamina']);
-    const dTeknik = calcAvg(['passing','dribbling','shooting']);
-    const dTaktik = ratings.roleplay || 0;
-    const dMental = calcAvg(['motivation','teamwork','discipline']);
-    
-    const tColor = getComputedStyle(document.documentElement).getPropertyValue('--purple1').trim() || '#7c3aed';
-
-    if(myRadarChart) {
-        myRadarChart.data.datasets[0].data = [dFisik, dTeknik, dTaktik, dMental];
-        myRadarChart.data.datasets[0].borderColor = tColor;
-        myRadarChart.data.datasets[0].pointBackgroundColor = tColor;
-        myRadarChart.data.datasets[0].pointHoverBorderColor = tColor;
-        myRadarChart.update();
-    } else {
-        Chart.defaults.font.family = "'Inter', sans-serif";
-        myRadarChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['FISIK', 'TEKNIK', 'TAKTIK', 'MENTAL'],
-                datasets: [{
-                    data: [dFisik, dTeknik, dTaktik, dMental],
-                    backgroundColor: 'rgba(183, 255, 40, 0.4)', borderColor: tColor,
-                    pointBackgroundColor: tColor, pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff', pointHoverBorderColor: tColor, borderWidth: 2,
-                }]
-            },
-            options: {
-                animation: false, responsive: true, maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        min: 0, max: 5, ticks: { display: false, stepSize: 1 },
-                        grid: { color: 'rgba(0,0,0,0.08)', circular: true },
-                        angleLines: { color: 'rgba(0,0,0,0.1)' },
-                        pointLabels: { color: '#18181b', font: { size: 10, weight: '700', family: "'Inter', sans-serif" } }
-                    }
-                },
-                plugins: { legend: { display: false }, tooltip: { enabled: false } }
-            }
-        });
-    }
-}
-
-function saveSettings() {
-    DB.set('pro_settings', { 
-        club1: document.getElementById('inClub1').value, 
-        club2: document.getElementById('inClub2').value,
-        theme: document.getElementById('inTheme').value
-    });
-    changeTheme();
-    showToast("Pengaturan global berhasil disimpan.");
-}
-
-function saveReport() {
-    if(!selPlayer) return showToast("Pilih pemain terlebih dahulu!", "error");
-    const tw = document.getElementById('inTriwulan').value;
-    const ms = document.getElementById('inMusim').value;
-    
-    DB.set(`rapor_${selPlayer.id}_${tw}_${ms}`, { ratings: ratings, cat: document.getElementById('inCatatan').value });
-    
-    const statusBadge = document.getElementById('reportStatus');
-    if(statusBadge) {
-        statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
-        lucide.createIcons();
-    }
-    
-    const rStat = document.getElementById('stat-rapor');
-    if(rStat) rStat.innerText = parseInt(rStat.innerText) + 1;
-    
-    showToast("Data Rapor berhasil disimpan secara aman.");
-}
-
-function openFormatDialog() {
-    const dialog = document.getElementById('formatDialog');
-    if (dialog) {
-        dialog.showModal();
-        lucide.createIcons();
-    }
-}
-
-function confirmFormat() {
-    localStorage.clear();
-    location.reload();
-}
-
-// ==========================================
-// EKSPOR PROFESIONAL (MESIN PDF/IMG)
-// ==========================================
-async function takeSnapshot() {
-    if(typeof html2canvas === 'undefined') throw new Error("Modul html2canvas belum dimuat.");
-    
-    const card = document.getElementById('reportCard');
-    const inner = card.querySelector('.rc-inner-wrap');
-    if(!inner) throw new Error("Elemen rapor tidak ditemukan.");
-    
-    // Tunggu font dimuat sepenuhnya agar tidak terjadi pergeseran baselines di html2canvas
-    if (document.fonts && document.fonts.ready) {
-        await document.fonts.ready;
-    }
-
-    // Menggunakan inner wrap untuk snapshot menghindari masalah overflow hidden di html2canvas
-    const oW = inner.style.width, oT = inner.style.transform;
-    inner.style.width = '760px'; inner.style.transform = 'none';
-    window.scrollTo(0,0);
-
-    const canvas = await html2canvas(inner, {
-        scale: 2, backgroundColor: null, useCORS: true, allowTaint: false,
-        width: 760, windowWidth: 760, scrollY: 0, logging: false,
-        onclone: (clonedDoc) => {
-            const clonedInner = clonedDoc.querySelector('.rc-inner-wrap');
-            if(clonedInner) {
-                clonedInner.style.boxShadow = 'none'; // Buang bayangan saat dicetak
-            }
-        }
-    });
-
-    inner.style.width = oW; inner.style.transform = oT;
-    return canvas;
-}
-
-window.exportFile = async function(fmt) {
-    if(!selPlayer) return showToast("Pilih pemain terlebih dahulu!", "error");
-    
-    const btns = document.querySelectorAll('.action-btn');
-    btns.forEach(b => { safeStyle(b, 'opacity', '0.5'); b.disabled = true; });
-    
-    const ov = document.getElementById('exportOverlay');
-    if(ov) {
-        ov.style.display = 'flex';
-        document.getElementById('exportOverlayText').innerText = `Mengekspor Dokumen ${fmt.toUpperCase()}...`;
-    }
-
-    try {
-        const cvs = await takeSnapshot();
-        const tw = document.getElementById('inTriwulan').value;
-        const ms = document.getElementById('inMusim').value;
-        const fname = `Rapor_${selPlayer.name.replace(/\s+/g,'_')}_T${tw}_${ms}`;
-
-        if(fmt === 'pdf') {
-            if(typeof window.jsPDF === 'undefined') throw new Error("Modul jsPDF belum dimuat.");
-            const pdf = new window.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-            const w = 190, h = (cvs.height * w) / cvs.width;
-            pdf.addImage(cvs.toDataURL('image/png', 1.0), 'PNG', 10, 15, w, h);
-            pdf.save(fname + '.pdf');
-        } else {
-            const link = document.createElement('a');
-            link.download = fname + '.' + fmt;
-            link.href = cvs.toDataURL(`image/${fmt==='jpg'?'jpeg':'png'}`, 1.0);
-            link.click();
-        }
-        showToast(`Ekspor ${fmt.toUpperCase()} berhasil!`);
-    } catch(err) {
-        console.error(err);
-        showToast("Gagal memproses ekspor. Server gambar menolak izin CORS.", "error");
-    } finally {
-        btns.forEach(b => { safeStyle(b, 'opacity', '1'); b.disabled = false; });
-        if(ov) ov.style.display = 'none';
-    }
-};
-
-window.sendWA = async function() {
-    if(!selPlayer) return showToast("Pilih pemain terlebih dahulu!", "error");
-    if(!selPlayer.phone) return showToast("No WA orang tua pemain ini tidak ditemukan.", "error");
-
-    showToast("Memproses WhatsApp...");
-    await window.exportFile('pdf');
-
-    setTimeout(() => {
-        const tw = document.getElementById('inTriwulan').value;
-        const ms = document.getElementById('inMusim').value;
-        const txt = "Halo Bapak/Ibu Wali dari *" + selPlayer.name + "*,\n\nBerikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan " + tw + " Musim " + ms + ".\n\n_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_\n\nTerima kasih atas dukungannya,\n*Manajemen MNA GEN-Z ACADEMY*";
-        window.open(`https://wa.me/${selPlayer.phone}?text=${encodeURIComponent(txt)}`, '_blank');
-    }, 1500);
-}
+})();
 </script>
 </body>
 </html>
