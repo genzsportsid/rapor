@@ -23,41 +23,40 @@
     --ink: #070b13;
     --panel-bg: rgba(15, 23, 42, 0.6);
     --line: rgba(255, 255, 255, 0.1);
+    
+    /* Dynamic Theme Variables untuk Rapor */
+    --rc-bg: #ffffff;
+    --rc-sec: #f8fafc;
+    --rc-text: #1b2a63;
+    --rc-border: #e2e8f0;
+    --rc-text-muted: #64748b;
+    --rc-accent: #7c3aed;
   }
   
   * { box-sizing: border-box; }
   body {
-    margin: 0;
-    font-family: 'DM Sans', sans-serif;
+    margin: 0; font-family: 'DM Sans', sans-serif;
     background: linear-gradient(135deg, rgba(4, 8, 16, 0.98) 0%, rgba(11, 20, 37, 0.95) 100%);
-    color: #f6f8ff;
-    min-height: 100vh;
-    overflow-x: hidden;
+    color: #f6f8ff; min-height: 100vh; overflow-x: hidden;
   }
 
   /* LOADER ELEGAN (ANTI-STUCK) */
   #loadingScreen {
-    position: fixed; inset: 0; z-index: 9999;
-    background: var(--ink);
+    position: fixed; inset: 0; z-index: 9999; background: var(--ink);
     display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
     color: var(--green); font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
   }
   .loader-ring {
-    width: 50px; height: 50px; border: 3px solid rgba(183, 255, 40, 0.1);
+    width: 60px; height: 60px; border: 4px solid rgba(183, 255, 40, 0.1);
     border-top-color: var(--green); border-radius: 50%;
     animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* TOAST NOTIFICATION */
-  #toast-container {
-    position: fixed; bottom: 24px; right: 24px; z-index: 10000;
-    display: flex; flex-direction: column; gap: 12px; pointer-events: none;
-  }
+  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
   .toast {
-    background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line);
-    color: white; padding: 14px 20px; border-radius: 12px;
+    background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line); color: white; padding: 16px 20px; border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
     display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600;
     transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -69,13 +68,11 @@
   /* TOPBAR */
   .topbar {
     background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--line);
-    padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
-    position: sticky; top: 0; z-index: 50;
+    padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;
   }
   .topbar-brand { display: flex; flex-direction: column; }
   .topbar-brand h1 { font-size: 18px; margin: 0; color: #fff; font-weight: 900; letter-spacing: 1px; }
   .topbar-brand span { font-size: 11px; color: var(--green); font-weight: 700; letter-spacing: 1px; }
-  
   .api-status {
     display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
     background: rgba(183, 255, 40, 0.1); color: var(--green); padding: 6px 14px; border-radius: 20px;
@@ -84,15 +81,9 @@
 
   /* LAYOUT DASHBOARD */
   .dashboard { display: flex; flex-direction: column; gap: 24px; padding: 24px; max-width: 1600px; margin: 0 auto; }
-  
-  /* RESPONSIVE BEHAVIOR */
   @media (max-width: 1023px) {
     .dashboard { padding: 16px; gap: 16px; }
-    .sidebar-menu { 
-        display: flex; overflow-x: auto; gap: 8px; width: 100%; 
-        padding-bottom: 8px; margin-bottom: 4px;
-        -ms-overflow-style: none; scrollbar-width: none;
-    }
+    .sidebar-menu { display: flex; overflow-x: auto; gap: 8px; width: 100%; padding-bottom: 8px; margin-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none; }
     .sidebar-menu::-webkit-scrollbar { display: none; }
     .menu-btn { white-space: nowrap; flex-shrink: 0; width: auto; margin-bottom: 0; padding: 10px 16px; font-size: 13px; }
     .preview-wrapper { overflow-x: auto; margin-left: -16px; padding-left: 16px; padding-right: 16px; }
@@ -100,7 +91,7 @@
   @media (min-width: 1024px) {
     .dashboard { flex-direction: row; align-items: flex-start; }
     .sidebar-menu { width: 240px; position: sticky; top: 90px; }
-    .editor-panel { width: 420px; flex-shrink: 0; }
+    .editor-panel { width: 440px; flex-shrink: 0; }
     .preview-panel { flex: 1; min-width: 0; position: sticky; top: 90px; }
   }
 
@@ -108,14 +99,10 @@
   .menu-btn {
     width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 18px;
     background: transparent; color: #94a3b8; border: 1px solid transparent; border-radius: 14px;
-    font-size: 14px; font-weight: 700; text-align: left; cursor: pointer; transition: all 0.2s;
-    margin-bottom: 8px;
+    font-size: 14px; font-weight: 700; text-align: left; cursor: pointer; transition: all 0.2s; margin-bottom: 8px;
   }
   .menu-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
-  .menu-btn.active {
-    background: rgba(183, 255, 40, 0.1); border-color: rgba(183, 255, 40, 0.2);
-    color: var(--green); box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
+  .menu-btn.active { background: rgba(183, 255, 40, 0.1); border-color: rgba(183, 255, 40, 0.2); color: var(--green); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
   /* EDITOR TABS */
   .tab-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -125,27 +112,27 @@
   .card-section {
     background: var(--panel-bg); border-radius: 1.5rem; padding: 24px;
     border: 1px solid var(--line); box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); margin-bottom: 24px;
   }
+  .section-title { font-size: 16px; color: #fff; font-weight: 800; margin: 0 0 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
   
-  .section-title { 
-      font-size: 16px; color: #fff; font-weight: 800; margin: 0 0 20px; 
-      display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 12px; 
-  }
-  .hint { font-size: 12px; color: #94a3b8; margin: 0 0 16px; line-height: 1.5; }
+  /* STATS CARDS */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; }
+  .stat-card h4 { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px; }
+  .stat-card p { font-size: 18px; font-weight: 900; color: #fff; margin: 0; }
+  .stat-card p.neon { color: var(--green); }
 
   /* FORM UI */
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
   .field input, .field select, .field textarea {
     width: 100%; padding: 12px 16px; border-radius: 12px; background: rgba(2,6,23,0.5); color: #fff;
-    border: 2px solid rgba(255,255,255,0.08); font-size: 14px; transition: all 0.3s;
-    font-family: inherit; font-weight: 500;
+    border: 2px solid rgba(255,255,255,0.08); font-size: 14px; transition: all 0.3s; font-family: inherit; font-weight: 500;
   }
   .field input:focus, .field select:focus, .field textarea:focus {
     border-color: var(--green); background: rgba(2,6,23,0.8);
-    box-shadow: 0 0 0 4px rgba(183,255,40,0.1), inset 0 2px 4px rgba(0,0,0,0.2); outline: none;
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 4px rgba(183,255,40,0.1), inset 0 2px 4px rgba(0,0,0,0.2); outline: none; transform: translateY(-1px);
   }
   .field input:disabled { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
   .field textarea { resize: vertical; min-height: 80px; }
@@ -160,7 +147,6 @@
   .btn:hover { transform: translateY(-2px); }
   .btn:active { transform: scale(0.98); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  
   .btn-primary { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(183,255,40,0.2); }
   .btn-primary:hover { background: #9de018; }
   .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
@@ -173,12 +159,7 @@
   .player-list::-webkit-scrollbar { width: 4px; }
   .player-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
   .player-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-  
-  .player-card {
-    display: flex; align-items: center; gap: 12px; padding: 12px;
-    background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 14px;
-    transition: background 0.2s;
-  }
+  .player-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 14px; transition: background 0.2s; }
   .player-card:hover { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.2); }
   .player-card img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); background: #fff;}
   .player-card .info { flex: 1; min-width: 0; }
@@ -195,29 +176,24 @@
   .star-picker span:hover { color: #fcd34d; transform: scale(1.1); }
   .star-picker span.active { color: var(--gold); }
 
-  /* REPORT CARD PREVIEW (STRICTLY CONSTRAINED FOR PDF) */
+  /* REPORT CARD PREVIEW */
   .preview-wrapper { width: 100%; overflow-x: auto; padding-bottom: 20px; display: flex; justify-content: center; }
   .preview-wrapper::-webkit-scrollbar { display: none; }
   
   .report-card {
-    width: 760px; min-width: 760px; background: #ffffff; border-radius: 24px; overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); color: #1e293b;
-    position: relative;
-    /* Transisi tema warna rapor */
-    transition: background 0.5s ease;
+    width: 760px; min-width: 760px; border-radius: 24px; overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative;
+    background: var(--rc-bg); color: var(--rc-text); transition: all 0.5s ease;
   }
   
-  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 16px; background: #fff; position: relative;}
-  .rc-logo { width: 64px; height: 64px; border-radius: 50%; object-fit: contain; border: 2px solid var(--navy); background: #fff; z-index: 2;}
-  .rc-clubname { font-weight: 900; color: var(--navy); text-transform: uppercase; line-height: 1.1; letter-spacing: 0.5px; font-size: 24px; z-index: 2;}
-  .rc-clubname span { display: block; font-size: 14px; font-weight: 800; color: var(--purple1); margin-top: 4px; }
+  .rc-header { display: flex; align-items: center; gap: 16px; padding: 24px 32px 16px; background: var(--rc-bg); border-bottom: 1px solid var(--rc-border); }
+  .rc-logo { width: 64px; height: 64px; border-radius: 50%; object-fit: contain; border: 2px solid var(--rc-accent); background: #fff; z-index: 2;}
+  .rc-clubname { font-weight: 900; color: var(--rc-text); text-transform: uppercase; line-height: 1.1; letter-spacing: 0.5px; font-size: 24px; z-index: 2;}
+  .rc-clubname span { display: block; font-size: 14px; font-weight: 800; color: var(--rc-accent); margin-top: 4px; }
   
-  /* LENCANA NILAI (GRADE BADGE) */
-  .rc-grade-badge {
-      margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; justify-content: center;
-  }
-  .rc-grade-label { font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
-  .rc-grade-value { font-size: 38px; font-weight: 900; line-height: 1; color: #cbd5e1; transition: color 0.3s ease;}
+  .rc-grade-badge { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+  .rc-grade-label { font-size: 10px; font-weight: 800; color: var(--rc-text-muted); letter-spacing: 1px; }
+  .rc-grade-value { font-size: 38px; font-weight: 900; line-height: 1; color: var(--rc-text-muted); transition: color 0.3s ease;}
 
   .rc-banner { position: relative; background: linear-gradient(135deg, var(--purple1), var(--blue2)); color: #fff; padding: 32px 32px 48px; }
   .rc-banner h2 { color: var(--green); font-size: 48px; margin: 0; font-weight: 900; letter-spacing: 1px; line-height: 1; }
@@ -228,32 +204,30 @@
   .rc-photo-wrap { position: absolute; right: 32px; top: 50%; transform: translateY(-30%); width: 160px; height: 160px; border-radius: 50%; padding: 6px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
   .rc-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-  .rc-body { padding: 24px 32px; display: grid; grid-template-columns: 1fr 240px; gap: 32px; background: #f8fafc; }
-  
-  /* Skills Grid */
+  .rc-body { padding: 24px 32px; display: grid; grid-template-columns: 1fr 240px; gap: 32px; background: var(--rc-sec); }
   .rc-skills-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
-  .rc-cat { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
-  .rc-cat h3 { color: var(--navy); font-weight: 900; font-size: 14px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+  .rc-cat { background: var(--rc-bg); border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--rc-border); }
+  .rc-cat h3 { color: var(--rc-text); font-weight: 900; font-size: 14px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--rc-sec); padding-bottom: 8px; }
   .rc-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .rc-skill .label { color: #334155; font-weight: 800; font-size: 11px; text-transform: uppercase; }
+  .rc-skill .label { color: var(--rc-accent); font-weight: 800; font-size: 11px; text-transform: uppercase; }
   .rc-stars { font-size: 14px; letter-spacing: 2px; }
   .rc-stars .on { color: var(--gold); }
   .rc-stars .off { color: var(--graystar); }
 
-  /* Radar Chart Area */
-  .rc-chart-area { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .rc-chart-title { font-size: 12px; font-weight: 900; color: var(--navy); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;}
+  .rc-chart-area { background: var(--rc-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--rc-border); display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .rc-chart-title { font-size: 12px; font-weight: 900; color: var(--rc-text); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;}
   #radarContainer { width: 200px; height: 200px; position:relative; }
 
-  .rc-footer { background: #fff; padding: 24px 32px; display: flex; gap: 24px; border-top: 1px solid #e2e8f0; }
+  .rc-footer { background: var(--rc-bg); padding: 24px 32px; display: flex; gap: 24px; border-top: 1px solid var(--rc-border); }
   .rc-notes { flex: 1; }
-  .rc-notes h4 { color: var(--navy); font-size: 14px; font-weight: 900; margin: 0 0 8px; display:flex; align-items:center; gap:6px;}
-  .rc-notes p { margin: 0; font-size: 13px; line-height: 1.6; color: #475569; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px dashed #cbd5e1; min-height: 80px;}
+  .rc-notes h4 { color: var(--rc-text); font-size: 14px; font-weight: 900; margin: 0 0 8px; display:flex; align-items:center; gap:6px;}
+  .rc-notes p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--rc-text); background: var(--rc-sec); padding: 12px; border-radius: 12px; border: 1px dashed var(--rc-border); min-height: 80px;}
   
   .rc-sign-area { width: 200px; text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
-  .rc-sign-date { font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 30px; }
-  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--navy); border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; width: 100%; margin-bottom:4px;}
-  .rc-sign-label { font-size: 10px; color: #94a3b8; font-weight: 700; letter-spacing: 1px; }
+  .rc-sign-date { font-size: 11px; color: var(--rc-text-muted); font-weight: 600; margin-bottom: 30px; }
+  .rc-sign-name { font-size: 14px; font-weight: 800; color: var(--rc-text); border-bottom: 1px solid var(--rc-border); padding-bottom: 4px; width: 100%; margin-bottom:4px;}
+  .rc-sign-label { font-size: 10px; color: var(--rc-text-muted); font-weight: 700; letter-spacing: 1px; }
+  .rc-class { padding: 20px 32px 0px; font-weight: 900; color: var(--rc-text); font-size: 20px; letter-spacing: 1px; background: var(--rc-sec); margin-bottom:-10px;}
 
   /* EXPORT ACTIONS */
   .export-panel { background: var(--panel-bg); border-radius: 1.5rem; padding: 24px; border: 1px solid var(--line); margin-top: 24px; }
@@ -297,9 +271,15 @@
     
     <!-- TAB 1: DATABASE -->
     <div id="tab-db" class="tab-content active">
+      <!-- DASHBOARD STATS -->
+      <div class="stats-grid">
+          <div class="stat-card"><h4>Total Pemain</h4><p class="neon" id="stat-total">0</p></div>
+          <div class="stat-card"><h4>Status DB</h4><p id="stat-sync" class="text-xs mt-2 text-slate-300">Offline</p></div>
+          <div class="stat-card"><h4>Rapor Aktif</h4><p class="text-purple-400" id="stat-rapor">0</p></div>
+      </div>
+
       <div class="card-section">
-        <h2 class="section-title mb-5 pb-4"><i data-lucide="database" class="h-5 w-5 text-green-400"></i> Sinkronisasi Data</h2>
-        <p class="hint">Hubungkan dengan Google Spreadsheet untuk menarik data terbaru secara instan.</p>
+        <h2 class="section-title"><i data-lucide="database" class="h-5 w-5 text-green-400"></i> Sinkronisasi Data</h2>
         <button class="btn btn-primary" style="width:100%; margin-bottom:24px;" id="btnSyncSheet" onclick="syncPlayers()">
           <i data-lucide="refresh-cw" class="h-4 w-4"></i> Tarik Data Spreadsheet
         </button>
@@ -358,15 +338,15 @@
     <!-- TAB 3: PENGATURAN -->
     <div id="tab-settings" class="tab-content">
       <div class="card-section">
-        <h2 class="section-title mb-5 pb-4"><i data-lucide="palette" class="h-5 w-5 text-blue-400"></i> Pengaturan Global</h2>
+        <h2 class="section-title mb-5"><i data-lucide="palette" class="h-5 w-5 text-blue-400"></i> Pengaturan Global</h2>
         
         <div class="field"><label>Tema Warna Rapor</label>
             <select id="inTheme" onchange="changeTheme()">
                 <option value="default">Ungu Akademi (Default)</option>
-                <option value="emerald">Hijau Emerald</option>
+                <option value="emerald">Hijau Emerald (Emerald)</option>
                 <option value="rose">Merah Merona (Rose)</option>
                 <option value="ocean">Biru Samudra (Ocean)</option>
-                <option value="dark">Mode Gelap Keren (Dark Neon)</option>
+                <option value="dark">Mode Gelap (Dark Neon)</option>
             </select>
         </div>
 
@@ -461,11 +441,11 @@
     <div class="export-panel w-full max-w-[760px] mx-auto">
       <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2"><i data-lucide="download" class="h-4 w-4 text-green-400"></i> Ekspor Dokumen</h3>
       <div class="export-grid">
-        <button class="btn btn-secondary action-btn" onclick="exportFile('pdf')"><i data-lucide="file-text" class="h-4 w-4"></i> Cetak PDF</button>
-        <button class="btn btn-secondary action-btn" onclick="exportFile('png')"><i data-lucide="image" class="h-4 w-4"></i> Simpan PNG</button>
-        <button class="btn btn-secondary action-btn" onclick="exportFile('jpg')"><i data-lucide="image" class="h-4 w-4"></i> Simpan JPG</button>
+        <button class="btn btn-secondary action-btn" id="btnExportPDF" onclick="exportFile('pdf')"><i data-lucide="file-text" class="h-4 w-4"></i> Cetak PDF</button>
+        <button class="btn btn-secondary action-btn" id="btnExportPNG" onclick="exportFile('png')"><i data-lucide="image" class="h-4 w-4"></i> Simpan PNG</button>
+        <button class="btn btn-secondary action-btn" id="btnExportJPG" onclick="exportFile('jpg')"><i data-lucide="image" class="h-4 w-4"></i> Simpan JPG</button>
       </div>
-      <button class="btn btn-wa action-btn" style="width:100%;" onclick="sendWA()"><i data-lucide="send" class="h-5 w-5"></i> Distribusi via WhatsApp</button>
+      <button class="btn btn-wa action-btn" id="btnSendWA" style="width:100%;" onclick="sendWA()"><i data-lucide="send" class="h-5 w-5"></i> Distribusi via WhatsApp</button>
     </div>
 
   </section>
@@ -477,26 +457,22 @@
 // ==========================================
 // PENTING: TEMPELKAN URL GOOGLE SCRIPT ANDA DI SINI
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbWBPAYkgwGU_aHxJwMmYevUfiXF4KFYsz3knORuYtc4dv7YUhG7jSz4TZzPZPFjw1/exec";
-
-const DEF_LOGO = "https://i.ibb.co.com/5grgbXSs/LOGO-MNA-GEN-Z.png";
 const DEF_AVATAR = "https://ui-avatars.com/api/?name=Pemain&background=e2e8f0&color=475569&size=200";
 
-// TEMA WARNA (THEME SWITCHER)
+// TEMA WARNA MENGGUNAKAN CSS VARIABLES (ANTI-BUG)
 const THEMES = {
-    default: { p1: '#7c3aed', p2: '#3730a3', text: '#fff' },
-    emerald: { p1: '#10b981', p2: '#047857', text: '#fff' },
-    rose:    { p1: '#e11d48', p2: '#be123c', text: '#fff' },
-    ocean:   { p1: '#0ea5e9', p2: '#1d4ed8', text: '#fff' },
-    dark:    { p1: '#1e293b', p2: '#0f172a', text: '#b7ff28' }
+    default: { p1: '#7c3aed', p2: '#3730a3', bg: '#ffffff', sec: '#f8fafc', txt: '#1b2a63', brd: '#e2e8f0', mut: '#64748b', acc: '#7c3aed' },
+    emerald: { p1: '#10b981', p2: '#047857', bg: '#ffffff', sec: '#f8fafc', txt: '#064e3b', brd: '#e2e8f0', mut: '#64748b', acc: '#10b981' },
+    rose:    { p1: '#e11d48', p2: '#be123c', bg: '#ffffff', sec: '#fff1f2', txt: '#881337', brd: '#fecdd3', mut: '#9f1239', acc: '#e11d48' },
+    ocean:   { p1: '#0ea5e9', p2: '#1d4ed8', bg: '#ffffff', sec: '#f0f9ff', txt: '#1e3a8a', brd: '#e0f2fe', mut: '#3b82f6', acc: '#0ea5e9' },
+    dark:    { p1: '#1e293b', p2: '#0f172a', bg: '#0f172a', sec: '#1e293b', txt: '#ffffff', brd: '#334155', mut: '#94a3b8', acc: '#b7ff28' }
 };
 
-// State
 let players = [];
 let selPlayer = null;
 let ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
 let myRadarChart = null;
 
-// Database Lokal Aman (Anti-Error Vercel)
 const DB = {
     get: (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch(e){ return null; } },
     set: (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} },
@@ -506,49 +482,46 @@ const DB = {
 // ==========================================
 // INIT & CORE FUNCTIONS (FAILSAFE LOADER)
 // ==========================================
-// Loader akan hilang maksimal dalam 4 detik walau gagal muat
-const failsafeTimeout = setTimeout(() => {
-    hideLoader();
-    showToast("Sistem dimuat dalam Mode Offline/Terbatas.", "error");
-}, 4000);
+// Mencegah stuck jika terjadi error tidak terduga
+const failsafe = setTimeout(() => { hideLoader(); showToast("Mode Pemulihan Aktif.", "error"); }, 4000);
 
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.jsPDF = window.jspdf.jsPDF;
         lucide.createIcons();
         
-        // Setup Tanggal Default
         document.getElementById('inTanggal').valueAsDate = new Date();
         document.getElementById('inMusim').value = new Date().getFullYear();
 
-        // Load Settings
         const s = DB.get('pro_settings') || { club1: 'MNA GEN-Z', club2: 'FUTSAL ACADEMY', theme: 'default' };
         document.getElementById('inClub1').value = s.club1;
         document.getElementById('inClub2').value = s.club2;
         document.getElementById('inTheme').value = s.theme || 'default';
-        changeTheme(); // Apply theme
         
-        // Render UI
         buildStarsUI();
+        changeTheme();
+        
         players = DB.get('pro_players') || [];
         renderPlayers(players);
         
-        // Lepas layar loading dengan normal
-        clearTimeout(failsafeTimeout);
+        clearTimeout(failsafe);
         setTimeout(() => { hideLoader(); triggerPreviewUpdate(); }, 600);
 
     } catch(err) {
-        clearTimeout(failsafeTimeout);
+        clearTimeout(failsafe);
         hideLoader();
-        showToast("Terjadi kesalahan sistem: " + err.message, "error");
+        console.error(err);
+        showToast("Terjadi kesalahan inisialisasi UI.", "error");
     }
 });
 
 function hideLoader() {
     const ls = document.getElementById('loadingScreen');
-    ls.style.opacity = '0';
-    ls.style.visibility = 'hidden';
-    document.getElementById('mainApp').style.display = 'flex';
+    if(ls) {
+        ls.style.opacity = '0';
+        ls.style.visibility = 'hidden';
+        setTimeout(() => { ls.style.display = 'none'; document.getElementById('mainApp').style.display = 'flex'; }, 500);
+    }
 }
 
 function showToast(msg, type='success') {
@@ -569,60 +542,34 @@ function switchTab(tabId, btn) {
 }
 
 // ==========================================
-// TEMA WARNA & AUTO GRADING
+// TEMA WARNA (CSS VARIABLES) & GRADING
 // ==========================================
 function changeTheme() {
-    const key = document.getElementById('inTheme').value;
-    const t = THEMES[key] || THEMES.default;
-    document.documentElement.style.setProperty('--purple1', t.p1);
-    document.documentElement.style.setProperty('--blue2', t.p2);
-    
-    // Khusus tema Dark, ganti warna text title rapor
-    const titleObj = document.querySelector('.rc-banner h2.title');
-    if(key === 'dark') {
-        titleObj.style.color = t.text;
-        document.getElementById('reportCard').style.backgroundColor = "#0f172a";
-        document.querySelector('.rc-header').style.backgroundColor = "#0f172a";
-        document.querySelector('.rc-clubname').style.color = "#fff";
-        document.querySelector('.rc-body').style.backgroundColor = "#1e293b";
-        document.querySelectorAll('.rc-cat').forEach(el => {el.style.backgroundColor = "#0f172a"; el.style.borderColor = "#334155";});
-        document.querySelectorAll('.rc-cat h3').forEach(el => {el.style.color = "#fff"; el.style.borderBottomColor = "#334155";});
-        document.querySelectorAll('.rc-skill .label').forEach(el => {el.style.color = t.text;});
-        document.querySelector('.rc-chart-area').style.backgroundColor = "#0f172a";
-        document.querySelector('.rc-chart-area').style.borderColor = "#334155";
-        document.querySelector('.rc-chart-title').style.color = "#fff";
-        document.querySelector('.rc-footer').style.backgroundColor = "#0f172a";
-        document.querySelector('.rc-footer').style.borderColor = "#334155";
-        document.querySelector('.rc-notes p').style.backgroundColor = "#1e293b";
-        document.querySelector('.rc-notes p').style.borderColor = "#334155";
-        document.querySelector('.rc-notes p').style.color = "#cbd5e1";
-        document.querySelector('.rc-sign').style.backgroundColor = "#1e293b";
-        document.querySelector('.rc-sign-name').style.color = "#fff";
-        document.querySelector('.rc-sign-name').style.borderBottomColor = "#334155";
-        document.querySelector('.rc-class').style.color = "#fff";
-    } else {
-        // Reset to Light Report Card
-        titleObj.style.color = 'var(--green)';
-        document.getElementById('reportCard').style.backgroundColor = "#ffffff";
-        document.querySelector('.rc-header').style.backgroundColor = "#ffffff";
-        document.querySelector('.rc-clubname').style.color = "var(--navy)";
-        document.querySelector('.rc-body').style.backgroundColor = "#f8fafc";
-        document.querySelectorAll('.rc-cat').forEach(el => {el.style.backgroundColor = "#ffffff"; el.style.borderColor = "#e2e8f0";});
-        document.querySelectorAll('.rc-cat h3').forEach(el => {el.style.color = "var(--navy)"; el.style.borderBottomColor = "#f1f5f9";});
-        document.querySelectorAll('.rc-skill .label').forEach(el => {el.style.color = "var(--purple1)";});
-        document.querySelector('.rc-chart-area').style.backgroundColor = "#ffffff";
-        document.querySelector('.rc-chart-area').style.borderColor = "#e2e8f0";
-        document.querySelector('.rc-chart-title').style.color = "var(--navy)";
-        document.querySelector('.rc-footer').style.backgroundColor = "#ffffff";
-        document.querySelector('.rc-footer').style.borderColor = "#e2e8f0";
-        document.querySelector('.rc-notes p').style.backgroundColor = "#f8fafc";
-        document.querySelector('.rc-notes p').style.borderColor = "#cbd5e1";
-        document.querySelector('.rc-notes p').style.color = "#475569";
-        document.querySelector('.rc-sign').style.backgroundColor = "#ffffff";
-        document.querySelector('.rc-sign-name').style.color = "var(--navy)";
-        document.querySelector('.rc-sign-name').style.borderBottomColor = "#cbd5e1";
-        document.querySelector('.rc-class').style.color = "var(--navy)";
-    }
+    try {
+        const key = document.getElementById('inTheme').value || 'default';
+        const t = THEMES[key] || THEMES.default;
+        const r = document.documentElement;
+        
+        r.style.setProperty('--purple1', t.p1);
+        r.style.setProperty('--blue2', t.p2);
+        r.style.setProperty('--rc-bg', t.bg);
+        r.style.setProperty('--rc-sec', t.sec);
+        r.style.setProperty('--rc-text', t.txt);
+        r.style.setProperty('--rc-border', t.brd);
+        r.style.setProperty('--rc-text-muted', t.mut);
+        r.style.setProperty('--rc-accent', t.acc);
+
+        if(myRadarChart) {
+            myRadarChart.data.datasets[0].borderColor = t.p1;
+            myRadarChart.data.datasets[0].pointBackgroundColor = t.p1;
+            myRadarChart.data.datasets[0].pointHoverBorderColor = t.p1;
+            
+            const textColor = key === 'dark' ? '#ffffff' : '#1b2a63';
+            Chart.defaults.color = textColor;
+            myRadarChart.options.scales.r.pointLabels.color = textColor;
+            myRadarChart.update();
+        }
+    } catch(err) { console.error("Theme Error:", err); }
 }
 
 function calcGrade() {
@@ -630,13 +577,13 @@ function calcGrade() {
     for(let k in ratings) { sum += ratings[k]; count++; }
     const avg = count ? sum/count : 0;
     
-    let grade = "N/A", color = "#cbd5e1"; // default
-    if(avg === 0) { grade = "N/A"; color = "#cbd5e1"; }
-    else if(avg >= 4.5) { grade = "A+"; color = "#10b981"; }
-    else if(avg >= 4.0) { grade = "A";  color = "#3b82f6"; }
-    else if(avg >= 3.0) { grade = "B";  color = "#f59e0b"; }
-    else if(avg >= 2.0) { grade = "C";  color = "#f97316"; }
-    else { grade = "D"; color = "#ef4444"; }
+    let grade = "N/A", color = "var(--rc-text-muted)";
+    if(avg === 0) { grade = "N/A"; }
+    else if(avg >= 4.5) { grade = "A+"; color = "#10b981"; } // Emerald
+    else if(avg >= 4.0) { grade = "A";  color = "#3b82f6"; } // Blue
+    else if(avg >= 3.0) { grade = "B";  color = "#f59e0b"; } // Amber
+    else if(avg >= 2.0) { grade = "C";  color = "#f97316"; } // Orange
+    else { grade = "D"; color = "#ef4444"; } // Red
     
     const gVal = document.getElementById('pv-grade-value');
     gVal.innerText = grade;
@@ -644,7 +591,7 @@ function calcGrade() {
 }
 
 // ==========================================
-// DATA & SINKRONISASI (GOOGLE SHEETS)
+// SINKRONISASI GOOGLE SHEETS
 // ==========================================
 async function syncPlayers() {
     const btn = document.getElementById('btnSyncSheet');
@@ -675,18 +622,18 @@ async function syncPlayers() {
 
         DB.set('pro_players', players);
         renderPlayers(players);
-        showToast(`Sukses! ${players.length} pemain ditarik dari Spreadsheet.`);
+        document.getElementById('stat-total').innerText = players.length;
         
+        const now = new Date();
+        document.getElementById('stat-sync').innerText = `${now.getHours()}:${(now.getMinutes()<10?'0':'')+now.getMinutes()}`;
+
+        showToast(`Sukses! ${players.length} pemain ditarik.`);
         apiStatus.innerHTML = '<i data-lucide="check" class="h-4 w-4"></i> Online';
-        apiStatus.style.color = '#10b981';
-        apiStatus.style.background = 'rgba(16, 185, 129, 0.1)';
-        apiStatus.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+        apiStatus.style.color = '#10b981'; apiStatus.style.borderColor = 'rgba(16, 185, 129, 0.3)';
     } catch(err) {
-        showToast("Koneksi terputus. Pastikan URL Google Script benar.", "error");
+        showToast("Koneksi terputus. Cek URL Google Script.", "error");
         apiStatus.innerHTML = '<i data-lucide="x" class="h-4 w-4"></i> Offline';
-        apiStatus.style.color = '#f43f5e';
-        apiStatus.style.background = 'rgba(244, 63, 94, 0.1)';
-        apiStatus.style.borderColor = 'rgba(244, 63, 94, 0.2)';
+        apiStatus.style.color = '#f43f5e'; apiStatus.style.borderColor = 'rgba(244, 63, 94, 0.3)';
     } finally {
         btn.innerHTML = '<i data-lucide="refresh-cw" class="h-4 w-4"></i> Tarik Data Spreadsheet';
         btn.disabled = false;
@@ -710,23 +657,19 @@ function renderPlayers(arr) {
         `;
         c.appendChild(div);
     });
+    if(players.length) document.getElementById('stat-total').innerText = players.length;
 }
 
 function filterPlayers() {
     const q = document.getElementById('searchPlayer').value.toLowerCase();
-    const filtered = players.filter(p => p.name.toLowerCase().includes(q));
-    renderPlayers(filtered);
+    renderPlayers(players.filter(p => p.name.toLowerCase().includes(q)));
 }
 
 function selectPlayer(id) {
     selPlayer = players.find(p => p.id === id);
     if(selPlayer) {
         document.getElementById('selectedPlayerInfo').innerHTML = `<img src="${selPlayer.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #b7ff28;" crossorigin="anonymous"> <span class="truncate">${selPlayer.name}</span>`;
-        
-        // Pindah tab ke Rapor otomatis
         document.querySelectorAll('.menu-btn')[1].click();
-        
-        // Cek data rapor sesuai periode
         checkSavedReport();
     }
 }
@@ -737,7 +680,6 @@ function checkSavedReport() {
     const tw = document.getElementById('inTriwulan').value;
     const ms = document.getElementById('inMusim').value;
     const savedData = DB.get(`rapor_${selPlayer.id}_${tw}_${ms}`);
-    
     const statusBadge = document.getElementById('reportStatus');
     
     if(savedData) {
@@ -749,22 +691,18 @@ function checkSavedReport() {
         resetFormRapor(true); 
         statusBadge.innerHTML = '<span class="text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-bold border border-slate-700 uppercase tracking-widest"><i data-lucide="edit-3" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> DRAF KOSONG</span>';
     }
-    
-    updateStarsUI();
-    triggerPreviewUpdate();
-    lucide.createIcons();
+    updateStarsUI(); triggerPreviewUpdate(); lucide.createIcons();
 }
 
 function resetFormRapor(isSilent = false) {
     ratings = {atletics:0,agility:0,stamina:0,passing:0,dribbling:0,shooting:0,roleplay:0,motivation:0,teamwork:0,discipline:0};
     document.getElementById('inCatatan').value = "";
-    updateStarsUI();
-    triggerPreviewUpdate();
+    updateStarsUI(); triggerPreviewUpdate();
     if(!isSilent) showToast("Form dikosongkan.");
 }
 
 // ==========================================
-// RATING & UI UPDATE
+// RATING UI & PREVIEW
 // ==========================================
 const skillKeys = ['atletics','agility','stamina','passing','dribbling','shooting','roleplay','motivation','teamwork','discipline'];
 const cats = [
@@ -794,8 +732,7 @@ function buildStarsUI() {
 
 window.setRate = function(key, val) {
     ratings[key] = val;
-    updateStarsUI();
-    triggerPreviewUpdate();
+    updateStarsUI(); triggerPreviewUpdate();
 };
 
 function updateStarsUI() {
@@ -803,9 +740,7 @@ function updateStarsUI() {
         const val = ratings[k] || 0;
         const picker = document.querySelector(`.star-picker[data-key="${k}"]`);
         if(picker) {
-            picker.querySelectorAll('span').forEach((sp, i) => {
-                sp.classList.toggle('active', i < val);
-            });
+            picker.querySelectorAll('span').forEach((sp, i) => sp.classList.toggle('active', i < val));
         }
         const pv = document.getElementById(`st-${k}`);
         if(pv) {
@@ -823,7 +758,6 @@ function updateStarsUI() {
 function triggerPreviewUpdate() {
     document.getElementById('pv-club1').innerText = document.getElementById('inClub1').value || 'MNA GEN-Z';
     document.getElementById('pv-club2').innerText = document.getElementById('inClub2').value || 'FUTSAL ACADEMY';
-    
     document.getElementById('pv-period').innerText = `TRIWULAN ${document.getElementById('inTriwulan').value} MUSIM ${document.getElementById('inMusim').value}`;
     
     if(selPlayer) {
@@ -836,9 +770,7 @@ function triggerPreviewUpdate() {
     
     const d = new Date(document.getElementById('inTanggal').value);
     const bln = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    if(!isNaN(d.getTime())) {
-        document.getElementById('pv-tanggal').innerText = `SBY, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
-    }
+    if(!isNaN(d.getTime())) document.getElementById('pv-tanggal').innerText = `SBY, ${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
     
     document.getElementById('pv-pelatih').innerText = document.getElementById('inPelatih').value || "Coach";
 
@@ -859,15 +791,14 @@ function updateRadarChart() {
     const dTeknik = calcAvg(['passing','dribbling','shooting']);
     const dTaktik = ratings.roleplay || 0;
     const dMental = calcAvg(['motivation','teamwork','discipline']);
-
-    // Ambil warna tema
-    const pColor = getComputedStyle(document.documentElement).getPropertyValue('--purple1').trim() || '#7c3aed';
+    
+    const tColor = getComputedStyle(document.documentElement).getPropertyValue('--purple1').trim() || '#7c3aed';
 
     if(myRadarChart) {
         myRadarChart.data.datasets[0].data = [dFisik, dTeknik, dTaktik, dMental];
-        myRadarChart.data.datasets[0].borderColor = pColor;
-        myRadarChart.data.datasets[0].pointBackgroundColor = pColor;
-        myRadarChart.data.datasets[0].pointHoverBorderColor = pColor;
+        myRadarChart.data.datasets[0].borderColor = tColor;
+        myRadarChart.data.datasets[0].pointBackgroundColor = tColor;
+        myRadarChart.data.datasets[0].pointHoverBorderColor = tColor;
         myRadarChart.update();
     } else {
         Chart.defaults.font.family = "'DM Sans', sans-serif";
@@ -876,20 +807,14 @@ function updateRadarChart() {
             data: {
                 labels: ['FISIK', 'TEKNIK', 'TAKTIK', 'MENTAL'],
                 datasets: [{
-                    label: 'Atribut',
                     data: [dFisik, dTeknik, dTaktik, dMental],
-                    backgroundColor: 'rgba(183, 255, 40, 0.4)', 
-                    borderColor: pColor,
-                    pointBackgroundColor: pColor,
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: pColor,
-                    borderWidth: 2,
+                    backgroundColor: 'rgba(183, 255, 40, 0.4)', borderColor: tColor,
+                    pointBackgroundColor: tColor, pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff', pointHoverBorderColor: tColor, borderWidth: 2,
                 }]
             },
             options: {
-                animation: false, 
-                responsive: true, maintainAspectRatio: false,
+                animation: false, responsive: true, maintainAspectRatio: false,
                 scales: {
                     r: {
                         min: 0, max: 5, ticks: { display: false, stepSize: 1 },
@@ -910,6 +835,7 @@ function saveSettings() {
         club2: document.getElementById('inClub2').value,
         theme: document.getElementById('inTheme').value
     });
+    changeTheme();
     showToast("Pengaturan global berhasil disimpan.");
 }
 
@@ -924,30 +850,33 @@ function saveReport() {
     statusBadge.innerHTML = '<span class="text-green-400 bg-green-400/10 px-3 py-1.5 rounded-full text-[10px] font-bold border border-green-400/20 uppercase tracking-widest"><i data-lucide="check-circle" class="inline h-3.5 w-3.5 mr-1 align-text-bottom"></i> Tersimpan</span>';
     lucide.createIcons();
     
+    // Update dashboard stat rapor
+    const rCount = parseInt(document.getElementById('stat-rapor').innerText) + 1;
+    document.getElementById('stat-rapor').innerText = rCount;
+    
     showToast("Data Rapor berhasil disimpan secara aman.");
 }
 
-// BUG FIXED: Format multi-line string yang membuat error telah diubah menggunakan `\n` standar
 function clearAllData() {
-    if(confirm("PERINGATAN KERAS!\n\nApakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
+    if(confirm("PERINGATAN KERAS!
+
+Apakah Anda yakin ingin melakukan format sistem? Seluruh histori rapor di perangkat ini akan lenyap selamanya.")) {
         localStorage.clear();
         location.reload();
     }
 }
 
 // ==========================================
-// EKSPOR & ENGINE KAMERA PRO (ANTI-TERPOTONG)
+// EKSPOR PROFESIONAL
 // ==========================================
 async function takeSnapshot() {
     const card = document.getElementById('reportCard');
     const oW = card.style.width, oT = card.style.transform;
-    
-    card.style.width = '760px';
-    card.style.transform = 'none';
+    card.style.width = '760px'; card.style.transform = 'none';
     window.scrollTo(0,0);
 
     const canvas = await html2canvas(card, {
-        scale: 2, backgroundColor: '#ffffff', useCORS: true, allowTaint: true,
+        scale: 2, backgroundColor: null, useCORS: true, allowTaint: true,
         width: 760, windowWidth: 760, scrollY: 0
     });
 
@@ -960,7 +889,13 @@ window.exportFile = async function(fmt) {
     
     const btns = document.querySelectorAll('.action-btn');
     btns.forEach(b => b.disabled = true);
-    showToast(`Memproses dokumen ${fmt.toUpperCase()}... Mohon tunggu.`);
+    
+    const btnId = 'btnExport' + fmt.toUpperCase();
+    const btn = document.getElementById(btnId);
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Proses...';
+    lucide.createIcons();
+    showToast(`Memproses ${fmt.toUpperCase()}...`);
 
     try {
         const cvs = await takeSnapshot();
@@ -968,8 +903,8 @@ window.exportFile = async function(fmt) {
 
         if(fmt === 'pdf') {
             const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-            const w = 180, h = (cvs.height * w) / cvs.width;
-            pdf.addImage(cvs.toDataURL('image/jpeg', 1.0), 'JPEG', 15, 20, w, h);
+            const w = 190, h = (cvs.height * w) / cvs.width;
+            pdf.addImage(cvs.toDataURL('image/jpeg', 1.0), 'JPEG', 10, 15, w, h);
             pdf.save(fname + '.pdf');
         } else {
             const link = document.createElement('a');
@@ -979,9 +914,12 @@ window.exportFile = async function(fmt) {
         }
         showToast("Ekspor dokumen berhasil!");
     } catch(err) {
-        showToast("Gagal memproses gambar. Pastikan gambar tidak dikunci server.", "error");
+        showToast("Gagal memproses gambar. Pastikan gambar tidak diproteksi server.", "error");
+        console.error(err);
     } finally {
         btns.forEach(b => b.disabled = false);
+        btn.innerHTML = oldHtml;
+        lucide.createIcons();
     }
 };
 
@@ -995,7 +933,14 @@ window.sendWA = async function() {
     setTimeout(() => {
         const tw = document.getElementById('inTriwulan').value;
         const ms = document.getElementById('inMusim').value;
-        const txt = `Halo Bapak/Ibu Wali dari *${selPlayer.name}*,\n\nBerikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan ${tw} Musim ${ms}.\n\n_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_\n\nTerima kasih atas dukungannya,\n*Manajemen MNA GEN-Z ACADEMY*`;
+        const txt = `Halo Bapak/Ibu Wali dari *${selPlayer.name}*,
+
+Berikut kami lampirkan dokumen Evaluasi Rapor Akademi MNA GEN-Z untuk periode Triwulan ${tw} Musim ${ms}.
+
+_(Mohon pelatih melampirkan file PDF yang baru saja diunduh ke dalam chat ini)_
+
+Terima kasih atas dukungannya,
+*Manajemen MNA GEN-Z ACADEMY*`;
         window.open(`https://wa.me/${selPlayer.phone}?text=${encodeURIComponent(txt)}`, '_blank');
     }, 1500);
 }
